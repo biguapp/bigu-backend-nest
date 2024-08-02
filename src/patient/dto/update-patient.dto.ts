@@ -33,7 +33,7 @@ export class UpdatePatientDto extends PartialType(CreatePatientDto) {
   readonly email?: string;
 
   @ApiProperty({ example: 'updated-password', required: false })
-  readonly senha?: string;
+  readonly password?: string;
 
   @ApiProperty({ example: '(11) 98765-4321', required: false })
   readonly celular?: string;

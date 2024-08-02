@@ -3,20 +3,19 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsEmail, IsEnum, IsOptional, ValidateNested, IsInt, Min, Max, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
 import { HealthUnitType, ServiceType } from '../../enums/index'
-import { InfinityIcon } from 'lucide-react';
 
 export class OperatingHoursDto {
   @ApiProperty({ example: '08:00' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Time must be in HH:MM format' })
-  readonly inicio: string;
+  readonly abre: string;
 
   @ApiProperty({ example: '18:00' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Time must be in HH:MM format' })
-  readonly fim: string;
+  readonly fecha: string;
 }
 
 export class OperatingHoursGroupDto {
@@ -129,7 +128,7 @@ export class CreateHealthUnitDto {
   @IsNotEmpty()
   readonly tipo: HealthUnitType;
 
-  @ApiProperty({ example: ['especialidades médicas', 'clínica geral'], enum: ServiceType, isArray: true })
+  @ApiProperty({ example: ['Pediatria', 'Clínica Geral'], enum: ServiceType, isArray: true })
   @IsEnum(ServiceType, { each: true })
   @IsNotEmpty()
   readonly servicosOfertados: ServiceType[];

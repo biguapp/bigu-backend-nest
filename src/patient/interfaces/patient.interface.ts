@@ -12,7 +12,7 @@ export interface Patient extends Document {
   readonly sexo: string;
   readonly estadoCivil?: string;
   readonly email: string;
-  readonly senha: string;
+  readonly password: string;
   readonly celular: string;
   readonly racaCor?: string;
   readonly endereco: {

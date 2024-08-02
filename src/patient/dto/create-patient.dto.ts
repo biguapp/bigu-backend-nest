@@ -64,7 +64,7 @@ export class CreatePatientDto {
   @ApiProperty({ example: 'senha123' })
   @IsString()
   @IsNotEmpty()
-  readonly senha: string;
+  readonly password: string;
 
   @ApiProperty({ example: '(11) 98765-4321' })
   @IsString()

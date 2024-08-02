@@ -1,55 +1,126 @@
-import { Schema } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 import { HealthUnitType, ServiceType } from '../../enums'; // Atualize o caminho conforme necessário
 
 // Define o schema para o horário de funcionamento
-const OperatingHoursSchema = new Schema({
-  abertura: { type: String, required: true }, // Ex: '08:00'
-  fechamento: { type: String, required: true } // Ex: '18:00'
-});
+@Schema()
+export class OperatingHours {
+  @Prop({ required: true })
+  abre: string; // Ex: '08:00'
+
+  @Prop({ required: true })
+  fecha: string; // Ex: '18:00'
+}
+
+export const OperatingHoursSchema = SchemaFactory.createForClass(OperatingHours);
 
 // Define o schema para o grupo de horários de funcionamento por dia da semana
-const OperatingHoursGroupSchema = new Schema({
-  segunda: { type: OperatingHoursSchema },
-  terca: { type: OperatingHoursSchema },
-  quarta: { type: OperatingHoursSchema },
-  quinta: { type: OperatingHoursSchema },
-  sexta: { type: OperatingHoursSchema },
-  sabado: { type: OperatingHoursSchema },
-  domingo: { type: OperatingHoursSchema }
-});
+@Schema()
+export class OperatingHoursGroup {
+  @Prop({ type: OperatingHoursSchema })
+  segunda?: OperatingHours;
+
+  @Prop({ type: OperatingHoursSchema })
+  terca?: OperatingHours;
+
+  @Prop({ type: OperatingHoursSchema })
+  quarta?: OperatingHours;
+
+  @Prop({ type: OperatingHoursSchema })
+  quinta?: OperatingHours;
+
+  @Prop({ type: OperatingHoursSchema })
+  sexta?: OperatingHours;
+
+  @Prop({ type: OperatingHoursSchema })
+  sabado?: OperatingHours;
+
+  @Prop({ type: OperatingHoursSchema })
+  domingo?: OperatingHours;
+}
+
+export const OperatingHoursGroupSchema = SchemaFactory.createForClass(OperatingHoursGroup);
 
 // Define o schema para o endereço
-const AddressSchema = new Schema({
-  rua: { type: String },
-  numero: { type: String },
-  complemento: { type: String },
-  bairro: { type: String },
-  cidade: { type: String },
-  estado: { type: String },
-  cep: { type: String }
-});
+@Schema()
+export class Address {
+  @Prop()
+  rua?: string;
+
+  @Prop()
+  numero?: string;
+
+  @Prop()
+  complemento?: string;
+
+  @Prop()
+  bairro?: string;
+
+  @Prop()
+  cidade?: string;
+
+  @Prop()
+  estado?: string;
+
+  @Prop()
+  cep?: string;
+}
+
+export const AddressSchema = SchemaFactory.createForClass(Address);
 
 // Define o schema para a especialidade
-const SpecialtySchema = new Schema({
-  nome: { type: String, required: true }, // Ex: 'Pediatra'
-  horarioFuncionamento: { type: OperatingHoursGroupSchema }
-});
+@Schema()
+export class Specialty {
+  @Prop({ required: true })
+  nome: string; // Ex: 'Pediatra'
+
+  @Prop({ type: OperatingHoursGroupSchema })
+  horarioFuncionamento?: OperatingHoursGroup;
+}
+
+export const SpecialtySchema = SchemaFactory.createForClass(Specialty);
 
 // Define o schema para a avaliação
-const RatingSchema = new Schema({
-  nota: { type: Number, min: 0, max: 5, required: true }, // Nota de 0 a 5
-  descricao: { type: String }
-});
+@Schema()
+export class Rating {
+  @Prop({ required: true, min: 0, max: 5 })
+  nota: number; // Nota de 0 a 5
 
-// Define o schema principal para a unidade de saúde
-export const HealthUnitSchema = new Schema({
-  nome: { type: String, required: true },
-  tipo: { type: String, enum: Object.values(HealthUnitType), required: true }, // Enum para tipo de unidade de saúde
-  endereco: { type: AddressSchema },
-  horarioFuncionamento: { type: OperatingHoursGroupSchema },
-  servicosOfertados: { type: [String], enum: Object.values(ServiceType) }, // Enum para serviços oferecidos
-  telefoneContato: { type: String, required: true },
-  emailContato: { type: String, required: true },
-  especialidadesDisponiveis: { type: [SpecialtySchema] }, // Lista de especialidades disponíveis
-  avaliacao: { type: RatingSchema } // Avaliação opcional
-});
+  @Prop()
+  descricao?: string;
+}
+
+export const RatingSchema = SchemaFactory.createForClass(Rating);
+
+// Define o schema principal para HealthUnit
+@Schema()
+export class HealthUnit extends Document {
+  @Prop({ required: true })
+  nome: string;
+
+  @Prop({ required: true, enum: Object.values(HealthUnitType) })
+  tipo: HealthUnitType; // Enum para tipo de unidade de saúde
+
+  @Prop({ type: AddressSchema })
+  endereco?: Address;
+
+  @Prop({ type: OperatingHoursGroupSchema })
+  horarioFuncionamento?: OperatingHoursGroup;
+
+  @Prop({ type: [String], enum: Object.values(ServiceType) })
+  servicosOfertados?: ServiceType[]; // Enum para serviços oferecidos
+
+  @Prop({ required: true })
+  telefoneContato: string;
+
+  @Prop({ required: true })
+  emailContato: string;
+
+  @Prop({ type: [SpecialtySchema] })
+  especialidadesDisponiveis?: Specialty[];
+
+  @Prop({ type: RatingSchema })
+  avaliacao?: Rating; // Avaliação opcional
+}
+
+export const HealthUnitSchema = SchemaFactory.createForClass(HealthUnit);

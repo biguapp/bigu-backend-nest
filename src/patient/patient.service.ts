@@ -11,7 +11,7 @@ export class PatientService {
   constructor(@InjectModel('Patient') private readonly patientModel: Model<Patient>) {}
 
   async create(createPatientDto: CreatePatientDto): Promise<Patient> {
-    const hashedPassword = await bcrypt.hash(createPatientDto.senha, 10);
+    const hashedPassword = await bcrypt.hash(createPatientDto.password, 10);
 
     const createdPatient = new this.patientModel({
       ...createPatientDto,
@@ -26,6 +26,14 @@ export class PatientService {
 
   async findOne(id: string): Promise<Patient> {
     return this.patientModel.findById(id).exec();
+  }
+
+  async findByEmail(email: string): Promise<Patient> {
+    const patient = await this.patientModel.findOne({ email }).exec();
+    if (!patient) {
+      throw new NotFoundException(`Patient with email ${email} not found`);
+    }
+    return patient;
   }
 
   async update(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient> {

@@ -1,20 +1,37 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  UseGuards,
+  Delete,
+} from '@nestjs/common';
 import { HealthUnitService } from './health-unit.service';
 import { CreateHealthUnitDto } from './dto/create-health-unit.dto';
 import { UpdateHealthUnitDto } from './dto/update-health-unit.dto';
 import { HealthUnit } from './interfaces/health-unit.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('health-units')
 @Controller('health-units')
 export class HealthUnitController {
   constructor(private readonly healthUnitService: HealthUnitService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  @ApiOperation({summary: 'Create Health Unit'})
-  @ApiResponse({ status: 201, description: 'The health unit has been successfully created.' })
+  @ApiOperation({ summary: 'Create Health Unit' })
+  @ApiResponse({
+    status: 201,
+    description: 'The health unit has been successfully created.',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async create(@Body() createHealthUnitDto: CreateHealthUnitDto): Promise<HealthUnit> {
+  async create(
+    @Body() createHealthUnitDto: CreateHealthUnitDto,
+  ): Promise<HealthUnit> {
     return this.healthUnitService.create(createHealthUnitDto);
   }
 
@@ -32,19 +49,21 @@ export class HealthUnitController {
     return this.healthUnitService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
-  @ApiOperation({summary: 'Edit health unit'})
-  @ApiResponse({ status:200, description: 'Health unit edited.'})
+  @ApiOperation({ summary: 'Edit health unit' })
+  @ApiResponse({ status: 200, description: 'Health unit edited.' })
   async update(
     @Param('id') id: string,
-    @Body() updateHealthUnitDto: UpdateHealthUnitDto
+    @Body() updateHealthUnitDto: UpdateHealthUnitDto,
   ): Promise<HealthUnit> {
     return this.healthUnitService.update(id, updateHealthUnitDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete one health unit'})
-  @ApiResponse({ status: 200, description: 'Health unit deleted.'})
+  @ApiOperation({ summary: 'Delete one health unit' })
+  @ApiResponse({ status: 200, description: 'Health unit deleted.' })
   async remove(@Param('id') id: string): Promise<void> {
     return this.healthUnitService.remove(id);
   }

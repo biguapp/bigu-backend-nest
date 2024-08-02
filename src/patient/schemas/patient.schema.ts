@@ -4,6 +4,7 @@ export const PatientSchema = new Schema({
   cpf: {
     type: String,
     required: true,
+    unique: true,
     match: /^[0-9]{11}$/,
   },
   nome: { type: String, required: true },
@@ -42,9 +43,10 @@ export const PatientSchema = new Schema({
   email: { 
     type: String, 
     required: true, 
+    unique: true,
     match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ // Validação de email
   },
-  senha: { type: String, required: true },
+  password: { type: String, required: true },
   celular: { 
     type: String, 
     required: true,
@@ -63,4 +65,6 @@ export const PatientSchema = new Schema({
       match: /^[0-9]{5}-[0-9]{3}$/ // Validação para o formato 00000-000
     },
   },
-});
+})
+
+export const Patient = { name: 'Patient', schema: PatientSchema };

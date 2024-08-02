@@ -3,8 +3,8 @@ import { HealthUnitType, ServiceType } from '../../enums'; // Atualize o caminho
 
 // Define a interface para o horário de funcionamento
 interface OperatingHours {
-  abertura: string; // Ex: '08:00'
-  fechamento: string; // Ex: '18:00'
+  abre: string; // Ex: '08:00'
+  fecha: string; // Ex: '18:00'
 }
 
 // Define a interface para o grupo de horários de funcionamento por dia da semana
