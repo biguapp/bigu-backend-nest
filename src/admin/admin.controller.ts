@@ -15,6 +15,15 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  @Post()
+  @ApiOperation({ summary: 'Create admin'})
+  @ApiResponse({ status: 200, description: 'Admin created.'})
+  async create(
+    @Body() createAdminDto: CreateAdminDto,
+  ): Promise<Admin> {
+    return this.adminService.create(createAdminDto);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all admins' })
   @ApiResponse({ status: 200, description: 'All admins returned.' })
@@ -27,6 +36,13 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Admin returned.' })
   async findOne(@Param('id') id: string): Promise<Admin> {
     return this.adminService.findOne(id);
+  }
+
+  @Get(':email')
+  @ApiOperation({ summary: 'Get one admin by email' })
+  @ApiResponse({ status: 200, description: 'Admin returned.' })
+  async findByEmail(@Param('email') email: string): Promise<Admin> {
+    return this.adminService.findByEmail(email);
   }
 
   @Put(':id')
@@ -44,29 +60,5 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Admin deleted.'})
   async remove(@Param('id') id: string): Promise<void> {
     return this.adminService.remove(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('health-units')
-  async createHealthUnit(@Body() createHealthUnitDto: CreateHealthUnitDto): Promise<HealthUnit> {
-    return this.adminService.createHealthUnit(createHealthUnitDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('health-units/:id')
-  async getHealthUnit(@Param('id') id: string): Promise<HealthUnit> {
-    return this.adminService.getHealthUnit(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put('health-units/:id')
-  async updateHealthUnit(@Param('id') id: string, @Body() updateHealthUnitDto: UpdateHealthUnitDto): Promise<HealthUnit> {
-    return this.adminService.updateHealthUnit(id, updateHealthUnitDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete('health-units/:id')
-  async deleteHealthUnit(@Param('id') id: string): Promise<HealthUnit> {
-    return this.adminService.deleteHealthUnit(id);
   }
 }

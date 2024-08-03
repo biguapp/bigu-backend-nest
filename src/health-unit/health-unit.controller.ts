@@ -12,11 +12,11 @@ import { HealthUnitService } from './health-unit.service';
 import { CreateHealthUnitDto } from './dto/create-health-unit.dto';
 import { UpdateHealthUnitDto } from './dto/update-health-unit.dto';
 import { HealthUnit } from './interfaces/health-unit.interface';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('health-units')
+@ApiBearerAuth('access-token')
 @Controller('health-units')
 export class HealthUnitController {
   constructor(private readonly healthUnitService: HealthUnitService) {}

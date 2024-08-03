@@ -16,10 +16,8 @@ import { Patient, PatientSchema } from 'src/patient/schemas/patient.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Admin.name, schema: AdminSchema }]),
-    MongooseModule.forFeature([{ name: HealthUnit.name, schema: HealthUnitSchema }]), 
+    MongooseModule.forFeature([{ name: Admin.name, schema: AdminSchema }]), 
     MongooseModule.forFeature([{ name: Patient.name, schema: PatientSchema}]),
-    HealthUnitModule,
     PassportModule,
     PatientModule,
     JwtModule.register({
@@ -28,7 +26,7 @@ import { Patient, PatientSchema } from 'src/patient/schemas/patient.schema';
     }),
   ],
   controllers: [AdminController],
-  providers: [AdminService, AuthService, PatientService, HealthUnitService],
-  exports: [AdminService, HealthUnitService, PatientService],
+  providers: [AdminService, AuthService, PatientService],
+  exports: [AdminService, PatientService],
 })
 export class AdminModule {}
