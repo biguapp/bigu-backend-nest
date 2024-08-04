@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AdminSchema } from './schemas/admin.schema';
+import { Admin as AdminSchema } from './schemas/admin.schema';
 import { Admin } from '../admin/interfaces/admin.interface';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';

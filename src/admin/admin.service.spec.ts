@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminService } from './admin.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { AdminSchema } from './schemas/admin.schema';
+import { Admin } from './schemas/admin.schema';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/auth.service';
 
@@ -33,7 +33,7 @@ describe('AdminService', () => {
       providers: [
         AdminService,
         {
-          provide: getModelToken(AdminSchema.name),
+          provide: getModelToken(Admin.name),
           useValue: mockAdminModel,
         },
         {

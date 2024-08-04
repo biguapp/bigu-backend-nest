@@ -11,4 +11,4 @@ export class Admin extends Document {
   password: string;
 }
 
-export const AdminSchema = { name: 'Admin', schema: Admin };
+export const AdminSchema = SchemaFactory.createForClass(Admin);

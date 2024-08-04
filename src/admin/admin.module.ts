@@ -9,7 +9,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from '../auth/auth.service';
 import { jwtConstants } from '../auth/constants';
-import { HealthUnitService } from '../health-unit/health-unit.service';
 import { PatientService } from 'src/patient/patient.service';
 import { PatientModule } from 'src/patient/patient.module';
 import { Patient, PatientSchema } from 'src/patient/schemas/patient.schema';

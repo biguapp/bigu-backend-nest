@@ -1,70 +1,90 @@
-import { Schema } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-export const Patient = new Schema({
-  cpf: {
-    type: String,
-    required: true,
-    unique: true,
-    match: /^[0-9]{11}$/,
-  },
-  nome: { type: String, required: true },
-  nomeSocial: { type: String },
-  nomeMae: { type: String, required: true },
-  nomePai: { type: String },
-  numeroSus: {
-    type: String,
-    required: true,
-    match: /^[0-9]{15}$/, // Validação de 15 dígitos
-  },
-  tipoSanguineo: {
-    type: String,
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-    default: 'O+',
-  },
-  dataNascimento: {
-    type: Date,
+// Define o schema para o endereço
+@Schema()
+export class Address {
+  @Prop()
+  rua?: string;
+
+  @Prop()
+  numero?: string;
+
+  @Prop()
+  complemento?: string;
+
+  @Prop()
+  bairro?: string;
+
+  @Prop()
+  cidade?: string;
+
+  @Prop()
+  estado?: string;
+
+  @Prop({ match: /^[A-Z]{2}$/ })
+  cep?: string;
+}
+
+export const AddressSchema = SchemaFactory.createForClass(Address);
+
+@Schema()
+export class Patient extends Document {
+  @Prop({ required: true, unique: true, match: /^[0-9]{11}$/ })
+  cpf: string;
+
+  @Prop({ required: true })
+  nome: string;
+
+  @Prop()
+  nomeSocial?: string;
+
+  @Prop({ required: true })
+  nomeMae: string;
+
+  @Prop()
+  nomePai?: string;
+
+  @Prop({ required: true, match: /^[0-9]{15}$/ })
+  numeroSus: string;
+
+  @Prop({ enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], default: 'O+' })
+  tipoSanguineo?: string;
+
+  @Prop({
     required: true,
     validate: {
-      validator: function (value) {
-        return value < Date.now();
+      validator: function (value: Date) {
+        return value.getTime() < Date.now();
       },
       message: 'Data de nascimento deve ser no passado.',
     },
-  },
-  sexo: {
-    type: String,
-    required: true,
-    enum: ['Masculino', 'Feminino', 'Outro'],
-  },
-  estadoCivil: {
-    type: String,
-    enum: ['Solteiro', 'Casado', 'Divorciado', 'Viúvo', 'Outro'],
-  },
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true,
-    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ // Validação de email
-  },
-  password: { type: String, required: true },
-  celular: { 
-    type: String, 
-    required: true,
-    match: /^\(\d{2}\) \d{5}-\d{4}$/ // Validação para o formato (xx) xxxxx-xxxx
-  },
-  racaCor: { type: String, enum: ['Branco', 'Preto', 'Pardo', 'Amarelo', 'Indígena', 'Outro'] },
-  endereco: {
-    rua: { type: String },
-    numero: { type: String },
-    complemento: { type: String },
-    bairro: { type: String },
-    cidade: { type: String },
-    estado: { type: String, match: /^[A-Z]{2}$/ }, // Validação para siglas de estados brasileiros
-    cep: { 
-      type: String, 
-      match: /^[0-9]{5}-[0-9]{3}$/ // Validação para o formato 00000-000
-    },
-  },
-})
+  })
+  dataNascimento: Date;
 
-export const PatientSchema = { name: 'Patient', schema: Patient };
+  @Prop({ required: true, enum: ['Masculino', 'Feminino', 'Outro'] })
+  sexo: string;
+
+  @Prop({ enum: ['Solteiro', 'Casado', 'Divorciado', 'Viúvo', 'Outro'] })
+  estadoCivil?: string;
+
+  @Prop({ required: true, unique: true, match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ })
+  email: string;
+
+  @Prop({ required: true })
+  password: string;
+
+  @Prop({ required: true, match: /^\(\d{2}\) \d{5}-\d{4}$/ })
+  celular: string;
+
+  @Prop({ enum: ['Branco', 'Preto', 'Pardo', 'Amarelo', 'Indígena', 'Outro'] })
+  racaCor?: string;
+
+  @Prop({
+    type: AddressSchema,
+    default: {}
+  })
+  endereco?: Address;
+}
+
+export const PatientSchema = SchemaFactory.createForClass(Patient);
