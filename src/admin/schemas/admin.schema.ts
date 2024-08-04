@@ -5,10 +5,10 @@ import { Document } from 'mongoose';
 export class Admin extends Document {
 
   @Prop({ required: true, unique: true})
-  email?: string;
+  email: string;
 
   @Prop({ required: true })
   password: string;
 }
 
-export const AdminSchema = SchemaFactory.createForClass(Admin);
+export const AdminSchema = { name: 'Admin', schema: Admin };

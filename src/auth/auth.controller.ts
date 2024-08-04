@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { CreateAdminDto } from '../admin/dto/create-admin.dto';
 import { CreatePatientDto } from '../patient/dto/create-patient.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { LoginPatientDto } from '../patient/dto/login-patient.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -24,9 +25,9 @@ export class AuthController {
   @Post('login/patient')
   @ApiOperation({ summary: 'Patient login' })
   @ApiResponse({ status: 200, description: 'Patient logged in' })
-  async loginPatient(@Body() createPatientDto: CreatePatientDto) {
-    const { email, password } = createPatientDto;
-    const token = await this.authService.loginPatient(email, password);
+  async loginPatient(@Body() loginPatientDto: LoginPatientDto) {
+    const { cpf, password } = loginPatientDto;
+    const token = await this.authService.loginPatient(cpf, password);
     if (!token) {
       throw new BadRequestException('Invalid credentials');
     }

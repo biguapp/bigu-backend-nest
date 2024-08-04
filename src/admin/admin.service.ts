@@ -1,7 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Admin } from '../admin/schemas/admin.schema';
+import { AdminSchema } from './schemas/admin.schema';
+import { Admin } from '../admin/interfaces/admin.interface';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { NotFoundException } from '@nestjs/common';
@@ -9,7 +10,7 @@ import { NotFoundException } from '@nestjs/common';
 @Injectable()
 export class AdminService {
   constructor(
-    @InjectModel(Admin.name) private readonly adminModel: Model<Admin>
+    @InjectModel(AdminSchema.name) private readonly adminModel: Model<Admin>
   ) {}
 
   async findByEmail(email: string): Promise<Admin> {

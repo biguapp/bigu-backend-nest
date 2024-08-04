@@ -36,6 +36,14 @@ export class PatientService {
     return patient;
   }
 
+  async findByCpf(cpf: string): Promise<Patient> {
+    const patient = await this.patientModel.findOne({ cpf }).exec();
+    if (!patient) {
+      throw new NotFoundException(`Patient with email ${cpf} not found`);
+    }
+    return patient;
+  }
+
   async update(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient> {
     const updatedPatient = await this.patientModel.findByIdAndUpdate(
       id,

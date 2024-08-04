@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 
-export const PatientSchema = new Schema({
+export const Patient = new Schema({
   cpf: {
     type: String,
     required: true,
@@ -67,4 +67,4 @@ export const PatientSchema = new Schema({
   },
 })
 
-export const Patient = { name: 'Patient', schema: PatientSchema };
+export const PatientSchema = { name: 'Patient', schema: Patient };
