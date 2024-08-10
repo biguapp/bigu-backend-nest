@@ -4,6 +4,8 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './interfaces/patient.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Roles } from '../roles/roles.decorator';
+import { Role } from '../enums/enum';
 
 @ApiTags('patients')
 @Controller('patients')
@@ -11,6 +13,7 @@ export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
   @Post()
+  @Roles(Role.Patient)
   @ApiOperation({ summary: 'Create Patient' })
   @ApiResponse({ status: 201, description: 'The patient has been successfully created.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -19,6 +22,7 @@ export class PatientController {
   }
 
   @Get()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Get all patients' })
   @ApiResponse({ status: 200, description: 'All patients returned.' })
   async findAll(): Promise<Patient[]> {
@@ -26,6 +30,7 @@ export class PatientController {
   }
 
   @Get(':id')
+  @Roles(Role.Patient)
   @ApiOperation({ summary: 'Get one patient' })
   @ApiResponse({ status: 200, description: 'Patient returned.' })
   async findOne(@Param('id') id: string): Promise<Patient> {
@@ -33,6 +38,7 @@ export class PatientController {
   }
 
   @Put(':id')
+  @Roles(Role.Patient)
   @ApiOperation({ summary: 'Edit patient'})
   @ApiResponse({ status: 200, description: 'Patient edited.'})
   async update(
@@ -43,6 +49,7 @@ export class PatientController {
   }
 
   @Delete(':id')
+  @Roles(Role.Patient)
   @ApiOperation({ summary: 'Delete one patient'})
   @ApiResponse({ status: 200, description: 'Patient deleted.'})
   async remove(@Param('id') id: string): Promise<void> {

@@ -4,10 +4,11 @@ import { Model } from 'mongoose';
 import { HealthUnit } from './interfaces/health-unit.interface';
 import { CreateHealthUnitDto } from './dto/create-health-unit.dto';
 import { UpdateHealthUnitDto } from './dto/update-health-unit.dto';
+import { HealthUnit as HealthUnitSchema } from './schemas/health-unit.schema';
 
 @Injectable()
 export class HealthUnitService {
-  constructor(@InjectModel('HealthUnit') private readonly healthUnitModel: Model<HealthUnit>) {}
+  constructor(@InjectModel(HealthUnitSchema.name) private readonly healthUnitModel: Model<HealthUnit>) {}
 
   async create(createHealthUnitDto: CreateHealthUnitDto): Promise<HealthUnit> {
     const createdHealthUnit = new this.healthUnitModel(createHealthUnitDto);

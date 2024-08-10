@@ -10,6 +10,7 @@ import { Admin } from '../admin/interfaces/admin.interface';
 import { Patient } from '../patient/interfaces/patient.interface';
 import { CreatePatientDto } from '../patient/dto/create-patient.dto';
 import { CreateAdminDto } from '../admin/dto/create-admin.dto';
+import { Role } from '../enums/enum';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -133,6 +134,7 @@ describe('AuthService', () => {
   describe('registerPatient', () => {
     it('should hash the password and create a new patient', async () => {
       const createPatientDto: CreatePatientDto = {
+        role: Role.Patient,
         cpf: '10050972405',
         nome: 'Patient Name',
         nomeMae: 'Mother Name',
@@ -164,6 +166,7 @@ describe('AuthService', () => {
       const createAdminDto: CreateAdminDto = {
         email: 'admin@example.com',
         password: 'password',
+        role: Role.Admin
       };
 
       jest.spyOn(adminService, 'create').mockResolvedValue(mockAdmin);

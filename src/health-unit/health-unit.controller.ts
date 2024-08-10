@@ -12,17 +12,24 @@ import { HealthUnitService } from './health-unit.service';
 import { CreateHealthUnitDto } from './dto/create-health-unit.dto';
 import { UpdateHealthUnitDto } from './dto/update-health-unit.dto';
 import { HealthUnit } from './interfaces/health-unit.interface';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../roles/roles.decorator';
+import { Role } from '../enums/enum';
 
 @ApiTags('health-units')
-@ApiBearerAuth('access-token')
+@ApiBearerAuth()
 @Controller('health-units')
 export class HealthUnitController {
   constructor(private readonly healthUnitService: HealthUnitService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Create Health Unit' })
   @ApiResponse({
     status: 201,
@@ -36,6 +43,7 @@ export class HealthUnitController {
   }
 
   @Get()
+  @Roles(Role.Patient, Role.Admin)
   @ApiOperation({ summary: 'Get all health units' })
   @ApiResponse({ status: 200, description: 'Return all health units.' })
   async findAll(): Promise<HealthUnit[]> {
@@ -43,14 +51,15 @@ export class HealthUnitController {
   }
 
   @Get(':id')
+  @Roles(Role.Patient, Role.Admin)
   @ApiOperation({ summary: 'Get one health unit' })
   @ApiResponse({ status: 200, description: 'Return one health unit.' })
   async findOne(@Param('id') id: string): Promise<HealthUnit> {
     return this.healthUnitService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put(':id')
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Edit health unit' })
   @ApiResponse({ status: 200, description: 'Health unit edited.' })
   async update(
@@ -60,8 +69,8 @@ export class HealthUnitController {
     return this.healthUnitService.update(id, updateHealthUnitDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Delete one health unit' })
   @ApiResponse({ status: 200, description: 'Health unit deleted.' })
   async remove(@Param('id') id: string): Promise<void> {

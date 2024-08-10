@@ -2,7 +2,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsEmail, IsEnum, IsOptional, ValidateNested, IsInt, Min, Max, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
-import { HealthUnitType, ServiceType } from '../../enums/index'
+import { HealthUnitType, ServiceType } from '../../enums/enum'
 
 export class OperatingHoursDto {
   @ApiProperty({ example: '08:00' })

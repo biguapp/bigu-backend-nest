@@ -3,6 +3,7 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { Role } from '../enums/enum';
 
 const uuid = '4fbf7c1f-4174-4105-997d-45e62f5cc5a3';
 
@@ -39,6 +40,7 @@ describe('AdminController', () => {
     const adminDto: CreateAdminDto = {
       email: 'example@mail.com',
       password: '123',
+      role: Role.Admin
     };
     await adminController.create(adminDto);
 

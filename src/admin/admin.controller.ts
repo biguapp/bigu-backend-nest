@@ -1,13 +1,11 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { CreateHealthUnitDto } from '../health-unit/dto/create-health-unit.dto';
-import { UpdateHealthUnitDto } from '../health-unit/dto/update-health-unit.dto';
-import { HealthUnit } from '../health-unit/interfaces/health-unit.interface';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { Admin } from './schemas/admin.schema';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { Roles } from '../roles/roles.decorator';
+import { Role } from '../enums/enum';
 
 @ApiTags('admin')
 @ApiBearerAuth('access-token')
@@ -16,6 +14,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Create admin'})
   @ApiResponse({ status: 200, description: 'Admin created.'})
   async create(
@@ -25,6 +24,7 @@ export class AdminController {
   }
 
   @Get()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Get all admins' })
   @ApiResponse({ status: 200, description: 'All admins returned.' })
   async findAll(): Promise<Admin[]> {
@@ -32,6 +32,7 @@ export class AdminController {
   }
 
   @Get(':id')
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Get one admin' })
   @ApiResponse({ status: 200, description: 'Admin returned.' })
   async findOne(@Param('id') id: string): Promise<Admin> {
@@ -39,6 +40,7 @@ export class AdminController {
   }
 
   @Get(':email')
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Get one admin by email' })
   @ApiResponse({ status: 200, description: 'Admin returned.' })
   async findByEmail(@Param('email') email: string): Promise<Admin> {
@@ -46,6 +48,7 @@ export class AdminController {
   }
 
   @Put(':id')
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Edit admin'})
   @ApiResponse({ status: 200, description: 'Admin edited.'})
   async update(
@@ -56,6 +59,7 @@ export class AdminController {
   }
 
   @Delete(':id')
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Delete one admin'})
   @ApiResponse({ status: 200, description: 'Admin deleted.'})
   async remove(@Param('id') id: string): Promise<void> {

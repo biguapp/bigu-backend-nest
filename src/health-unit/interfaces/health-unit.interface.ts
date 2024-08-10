@@ -1,5 +1,5 @@
 import { Document } from 'mongoose';
-import { HealthUnitType, ServiceType } from '../../enums'; // Atualize o caminho conforme a localização do seu arquivo de enums
+import { HealthUnitType, ServiceType } from '../../enums/enum'; // Atualize o caminho conforme a localização do seu arquivo de enums
 
 // Define a interface para o horário de funcionamento
 interface OperatingHours {

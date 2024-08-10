@@ -2,9 +2,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsDate, IsEmail, IsNotEmpty, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Role } from '@src/enums/enum';
 
 
 export class CreatePatientDto {
+
+  @ApiProperty({ example: 'patient'})
+  @IsEnum(Role)
+  @IsNotEmpty()
+  readonly role: Role;
+
   @ApiProperty({ example: '10050972405' })
   @IsString()
   @IsNotEmpty()

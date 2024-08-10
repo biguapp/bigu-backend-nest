@@ -27,3 +27,8 @@ export enum ServiceType {
   'Reumatologia',
   'Urologia',
 }
+
+export enum Role {
+  Patient = 'patient',
+  Admin = 'admin',
+}

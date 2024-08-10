@@ -24,10 +24,6 @@ describe('AdminService', () => {
     validateAdmin: jest.fn().mockResolvedValue({ email: 'test@admin.com', sub: '1' }),
   };
 
-  beforeEach(() =>{
-    jest.resetAllMocks();
-  })
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [

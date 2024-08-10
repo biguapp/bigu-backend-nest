@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateHealthUnitDto, AddressDto, SpecialtyDto, RatingDto, OperatingHoursGroupDto,  } from './create-health-unit.dto';
-import { HealthUnitType, ServiceType } from 'src/enums';
+import { HealthUnitType, ServiceType } from '../../enums/enum'; 
 
 export class UpdateHealthUnitDto extends PartialType(CreateHealthUnitDto) {
   @ApiProperty({ example: 'Updated Health Unit Name', required: false })

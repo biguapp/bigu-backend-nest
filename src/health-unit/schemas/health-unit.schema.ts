@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { HealthUnitType, ServiceType } from '../../enums'; // Atualize o caminho conforme necessário
+import { HealthUnitType, ServiceType } from '../../enums/enum'; // Atualize o caminho conforme necessário
 
 // Define o schema para o horário de funcionamento
 @Schema()

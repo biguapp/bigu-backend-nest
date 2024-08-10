@@ -1,9 +1,10 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAdminDto } from '../admin/dto/create-admin.dto';
 import { CreatePatientDto } from '../patient/dto/create-patient.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginPatientDto } from '../patient/dto/login-patient.dto';
+import { LocalAuthGuard } from './local-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -11,6 +12,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login/admin')
+  @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Admin login' })
   @ApiResponse({ status: 200, description: 'Admin logged in' })
   async loginAdmin(@Body() createAdminDto: CreateAdminDto) {
@@ -23,6 +25,7 @@ export class AuthController {
   }
 
   @Post('login/patient')
+  @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Patient login' })
   @ApiResponse({ status: 200, description: 'Patient logged in' })
   async loginPatient(@Body() loginPatientDto: LoginPatientDto) {
