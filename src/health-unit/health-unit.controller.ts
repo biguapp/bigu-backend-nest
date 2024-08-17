@@ -18,13 +18,14 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../roles/roles.decorator';
 import { Role } from '../enums/enum';
+import { RolesGuard } from '../roles/roles.guard';
 
 @ApiTags('health-units')
 @ApiBearerAuth()
 @Controller('health-units')
+@UseGuards(RolesGuard)
 export class HealthUnitController {
   constructor(private readonly healthUnitService: HealthUnitService) {}
 
@@ -73,7 +74,15 @@ export class HealthUnitController {
   @Roles(Role.Admin)
   @ApiOperation({ summary: 'Delete one health unit' })
   @ApiResponse({ status: 200, description: 'Health unit deleted.' })
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string): Promise<String> {
     return this.healthUnitService.remove(id);
+  }
+
+  @Post('clear')
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: 'Delete all health units' })
+  @ApiResponse({ status: 200, description: 'All health units have been successfully deleted.' })
+  async clearAll(): Promise<void> {
+    return this.healthUnitService.removeAll();
   }
 }

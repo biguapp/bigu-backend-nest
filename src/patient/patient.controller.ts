@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, Param, Delete, Req } from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
@@ -13,12 +13,12 @@ export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
   @Post()
-  @Roles(Role.Patient)
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Create Patient' })
   @ApiResponse({ status: 201, description: 'The patient has been successfully created.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async create(@Body() createPatientDto: CreatePatientDto): Promise<Patient> {
-    return this.patientService.create(createPatientDto);
+    return this.patientService.create(createPatientDto, Role.Patient);
   }
 
   @Get()
@@ -30,7 +30,7 @@ export class PatientController {
   }
 
   @Get(':id')
-  @Roles(Role.Patient)
+  @Roles(Role.Patient, Role.Admin)
   @ApiOperation({ summary: 'Get one patient' })
   @ApiResponse({ status: 200, description: 'Patient returned.' })
   async findOne(@Param('id') id: string): Promise<Patient> {
@@ -38,7 +38,7 @@ export class PatientController {
   }
 
   @Put(':id')
-  @Roles(Role.Patient)
+  @Roles(Role.Patient, Role.Admin)
   @ApiOperation({ summary: 'Edit patient'})
   @ApiResponse({ status: 200, description: 'Patient edited.'})
   async update(
@@ -49,10 +49,18 @@ export class PatientController {
   }
 
   @Delete(':id')
-  @Roles(Role.Patient)
+  @Roles(Role.Patient, Role.Admin)
   @ApiOperation({ summary: 'Delete one patient'})
   @ApiResponse({ status: 200, description: 'Patient deleted.'})
   async remove(@Param('id') id: string): Promise<void> {
     return this.patientService.remove(id);
+  }
+
+  @Post('clear')
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: 'Delete all patients' })
+  @ApiResponse({ status: 200, description: 'All patients have been successfully deleted.' })
+  async clearAll(): Promise<void> {
+    return this.patientService.removeAll();
   }
 }

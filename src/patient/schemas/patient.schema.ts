@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Role } from '../../enums/enum';
 import { Document } from 'mongoose';
 
 // Define o schema para o endereço
@@ -22,7 +23,7 @@ export class Address {
   @Prop()
   estado?: string;
 
-  @Prop({ match: /^[A-Z]{2}$/ })
+  @Prop({ match: /^[0-9]{8}$/ })
   cep?: string;
 }
 
@@ -30,6 +31,9 @@ export const AddressSchema = SchemaFactory.createForClass(Address);
 
 @Schema()
 export class Patient extends Document {
+  @Prop({ required: true })
+  role: Role;
+
   @Prop({ required: true, unique: true, match: /^[0-9]{11}$/ })
   cpf: string;
 

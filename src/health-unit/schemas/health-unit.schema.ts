@@ -83,7 +83,7 @@ export const SpecialtySchema = SchemaFactory.createForClass(Specialty);
 // Define o schema para a avaliação
 @Schema()
 export class Rating {
-  @Prop({ required: true, min: 0, max: 5 })
+  @Prop({ required: true, min: 0.0, max: 5.0 })
   nota: number; // Nota de 0 a 5
 
   @Prop()

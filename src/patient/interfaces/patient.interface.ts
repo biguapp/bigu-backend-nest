@@ -1,6 +1,8 @@
+import { Role } from '../../enums/enum';
 import { Document } from 'mongoose';
 
 export interface Patient extends Document {
+  readonly role: Role;
   readonly cpf: string;
   readonly nome: string;
   readonly nomeSocial?: string;

@@ -39,10 +39,16 @@ export class HealthUnitService {
     return updatedHealthUnit;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<String> {
     const result = await this.healthUnitModel.findByIdAndDelete(id).exec();
     if (!result) {
       throw new NotFoundException(`HealthUnit with ID ${id} not found`);
+    } else {
+      return `A unidade de saúde com id ${id} foi removida`;
     }
+  }
+
+  async removeAll(): Promise<void> {
+    await this.healthUnitModel.deleteMany({});
   }
 }

@@ -2,15 +2,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsDate, IsEmail, IsNotEmpty, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Role } from '@src/enums/enum';
 
 
 export class CreatePatientDto {
-
-  @ApiProperty({ example: 'patient'})
-  @IsEnum(Role)
-  @IsNotEmpty()
-  readonly role: Role;
 
   @ApiProperty({ example: '10050972405' })
   @IsString()
@@ -91,7 +85,7 @@ export class CreatePatientDto {
       bairro: 'Centro',
       cidade: 'São Paulo',
       estado: 'SP',
-      cep: '12345-678',
+      cep: '12345678',
     },
   })
   readonly endereco: {

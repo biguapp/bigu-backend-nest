@@ -6,6 +6,8 @@ import { Admin } from '../admin/interfaces/admin.interface';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { NotFoundException } from '@nestjs/common';
+import { Role } from '../enums/enum';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
@@ -21,8 +23,13 @@ export class AdminService {
     return admin;
   }
 
-  async create(createAdminDto: CreateAdminDto): Promise<Admin> {
-    const newAdmin = new this.adminModel(createAdminDto);
+  async create(createAdminDto: CreateAdminDto, role: Role.Admin): Promise<Admin> {
+    const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
+    const newAdmin = new this.adminModel({
+      ...createAdminDto,
+      role: role,
+      password: hashedPassword,
+    });
     return newAdmin.save();
   }
 

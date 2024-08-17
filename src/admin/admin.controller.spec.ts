@@ -39,13 +39,12 @@ describe('AdminController', () => {
   it('create', async () => {
     const adminDto: CreateAdminDto = {
       email: 'example@mail.com',
-      password: '123',
-      role: Role.Admin
+      password: '123'
     };
     await adminController.create(adminDto);
 
     expect(mockAdminService.create).toHaveBeenCalledTimes(1);
-    expect(mockAdminService.create).toHaveBeenCalledWith(adminDto);
+    expect(mockAdminService.create).toHaveBeenCalledWith(adminDto, Role.Admin);
   });
 
   it('findAll', async () => {

@@ -5,17 +5,20 @@ import { Patient } from './interfaces/patient.interface';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import * as bcrypt from 'bcrypt';
+import { Role } from '../enums/enum';
 
 @Injectable()
 export class PatientService {
   constructor(@InjectModel('Patient') private readonly patientModel: Model<Patient>) {}
 
-  async create(createPatientDto: CreatePatientDto): Promise<Patient> {
+  async create(createPatientDto: CreatePatientDto, role: Role.Patient): Promise<Patient> {
     const hashedPassword = await bcrypt.hash(createPatientDto.password, 10);
-
+    console.log(hashedPassword);
+    console.log(createPatientDto.password);
     const createdPatient = new this.patientModel({
       ...createPatientDto,
-      senha: hashedPassword,
+      role: role,
+      password: hashedPassword,
     });
     return createdPatient.save();
   }
@@ -61,6 +64,10 @@ export class PatientService {
     if (result.deletedCount === 0) {
       throw new HttpException('Paciente não encontrado', HttpStatus.NOT_FOUND);
     }
+  }
+
+  async removeAll(): Promise<void> {
+    await this.patientModel.deleteMany({});
   }
 
 }

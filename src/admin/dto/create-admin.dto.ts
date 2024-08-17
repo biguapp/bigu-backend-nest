@@ -12,9 +12,4 @@ export class CreateAdminDto {
   @IsString()
   @IsNotEmpty()
   readonly password: string;
-
-  @ApiProperty({ example: 'admin'})
-  @IsEnum(Role)
-  @IsNotEmpty()
-  readonly role: Role;
 }

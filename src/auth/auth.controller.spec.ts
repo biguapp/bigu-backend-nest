@@ -48,7 +48,7 @@ describe('AuthController', () => {
 
   describe('loginAdmin', () => {
     it('should return an access token for valid credentials', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password', role: Role.Admin };
+      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password'};
       jest.spyOn(authService, 'loginAdmin').mockResolvedValue('jwt-token');
 
       const result = await controller.loginAdmin(createAdminDto);
@@ -56,7 +56,7 @@ describe('AuthController', () => {
     });
 
     it('should throw BadRequestException for invalid credentials', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password', role: Role.Admin };
+      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password' };
       jest.spyOn(authService, 'loginAdmin').mockResolvedValue(null);
 
       await expect(controller.loginAdmin(createAdminDto)).rejects.toThrow(BadRequestException);
@@ -82,7 +82,7 @@ describe('AuthController', () => {
 
   describe('registerAdmin', () => {
     it('should register an admin and return a success message', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password', role: Role.Admin };
+      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password' };
       const mockAdmin: Admin = {
         _id: 'adminId',
         email: createAdminDto.email,
@@ -95,7 +95,7 @@ describe('AuthController', () => {
     });
 
     it('should throw BadRequestException if registration fails', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password', role: Role.Admin };
+      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password' };
       jest.spyOn(authService, 'registerAdmin').mockResolvedValue(null);
 
       await expect(controller.registerAdmin(createAdminDto)).rejects.toThrow(BadRequestException);
@@ -105,7 +105,6 @@ describe('AuthController', () => {
   describe('registerPatient', () => {
     it('should register a patient and return a success message', async () => {
       const createPatientDto: CreatePatientDto = {
-        role: Role.Patient,
         cpf: '12345678901',
         nome: 'Patient Name',
         nomeMae: 'Mother Name',
@@ -145,7 +144,6 @@ describe('AuthController', () => {
 
     it('should throw BadRequestException if registration fails', async () => {
       const createPatientDto: CreatePatientDto = {
-        role: Role.Patient,
         cpf: '12345678901',
         nome: 'Patient Name',
         nomeMae: 'Mother Name',

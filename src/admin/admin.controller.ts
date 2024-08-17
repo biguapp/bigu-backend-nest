@@ -20,7 +20,7 @@ export class AdminController {
   async create(
     @Body() createAdminDto: CreateAdminDto,
   ): Promise<Admin> {
-    return this.adminService.create(createAdminDto);
+    return this.adminService.create(createAdminDto, Role.Admin);
   }
 
   @Get()

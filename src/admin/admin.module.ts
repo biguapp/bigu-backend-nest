@@ -26,6 +26,6 @@ import { Patient, PatientSchema } from '../patient/schemas/patient.schema';
   ],
   controllers: [AdminController],
   providers: [AdminService, AuthService, PatientService],
-  exports: [AdminService, PatientService],
+  exports: [AdminService],
 })
 export class AdminModule {}

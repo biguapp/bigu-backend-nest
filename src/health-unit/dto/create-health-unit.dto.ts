@@ -105,10 +105,9 @@ export class SpecialtyDto {
 }
 
 export class RatingDto {
-  @ApiProperty({ example: 4.5, minimum: 0, maximum: 5 })
-  @IsInt()
-  @Min(0)
-  @Max(5)
+  @ApiProperty({ example: 4.5, minimum: 0.0, maximum: 5.0 })
+  @Min(0.0)
+  @Max(5.0)
   readonly nota: number;
 
   @ApiProperty({ example: 'Ótimo atendimento e estrutura.' })

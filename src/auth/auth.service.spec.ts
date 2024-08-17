@@ -22,6 +22,7 @@ describe('AuthService', () => {
     _id: 'adminId',
     email: 'admin@example.com',
     password: 'hashedPassword',
+    role: Role.Admin
   } as Admin;
 
   const mockPatient: Patient = {
@@ -96,7 +97,7 @@ describe('AuthService', () => {
   describe('validateAdmin', () => {
     it('should validate and return the admin if credentials are correct', async () => {
       const result = await authService.validateAdmin(mockAdmin.email, 'password');
-      expect(result).toEqual({ email: mockAdmin.email, sub: mockAdmin._id });
+      expect(result).toEqual({ email: mockAdmin.email, sub: mockAdmin._id, role: mockAdmin.role });
     });
 
     it('should throw UnauthorizedException if credentials are invalid', async () => {
@@ -115,7 +116,7 @@ describe('AuthService', () => {
   describe('validatePatient', () => {
     it('should validate and return the patient if credentials are correct', async () => {
       const result = await authService.validatePatient(mockPatient.cpf, 'password');
-      expect(result).toEqual({ name: mockPatient.nome, sub: mockPatient._id });
+      expect(result).toEqual({ name: mockPatient.nome, sub: mockPatient._id, role: Role.Patient });
     });
 
     it('should throw UnauthorizedException if credentials are invalid', async () => {
@@ -134,7 +135,6 @@ describe('AuthService', () => {
   describe('registerPatient', () => {
     it('should hash the password and create a new patient', async () => {
       const createPatientDto: CreatePatientDto = {
-        role: Role.Patient,
         cpf: '10050972405',
         nome: 'Patient Name',
         nomeMae: 'Mother Name',
@@ -165,8 +165,7 @@ describe('AuthService', () => {
     it('should hash the password and create a new admin', async () => {
       const createAdminDto: CreateAdminDto = {
         email: 'admin@example.com',
-        password: 'password',
-        role: Role.Admin
+        password: 'password'
       };
 
       jest.spyOn(adminService, 'create').mockResolvedValue(mockAdmin);

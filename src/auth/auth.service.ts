@@ -11,6 +11,7 @@ import { AdminService } from '../admin/admin.service';
 import { PatientService } from '../patient/patient.service';
 import { CreatePatientDto } from '../patient/dto/create-patient.dto';
 import { CreateAdminDto } from '../admin/dto/create-admin.dto';
+import { Role } from '../enums/enum';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,7 @@ export class AuthService {
   async validateAdmin(email: string, password: string): Promise<any> {
     const admin = await this.adminService.findByEmail(email);
     if (admin && (await bcrypt.compare(password, admin.password))) {
-      return { email: admin.email, sub: admin._id };
+      return { email: admin.email, sub: admin._id, role: Role.Admin };
     }
     throw new UnauthorizedException('Invalid credentials 1');
   }
@@ -35,7 +36,7 @@ export class AuthService {
   async validatePatient(cpf: string, password: string): Promise<any> {
     const patient = await this.patientService.findByCpf(cpf);
     if (patient && (await bcrypt.compare(password, patient.password))) {
-      return { name: patient.nome, sub: patient._id };
+      return { name: patient.nome, sub: patient._id, role: Role.Patient };
     }
     throw new UnauthorizedException('Invalid credentials 1');
   }
@@ -51,15 +52,11 @@ export class AuthService {
   }
 
   async registerPatient(createPatientDto: CreatePatientDto): Promise<Patient> {
-    const { password } = createPatientDto;
-    const hashedPassword = await bcrypt.hash(password, this.saltRounds);
-    return this.patientService.create({ ...createPatientDto, password: hashedPassword });
+    return this.patientService.create({ ...createPatientDto }, Role.Patient);
   }
 
   async registerAdmin(createAdminDto: CreateAdminDto): Promise<Admin> {
-    const { password } = createAdminDto;
-    const hashedPassword = await bcrypt.hash(password, this.saltRounds);
-    return this.adminService.create({ ...createAdminDto, password: hashedPassword });
+    return this.adminService.create({ ...createAdminDto }, Role.Admin);
   }
 
 }
