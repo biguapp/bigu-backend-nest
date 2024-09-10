@@ -9,9 +9,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   const config = new DocumentBuilder()
-    .setTitle('Saude Campina API')
+    .setTitle('Bigu API')
     .setDescription(
-      'API para gerenciar e exibir unidades de saúde de Campina Grande',
+      'API para aplicativo de caronas universitárias',
     )
     .setVersion('0.1')
     .addBearerAuth(

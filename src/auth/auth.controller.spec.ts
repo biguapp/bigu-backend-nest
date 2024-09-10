@@ -3,11 +3,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { BadRequestException } from '@nestjs/common';
-import { CreateAdminDto } from '../admin/dto/create-admin.dto';
-import { CreatePatientDto } from '../patient/dto/create-patient.dto';
-import { LoginPatientDto } from '../patient/dto/login-patient.dto';
-import { Admin } from '../admin/schemas/admin.schema';
-import { Patient } from '../patient/interfaces/patient.interface';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { LoginUserDto } from '../user/dto/login-user.dto';
+import { User } from '../user/interfaces/user.interface';
 import { Role } from '../enums/enum';
 
 describe('AuthController', () => {
@@ -16,8 +14,8 @@ describe('AuthController', () => {
 
   const mockAuthService = {
     loginAdmin: jest.fn(),
-    loginPatient: jest.fn(),
-    registerPatient: jest.fn(),
+    loginUser: jest.fn(),
+    registerUser: jest.fn(),
     registerAdmin: jest.fn(),
   };
 
@@ -46,125 +44,73 @@ describe('AuthController', () => {
     jest.clearAllMocks();
   });
 
-  describe('loginAdmin', () => {
+  describe('loginUser', () => {
     it('should return an access token for valid credentials', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password'};
-      jest.spyOn(authService, 'loginAdmin').mockResolvedValue('jwt-token');
+      const loginUserDto: LoginUserDto = {
+        email: 'user@mail.com',
+        password: 'password',
+      };
+      jest.spyOn(authService, 'loginUser').mockResolvedValue('jwt-token');
 
-      const result = await controller.loginAdmin(createAdminDto);
+      const result = await controller.loginUser(loginUserDto);
       expect(result).toEqual({ access_token: 'jwt-token' });
     });
 
     it('should throw BadRequestException for invalid credentials', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password' };
-      jest.spyOn(authService, 'loginAdmin').mockResolvedValue(null);
+      const loginUserDto: LoginUserDto = {
+        email: 'user@mail.com',
+        password: 'password',
+      };
+      jest.spyOn(authService, 'loginUser').mockResolvedValue(null);
 
-      await expect(controller.loginAdmin(createAdminDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.loginUser(loginUserDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
-  describe('loginPatient', () => {
-    it('should return an access token for valid credentials', async () => {
-      const loginPatientDto: LoginPatientDto = { cpf: '12345678901', password: 'password' };
-      jest.spyOn(authService, 'loginPatient').mockResolvedValue('jwt-token');
-
-      const result = await controller.loginPatient(loginPatientDto);
-      expect(result).toEqual({ access_token: 'jwt-token' });
-    });
-
-    it('should throw BadRequestException for invalid credentials', async () => {
-      const loginPatientDto: LoginPatientDto = { cpf: '12345678901', password: 'password' };
-      jest.spyOn(authService, 'loginPatient').mockResolvedValue(null);
-
-      await expect(controller.loginPatient(loginPatientDto)).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('registerAdmin', () => {
-    it('should register an admin and return a success message', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password' };
-      const mockAdmin: Admin = {
-        _id: 'adminId',
-        email: createAdminDto.email,
+  describe('registerUser', () => {
+    it('should register a user and return a success message', async () => {
+      const createUserDto: CreateUserDto = {
+        name: 'User Name',
+        sex: 'Masculino',
+        email: 'user@example.com',
+        matricula: '2021001234',
+        phoneNumber: '(11) 98765-4321',
+        password: 'password',
+      };
+      const mockUser: User = {
+        _id: 1,
+        cpf: '12345678901',
+        name: 'User Name',
+        sex: 'Masculino',
+        email: 'user@example.com',
+        matricula: '2021001234',
+        phoneNumber: '(11) 98765-4321',
         password: 'hashedPassword',
-      } as Admin;
-      jest.spyOn(authService, 'registerAdmin').mockResolvedValue(mockAdmin);
+        role: Role.User,
+        avgScore: 4.5,
+      } as User;
+      jest.spyOn(authService, 'registerUser').mockResolvedValue(mockUser);
 
-      const result = await controller.registerAdmin(createAdminDto);
-      expect(result).toEqual({ message: 'Admin registered successfully' });
+      const result = await controller.registerUser(createUserDto);
+      expect(result).toEqual({ message: 'User registered successfully' });
     });
 
     it('should throw BadRequestException if registration fails', async () => {
-      const createAdminDto: CreateAdminDto = { email: 'admin@example.com', password: 'password' };
-      jest.spyOn(authService, 'registerAdmin').mockResolvedValue(null);
-
-      await expect(controller.registerAdmin(createAdminDto)).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('registerPatient', () => {
-    it('should register a patient and return a success message', async () => {
-      const createPatientDto: CreatePatientDto = {
-        cpf: '12345678901',
-        nome: 'Patient Name',
-        nomeMae: 'Mother Name',
-        numeroSus: '123456789012345',
-        dataNascimento: new Date(),
-        sexo: 'Masculino',
-        email: 'patient@example.com',
+      const createUserDto: CreateUserDto = {
+        name: 'User Name',
+        sex: 'Masculino',
+        email: 'user@example.com',
+        matricula: '2021001234',
+        phoneNumber: '(11) 98765-4321',
         password: 'password',
-        celular: '(11) 98765-4321',
-        endereco: {
-          rua: 'Rua das Flores',
-          numero: '123',
-          bairro: 'Centro',
-          cidade: 'São Paulo',
-          estado: 'SP',
-          cep: '12345-678',
-        },
       };
-      const mockPatient: Patient = {
-        _id: 'patientId',
-        cpf: createPatientDto.cpf,
-        nome: createPatientDto.nome,
-        nomeMae: createPatientDto.nomeMae,
-        numeroSus: createPatientDto.numeroSus,
-        dataNascimento: createPatientDto.dataNascimento,
-        sexo: createPatientDto.sexo,
-        email: createPatientDto.email,
-        password: 'hashedPassword',
-        celular: createPatientDto.celular,
-        endereco: createPatientDto.endereco,
-      } as Patient;
-      jest.spyOn(authService, 'registerPatient').mockResolvedValue(mockPatient);
+      jest.spyOn(authService, 'registerUser').mockResolvedValue(null);
 
-      const result = await controller.registerPatient(createPatientDto);
-      expect(result).toEqual({ message: 'Patient registered successfully' });
-    });
-
-    it('should throw BadRequestException if registration fails', async () => {
-      const createPatientDto: CreatePatientDto = {
-        cpf: '12345678901',
-        nome: 'Patient Name',
-        nomeMae: 'Mother Name',
-        numeroSus: '123456789012345',
-        dataNascimento: new Date(),
-        sexo: 'Masculino',
-        email: 'patient@example.com',
-        password: 'password',
-        celular: '(11) 98765-4321',
-        endereco: {
-          rua: 'Rua das Flores',
-          numero: '123',
-          bairro: 'Centro',
-          cidade: 'São Paulo',
-          estado: 'SP',
-          cep: '12345-678',
-        },
-      };
-      jest.spyOn(authService, 'registerPatient').mockResolvedValue(null);
-
-      await expect(controller.registerPatient(createPatientDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.registerUser(createUserDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

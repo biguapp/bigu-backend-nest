@@ -3,14 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
-import { Admin } from '../admin/interfaces/admin.interface';
-import { Admin as AdminSchema } from '../admin/schemas/admin.schema';
-import { Patient } from '../patient/interfaces/patient.interface';
-import { Patient as PatientSchema } from '../patient/schemas/patient.schema';
-import { AdminService } from '../admin/admin.service';
-import { PatientService } from '../patient/patient.service';
-import { CreatePatientDto } from '../patient/dto/create-patient.dto';
-import { CreateAdminDto } from '../admin/dto/create-admin.dto';
+import { User } from '../user/interfaces/user.interface';
+import { User as UserSchema } from '../user/schemas/user.schema';
+import { UserService } from '../user/user.service';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Role } from '../enums/enum';
 
 @Injectable()
@@ -19,44 +15,25 @@ export class AuthService {
 
   constructor(
     private readonly jwtService: JwtService,
-    @InjectModel(PatientSchema.name) private readonly patientModel: Model<Patient>,
-    @InjectModel(AdminSchema.name) private readonly adminModel: Model<Admin>,
-    private readonly adminService: AdminService,
-    private readonly patientService: PatientService,
+    @InjectModel(UserSchema.name) private readonly userModel: Model<User>,
+    private readonly userService: UserService,
   ) {}
 
-  async validateAdmin(email: string, password: string): Promise<any> {
-    const admin = await this.adminService.findByEmail(email);
-    if (admin && (await bcrypt.compare(password, admin.password))) {
-      return { email: admin.email, sub: admin._id, role: Role.Admin };
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.userService.findByEmail(email);
+    if (user && (await bcrypt.compare(password, user.password))) {
+      return { name: user.name, sub: user._id, role: Role.User };
     }
     throw new UnauthorizedException('Invalid credentials 1');
   }
 
-  async validatePatient(cpf: string, password: string): Promise<any> {
-    const patient = await this.patientService.findByCpf(cpf);
-    if (patient && (await bcrypt.compare(password, patient.password))) {
-      return { name: patient.nome, sub: patient._id, role: Role.Patient };
-    }
-    throw new UnauthorizedException('Invalid credentials 1');
-  }
-
-  async loginAdmin(email: string, password: string): Promise<string> {
-    const validated = await this.validateAdmin(email, password);
+  async loginUser(email: string, password: string): Promise<string> {
+    const validated = await this.validateUser(email, password);
     return this.jwtService.sign(validated);
   }
 
-  async loginPatient(cpf: string, password: string): Promise<string> {
-    const validated = await this.validatePatient(cpf, password);
-    return this.jwtService.sign(validated);
-  }
-
-  async registerPatient(createPatientDto: CreatePatientDto): Promise<Patient> {
-    return this.patientService.create({ ...createPatientDto }, Role.Patient);
-  }
-
-  async registerAdmin(createAdminDto: CreateAdminDto): Promise<Admin> {
-    return this.adminService.create({ ...createAdminDto }, Role.Admin);
+  async registerUser(createUserDto: CreateUserDto): Promise<User> {
+    return this.userService.create({ ...createUserDto });
   }
 
 }
