@@ -18,18 +18,13 @@ export class AuthService {
     @InjectModel(UserSchema.name) private readonly userModel: Model<User>,
     private readonly userService: UserService,
   ) {}
-
-  async validateUser(email: string, password: string): Promise<any> {
+  
+  async loginUser(email: string, password: string): Promise<string> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      return { name: user.name, sub: user._id, role: Role.User };
+      return this.jwtService.sign({ name: user.name, sub: user._id, role: Role.User });
     }
-    throw new UnauthorizedException('Invalid credentials 1');
-  }
-
-  async loginUser(email: string, password: string): Promise<string> {
-    const validated = await this.validateUser(email, password);
-    return this.jwtService.sign(validated);
+    throw new UnauthorizedException('Credenciais inválidas');
   }
 
   async registerUser(createUserDto: CreateUserDto): Promise<User> {

@@ -15,9 +15,6 @@ export class AuthController {
   async loginUser(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     const token = await this.authService.loginUser(email, password);
-    if (!token) {
-      throw new BadRequestException('Invalid credentials');
-    }
     return { access_token: token };
   }
 
