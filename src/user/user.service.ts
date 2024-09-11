@@ -40,12 +40,32 @@ export class UserService {
 
     const addressId = address._id.toString();
     if (addressId) {
-      address.save();
       user.addresses.push(addressId); // Adiciona o ID do endereço ao array de endereços do usuário
     } else {
       throw new NotFoundException('Endereço não encontrado.');
     }
-    return user.save();
+    
+    const addresses = await Promise.all(
+      user.addresses.map((addressId) => this.addressService.findOne(addressId)),
+    );
+    await user.save()
+    
+    return addresses;
+  }
+
+  async removeAddressToUser(userId: string, addressId: string) {
+    const user = await this.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+    const index = user.addresses.indexOf(addressId);
+    
+    if (index !== -1) {
+      user.addresses.splice(index, 1);
+    }
+    
+    await user.save()
+    await this.addressService.remove(addressId)
   }
 
   async addCarToUser(userId: string, carDto: CreateCarDto) {
@@ -72,7 +92,12 @@ export class UserService {
       throw new NotFoundException('Carro não encontrado.');
     }
 
-    return user.save();
+    const cars = await Promise.all(
+      user.cars.map((carId) => this.carService.findOne(carId)),
+    );
+    await user.save()
+    
+    return cars;
   }
 
   async getUserCars(userId: string) {
@@ -208,7 +233,7 @@ export class UserService {
   async remove(id: string): Promise<void> {
     const result = await this.userModel.deleteOne({ _id: id }).exec();
     if (result.deletedCount === 0) {
-      throw new HttpException('Paciente não encontrado', HttpStatus.NOT_FOUND);
+      throw new HttpException('Endereço não encontrado', HttpStatus.NOT_FOUND);
     }
   }
 

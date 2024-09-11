@@ -50,7 +50,7 @@ export class RideController {
 
   @Delete('/ride/:id')
   @ApiOperation({ summary: 'Deletar uma carona' })
-  @ApiResponse({ status: 200, description: 'Carona deletada.' })
+  @ApiResponse({ status: 204, description: 'Carona deletada.' })
   remove(@Param('id') id: string) {
     return this.rideService.remove(+id);
   }

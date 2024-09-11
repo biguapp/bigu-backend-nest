@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -34,7 +35,22 @@ export class UserController {
     @Body() createAddressDto: CreateAddressDto,
   ) {
     const userId = req.user.sub; // Pega o userId da requisição
-    return this.userService.addAddressToUser(userId, createAddressDto);
+    return await this.userService.addAddressToUser(userId, createAddressDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/user/self/address/:id')
+  @ApiOperation({ summary: 'Remove address to user.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The address has been successfully removed.',
+  })
+  async removeAddress(
+    @Req() req,
+    @Param('id') id: string,
+  ) {
+    const userId = req.user.sub; // Pega o userId da requisição
+    await this.userService.removeAddressToUser(userId, id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -49,7 +65,7 @@ export class UserController {
     @Body() createCarDto: CreateCarDto,
   ) {
     const userId = req.user.sub; // Pega o userId da requisição
-    return this.userService.addCarToUser(userId, createCarDto);
+    return await this.userService.addCarToUser(userId, createCarDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -61,7 +77,7 @@ export class UserController {
   })
   async getUserCars(@Req() req) {
     const userId = req.user.sub; // Pega o userId da requisição
-    return this.userService.getUserCars(userId);
+    return await this.userService.getUserCars(userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -73,7 +89,7 @@ export class UserController {
   })
   async getUserAddresses(@Req() req) {
     const userId = req.user.sub; // Pega o userId da requisição
-    return this.userService.getUserAddresses(userId);
+    return await this.userService.getUserAddresses(userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -85,7 +101,7 @@ export class UserController {
   })
   async getUserHistory(@Req() req) {
     const userId = req.user.sub; // Pega o userId da requisição
-    return this.userService.getUserHistory(userId);
+    return await this.userService.getUserHistory(userId);
   }
 
 
@@ -105,14 +121,14 @@ export class UserController {
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'All users returned.' })
   async findAll(): Promise<User[]> {
-    return this.userService.findAll();
+    return await this.userService.findAll();
   }
 
   @Get(':email')
   @ApiOperation({ summary: 'Get user by email' })
   @ApiResponse({ status: 200, description: 'User returned.' })
   async findOneByEmail(@Param('email') email: string): Promise<User> {
-    return this.userService.findByEmail(email);
+    return await this.userService.findByEmail(email);
   }
 
   @Get(':matricula')
@@ -121,14 +137,14 @@ export class UserController {
   async findOneByMatricula(
     @Param('matricula') matricula: string,
   ): Promise<User> {
-    return this.userService.findByMatricula(matricula);
+    return await this.userService.findByMatricula(matricula);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get one user' })
   @ApiResponse({ status: 200, description: 'User returned.' })
   async findOne(@Param('id') id: string): Promise<User> {
-    return this.userService.findOne(id);
+    return await this.userService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -137,7 +153,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User returned.' })
   async findSelf(@Req() req): Promise<User> {
     const userId = req.user.sub;
-    return this.userService.findOne(userId);
+    return await this.userService.findOne(userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -149,7 +165,7 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     const userId = req.user.sub;
-    return this.userService.update(userId, updateUserDto);
+    return await this.userService.update(userId, updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -158,6 +174,6 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User deleted.' })
   async remove(@Req() req): Promise<void> {
     const userId = req.user.sub;
-    return this.userService.remove(userId);
+    return await this.userService.remove(userId);
   }
 }

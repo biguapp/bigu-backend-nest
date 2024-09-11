@@ -3,6 +3,10 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Address extends Document {
+
+  @Prop({ required: true })
+  nome: string;
+
   @Prop({ required: true })
   rua: string;
 

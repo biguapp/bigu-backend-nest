@@ -2,6 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, Length } from 'class-validator';
 
 export class CreateAddressDto {
+
+  @ApiProperty({ description: 'Nome do endereço', example: 'Casa' })
+  @IsString()
+  readonly nome: string;
   
   @ApiProperty({ description: 'Nome da rua', example: 'Avenida Paulista' })
   @IsString()
