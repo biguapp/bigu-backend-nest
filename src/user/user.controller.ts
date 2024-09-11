@@ -24,7 +24,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('user/address')
+  @Post('/self/address')
   @ApiOperation({ summary: 'Add address to user.' })
   @ApiResponse({
     status: 201,
@@ -39,7 +39,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('user/car')
+  @Post('self/car')
   @ApiOperation({ summary: 'Add car to user.' })
   @ApiResponse({
     status: 201,
@@ -54,7 +54,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('car')
+  @Get('self/car')
   @ApiOperation({ summary: 'Get user cars' })
   @ApiResponse({
     status: 200,
@@ -66,7 +66,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('address')
+  @Get('self/address')
   @ApiOperation({ summary: 'Get user addresses' })
   @ApiResponse({
     status: 200,
