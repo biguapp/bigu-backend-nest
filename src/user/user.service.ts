@@ -39,6 +39,11 @@ export class UserService {
     return user.save();
   }
 
+  async getUserCars(userId: string) {
+    const user = await this.findOne(userId);
+    if(user) return user.cars;
+  }
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     

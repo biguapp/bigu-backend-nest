@@ -7,15 +7,16 @@ import {
   Param,
   Delete,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './interfaces/user.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Role } from '../enums/enum';
 import { CreateAddressDto } from '../address/dto/create-address.dto';
 import { CreateCarDto } from '../car/dto/create-car.dto';
+import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 
 @ApiTags('users')
 @Controller('users')
@@ -48,8 +49,19 @@ export class UserController {
     return this.userService.addCarToUser(userId, createCarDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('car')
+  @ApiOperation({ summary: 'Get user cars' })
+  @ApiResponse({
+    status: 200,
+    description: 'All cars from user returned',
+  })
+  async getUserCars(@Req() req) {
+    const userId = req.user.sub;  // Pega o userId da requisição
+    return this.userService.getUserCars(userId);
+  }
+
   @Post()
-  // @Roles(Role.Driver)
   @ApiOperation({ summary: 'Create User' })
   @ApiResponse({
     status: 201,

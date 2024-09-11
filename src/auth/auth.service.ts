@@ -55,4 +55,13 @@ export class AuthService {
     return {token, userResponse}
   }
 
+  async validateToken(token: string) {
+    try {
+      const decoded = this.jwtService.verify(token); 
+      return decoded;  
+    } catch (error) {
+      return null;
+    }
+  }
+
 }
