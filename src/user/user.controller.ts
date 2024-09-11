@@ -70,11 +70,23 @@ export class UserController {
   @ApiOperation({ summary: 'Get user addresses' })
   @ApiResponse({
     status: 200,
-    description: 'All cars from user returned',
+    description: 'All address from user returned',
   })
   async getUserAddresses(@Req() req) {
     const userId = req.user.sub; // Pega o userId da requisição
     return this.userService.getUserAddresses(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('history')
+  @ApiOperation({ summary: 'Get user history' })
+  @ApiResponse({
+    status: 200,
+    description: 'All history from user returned',
+  })
+  async getUserHistory(@Req() req) {
+    const userId = req.user.sub; // Pega o userId da requisição
+    return this.userService.getUserHistory(userId);
   }
 
 

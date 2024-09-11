@@ -81,18 +81,13 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('Usuário não encontrado.');
     }
-
-    // Verifica se o usuário tem carros
-    if (user.cars && user.cars.length > 0) {
-      // Utiliza o CarService para buscar os carros pelos IDs
+    if (user.cars.length > 0) {
       const cars = await Promise.all(
-        user.cars.map((carId) => this.carService.findOne(carId)), // Busca cada carro pelo seu ID
+        user.cars.map((carId) => this.carService.findOne(carId)),
       );
-
-      // Retorna os carros completos
       return cars;
     } 
-    else throw new NotFoundException("O usuário não possui carros cadastrados.");
+    return []
   }
 
   async getUserAddresses(userId: string) {
@@ -101,17 +96,28 @@ export class UserService {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    // Verifica se o usuário tem carros
-    if (user.addresses && user.addresses.length > 0) {
-      // Utiliza o CarService para buscar os carros pelos IDs
+    if (user.addresses.length > 0) {
       const addresses = await Promise.all(
-        user.addresses.map((addressId) => this.addressService.findOne(addressId)), // Busca cada endereço pelo seu ID
+        user.addresses.map((addressId) => this.addressService.findOne(addressId)),
       );
-
-      // Retorna os carros completos
       return addresses;
     } 
-    else throw new NotFoundException("O usuário não possui endereços cadastrados.");
+    return []
+  }
+
+  async getUserHistory(userId: string) {
+    const user = await this.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    if (user.rides.length > 0) {
+      const ridesHistory = await Promise.all(
+        user.rides.map((rideId) => this.addressService.findOne(rideId)),
+      );
+      return ridesHistory;
+    } 
+    return []
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -121,8 +127,7 @@ export class UserService {
     const hasMatricula = await this.verifyMatricula(createUserDto.matricula);
 
     if (hasEmail) throw new BadRequestException('O email já está em uso.');
-    if (hasMatricula)
-      throw new BadRequestException('A matrícula já está em uso.');
+    if (hasMatricula)throw new BadRequestException('A matrícula já está em uso.');
 
     const createdUser = new this.userModel({
       ...createUserDto,
