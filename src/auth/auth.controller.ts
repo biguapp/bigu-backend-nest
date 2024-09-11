@@ -1,4 +1,4 @@
-import { Controller, Post, Body, BadRequestException, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -25,8 +25,7 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User registered' })
   @HttpCode(201)
   async registerUser(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.registerUser(createUserDto);
-    //retornar token no registro 
-    return { message: 'User registered successfully' };
+    const { token, userResponse } = await this.authService.registerUser(createUserDto);
+    return { user: userResponse, token: token};
   }
 }

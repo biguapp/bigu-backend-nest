@@ -37,8 +37,22 @@ export class AuthService {
     throw new UnauthorizedException('Credenciais inválidas');
   }
 
-  async registerUser(createUserDto: CreateUserDto): Promise<User> {
-    return this.userService.create({ ...createUserDto });
+  async registerUser(createUserDto: CreateUserDto): Promise<{ token: string; userResponse: UserResponseDto }> {
+    
+    const user = await this.userService.create({ ...createUserDto });
+    
+    const userResponse: UserResponseDto = {
+      name: user.name,
+      sex: user.sex,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      matricula: user.matricula,
+      userId: user._id
+    }
+
+    const token = this.jwtService.sign({ name: user.name, sub: user._id, role: Role.User })
+    
+    return {token, userResponse}
   }
 
 }

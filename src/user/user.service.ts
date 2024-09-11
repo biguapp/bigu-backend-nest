@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -40,13 +41,22 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    
+    const hasEmail = await this.verifyEmail(createUserDto.email)
+    const hasMatricula = await this.verifyMatricula(createUserDto.matricula);
+
+    if(hasEmail) throw new BadRequestException("O email já está em uso.")
+    if(hasMatricula) throw new BadRequestException("A matrícula já está em uso.")
+
     const createdUser = new this.userModel({
       ...createUserDto,
       role: "user",
       password: hashedPassword,
     });
-    //retornar os erros de email e matricula já cadastrados
-    return createdUser.save();
+    
+    const user = await createdUser.save();
+
+    return user
   }
 
   async findAll(): Promise<User[]> {
@@ -75,6 +85,31 @@ export class UserService {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) {
       throw new NotFoundException("Credenciais inválidas.");
+    }
+    return user;
+  }
+
+  async verifyEmail(email: string): Promise<Boolean> {
+    const user = await this.userModel.findOne({ email }).exec();
+    if(user) return true;
+    return false
+  }
+
+  async verifyMatricula(matricula: string): Promise<Boolean> {
+    const user = await this.userModel.findOne({ matricula }).exec();
+    if(user) return true;
+    return false
+  }
+
+  verifyMinSizePassword(password: string): Boolean {
+    if(password.length >= 6) return true
+    return false
+  }
+
+  async findByMatricula(matricula: string): Promise<User> {
+    const user = await this.userModel.findOne({ matricula }).exec();
+    if (!user) {
+      throw new NotFoundException("Matrícula não existente.");
     }
     return user;
   }
