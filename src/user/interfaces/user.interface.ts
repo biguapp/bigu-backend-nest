@@ -4,7 +4,6 @@ import { Role } from '../../enums/enum';
 import { Car } from '../../car/interfaces/car.interface';
 
 export interface User extends Document {
-  readonly cpf?: string;
   readonly name: string;
   readonly sex: string;
   readonly email: string;

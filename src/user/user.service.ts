@@ -45,6 +45,7 @@ export class UserService {
       role: "user",
       password: hashedPassword,
     });
+    //retornar os erros de email e matricula já cadastrados
     return createdUser.save();
   }
 
@@ -74,14 +75,6 @@ export class UserService {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) {
       throw new NotFoundException("Credenciais inválidas.");
-    }
-    return user;
-  }
-
-  async findByCpf(cpf: string): Promise<User> {
-    const user = await this.userModel.findOne({ cpf }).exec();
-    if (!user) {
-      throw new NotFoundException(`User with email ${cpf} not found`);
     }
     return user;
   }

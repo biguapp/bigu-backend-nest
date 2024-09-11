@@ -6,9 +6,6 @@ import { Role } from '../../enums/enum';
 import { CreateCarDto } from '../../car/dto/create-car.dto';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
-  @ApiProperty({ description: 'CPF do usuário', example: '123.456.789-00', required: false })
-  @IsOptional()
-  readonly cpf?: string;
 
   @ApiProperty({ description: 'Nome completo do usuário', example: 'João Silva', required: false })
   @IsOptional()

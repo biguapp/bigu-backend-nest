@@ -7,9 +7,6 @@ import { Document } from 'mongoose';
 @Schema()
 export class User extends Document {
 
-  @Prop({ required: false })
-  cpf?: string;
-
   @Prop({ required: true })
   name: string;
 

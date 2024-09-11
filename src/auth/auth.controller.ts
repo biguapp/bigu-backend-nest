@@ -17,7 +17,7 @@ export class AuthController {
   async loginUser(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     const { token, userResponse } = await this.authService.loginUser(email, password);
-    return { access_token: token, user: userResponse };
+    return { token: token, user: userResponse };
   }
 
   @Post('register/user')
@@ -26,9 +26,7 @@ export class AuthController {
   @HttpCode(201)
   async registerUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.authService.registerUser(createUserDto);
-    if (!user) {
-      throw new BadRequestException('Failed to register user');
-    }
+    //retornar token no registro 
     return { message: 'User registered successfully' };
   }
 }
