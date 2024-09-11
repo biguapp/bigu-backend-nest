@@ -5,10 +5,10 @@ import { Document } from 'mongoose';
 
 export interface Ride extends Document {
   readonly driverId?: string;
-  readonly members?: User[];
-  readonly candidates?: User[];
-  readonly startAddress?: Address;
-  readonly destinationAddress?: Address;
+  readonly members?: string[];
+  readonly candidates?: string[];
+  readonly startAddress?: string;
+  readonly destinationAddress?: string;
   readonly numSeats: number;
   readonly goingToCollege?: boolean;
   readonly distance?: number;

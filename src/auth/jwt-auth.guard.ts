@@ -9,6 +9,10 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
 
+    if (token && (await this.authService.isTokenBlacklisted(token))) {
+      throw new UnauthorizedException('Token revogado');
+    }
+
     if (!token) {
       throw new UnauthorizedException();
     }

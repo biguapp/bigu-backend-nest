@@ -11,8 +11,8 @@ export interface User extends Document {
   readonly phoneNumber: string;
   readonly password: string;
   readonly role?: Role;
-  readonly addresses?: Address[];
-  readonly cars?: Car[];
+  readonly addresses?: string[];
+  readonly cars?: string[];
   readonly rides?: string[];
   readonly feedbacks?: string[];
   readonly avgScore?: number;

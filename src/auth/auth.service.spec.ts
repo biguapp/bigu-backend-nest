@@ -15,36 +15,40 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: UserService, // Mocking UserService
+          provide: UserService,
           useValue: {
             findByEmail: jest.fn(),
             createUser: jest.fn(),
             validatePassword: jest.fn(),
-            addAddressToUser: jest.fn(), // Adicione o mock do método usado no serviço
+            addAddressToUser: jest.fn(),
           },
         },
         {
-          provide: AddressService, // Mocking AddressService
+          provide: AddressService,
           useValue: {
-            create: jest.fn(), // Mock the create method for AddressService
+            create: jest.fn(),
           },
         },
         {
-          provide: CarService, // Mocking CarService
-          useValue: {
-            // Mock methods of CarService if necessary
-          },
+          provide: CarService,
+          useValue: {},
         },
         {
-          provide: JwtService, // Mocking JwtService
+          provide: JwtService,
           useValue: {
             sign: jest.fn().mockReturnValue('mockJwtToken'),
           },
         },
         {
-          provide: getModelToken('User'), // Mocking the UserModel
+          provide: getModelToken('User'),
+          useValue: {},
+        },
+        {
+          provide: getModelToken('BlacklistedToken'), // Mocking BlacklistedTokenModel
           useValue: {
-            // Mock methods of UserModel if necessary
+            // Mock methods for BlacklistedTokenModel if necessary
+            create: jest.fn(),
+            findOne: jest.fn(),
           },
         },
       ],

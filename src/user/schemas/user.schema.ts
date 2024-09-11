@@ -28,11 +28,11 @@ export class User extends Document {
   @Prop({ required: true })
   role: Role.User;
 
-  @Prop({ type: [Address], default: [] })
-  addresses?: Address[];
+  @Prop({ type: [String], default: [] })
+  addresses?: string[];
 
-  @Prop({ type: [Car], default: [] })
-  cars?: Car[];
+  @Prop({ type: [String], default: [] })
+  cars?: string[];
 
   @Prop([String])
   rides?: string[];

@@ -23,32 +23,23 @@ export class RideService {
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
     const newRide = new this.rideModel();
-    const driver = this.userService.findOne(createRideDto.driverId);
     newRide.driverId = createRideDto.driverId;
     if (createRideDto.goingToCollege) {
-      newRide.startAddress = (await driver).addresses.at(
-        createRideDto.driverAddress,
-      );
+      newRide.startAddress = (
+        await this.userService.findOne(newRide.driverId)
+      ).addresses.at(createRideDto.driverAddress);
       switch (createRideDto.collegeAddress) {
         case 1:
-          newRide.startAddress = await this.addressService.findOne(
-            '66e09414e2323b4802da45c5'
-          );
+          newRide.startAddress = '66e09414e2323b4802da45c5';
           break;
         case 2:
-          newRide.startAddress = await this.addressService.findOne(
-            '66e09431e2323b4802da45c7'
-          );
+          newRide.startAddress = '66e09431e2323b4802da45c7';
           break;
-        case 2:
-          newRide.startAddress = await this.addressService.findOne(
-            '66e09466e2323b4802da45c9'
-          );
+        case 3:
+          newRide.startAddress = '66e09466e2323b4802da45c9';
           break;
         default:
-          newRide.startAddress = await this.addressService.findOne(
-            '66e093bfe2323b4802da45c3'
-          );
+          newRide.startAddress = '66e093bfe2323b4802da45c3';
           break;
       }
     }

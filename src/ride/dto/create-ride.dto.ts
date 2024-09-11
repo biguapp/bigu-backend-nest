@@ -27,19 +27,17 @@ export class CreateRideDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => User)
-  readonly members?: User[];
+  readonly members?: string[];
 
   @ApiProperty({
     description: 'Lista de candidatos ao passeio',
-    type: [User],
+    type: [String],
     required: false,
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => User)
-  readonly candidates?: User[];
+  readonly candidates?: string[];
 
   @ApiProperty({
     description: 'Endereço de início do passeio',

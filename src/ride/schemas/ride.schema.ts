@@ -10,17 +10,17 @@ export class Ride extends Document {
   @Prop()
   driverId?: string;
 
-  @Prop({ type: [{ type: User }] })
-  members?: User[];
+  @Prop({ type: [{ type: String }] })
+  members?: string[];
 
-  @Prop({ type: [{ type: User }] })
-  candidates?: User[];
-
-  @Prop({ type: Address })
-  startAddress?: Address;
+  @Prop({ type: [{ type: String }] })
+  candidates?: string[];
 
   @Prop({ type: Address })
-  destinationAddress?: Address;
+  startAddress?: string;
+
+  @Prop({ type: Address })
+  destinationAddress?: string;
 
   @Prop({ required: true })
   numSeats: number;

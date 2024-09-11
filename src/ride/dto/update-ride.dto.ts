@@ -12,31 +12,27 @@ export class UpdateRideDto {
   @IsNumber()
   readonly driverId?: number;
 
-  @ApiProperty({ description: 'Lista de membros do passeio', type: [User], required: false })
+  @ApiProperty({ description: 'Lista de membros do passeio', type: [String], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => User)
-  readonly members?: User[];
+  readonly members?: string[];
 
-  @ApiProperty({ description: 'Lista de candidatos ao passeio', type: [User], required: false })
+  @ApiProperty({ description: 'Lista de candidatos ao passeio', type: [String], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => User)
-  readonly candidates?: User[];
+  readonly candidates?: string[];
 
-  @ApiProperty({ description: 'Endereço de início do passeio', type: Address, required: false })
+  @ApiProperty({ description: 'Endereço de início do passeio', type: String, required: false })
   @IsOptional()
   @ValidateNested()
-  @Type(() => Address)
-  readonly startAddress?: Address;
+  readonly startAddress?: string;
 
-  @ApiProperty({ description: 'Endereço de destino do passeio', type: Address, required: false })
+  @ApiProperty({ description: 'Endereço de destino do passeio', type: String, required: false })
   @IsOptional()
   @ValidateNested()
-  @Type(() => Address)
-  readonly destinationAddress?: Address;
+  readonly destinationAddress?: string;
 
   @ApiProperty({ description: 'Número de assentos disponíveis', example: 4, required: false })
   @IsOptional()
