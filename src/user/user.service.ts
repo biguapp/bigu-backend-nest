@@ -22,7 +22,7 @@ export class UserService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly addressService: AddressService,
-    private readonly carService: CarService,
+    private readonly carService: CarService
   ) {}
 
   async addAddressToUser(userId: string, addressDto: CreateAddressDto) {

@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './interfaces/user.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -24,7 +23,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('/self/address')
+  @Post('/user/self/address')
   @ApiOperation({ summary: 'Add address to user.' })
   @ApiResponse({
     status: 201,
@@ -39,7 +38,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('self/car')
+  @Post('/user/self/car')
   @ApiOperation({ summary: 'Add car to user.' })
   @ApiResponse({
     status: 201,
@@ -54,7 +53,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('self/car')
+  @Get('/user/self/car')
   @ApiOperation({ summary: 'Get user cars' })
   @ApiResponse({
     status: 200,
@@ -66,7 +65,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('self/address')
+  @Get('/user/self/address')
   @ApiOperation({ summary: 'Get user addresses' })
   @ApiResponse({
     status: 200,
@@ -78,7 +77,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('history')
+  @Get('/user/self/history')
   @ApiOperation({ summary: 'Get user history' })
   @ApiResponse({
     status: 200,
@@ -133,7 +132,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('self')
+  @Get('/user/self')
   @ApiOperation({ summary: 'Get user logged' })
   @ApiResponse({ status: 200, description: 'User returned.' })
   async findSelf(@Req() req): Promise<User> {
@@ -142,7 +141,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('self')
+  @Put('/user/self')
   @ApiOperation({ summary: 'Edit self' })
   @ApiResponse({ status: 200, description: 'User edited.' })
   async update(
@@ -154,7 +153,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete('self')
+  @Delete('/user/self')
   @ApiOperation({ summary: 'Delete self account' })
   @ApiResponse({ status: 200, description: 'User deleted.' })
   async remove(@Req() req): Promise<void> {

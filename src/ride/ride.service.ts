@@ -6,14 +6,12 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { Ride } from './interfaces/ride.interface';
 import { Ride as RideSchema } from './schemas/ride.schema';
 import { UserService } from '../user/user.service';
-import { AddressService } from '../address/address.service';
 
 @Injectable()
 export class RideService {
   constructor(
-    @InjectModel('Ride') private rideModel: Model<RideSchema>,
-    private readonly userService: UserService,
-    private readonly addressService: AddressService,
+    @InjectModel('Ride') private readonly rideModel: Model<RideSchema>,
+    private readonly userService: UserService
   ) {}
 
   // Criação de um novo passeio
@@ -51,8 +49,9 @@ export class RideService {
     return await this.rideModel.find().exec();
   }
 
-  // Buscar um passeio por ID
-  async findOne(id: number): Promise<Ride> {
+  async findOne(id: string): Promise<Ride> {
+    console.log(id)
+    console.log(id)
     const ride = await this.rideModel.findById(id).exec();
     if (!ride) {
       throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
@@ -61,7 +60,7 @@ export class RideService {
   }
 
   // Atualizar um passeio por ID
-  async update(id: number, updateRideDto: UpdateRideDto): Promise<Ride> {
+  async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
     const updatedRide = await this.rideModel
       .findByIdAndUpdate(id, updateRideDto, { new: true })
       .exec();
@@ -78,4 +77,28 @@ export class RideService {
       throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
     }
   }
+
+  async getRidesAvailable(): Promise<Ride[]> {
+    const rides = await this.rideModel.find().exec();
+    return rides.filter((ride) => ride.isOver === false);
+  }
+
+  async getDriverRides(userId: string) {
+    const user = await this.userService.findOne(userId);
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+    if (user.rides.length > 0) {
+      const rides: Ride[] = await Promise.all(
+        user.rides.map((rideId) => this.findOne(rideId)),
+      );
+
+      const rideDriverActive = rides.filter((ride) => ride.driverId === userId && ride.isOver === false)
+      
+      return rideDriverActive;
+    } 
+    return []
+  }
+
 }
