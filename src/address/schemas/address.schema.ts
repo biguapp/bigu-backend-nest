@@ -27,6 +27,9 @@ export class Address extends Document {
 
   @Prop({ required: true, match: /^[0-9]{5}-?[0-9]{3}$/ })
   cep: string;
+
+  @Prop()
+  user: string;
 }
 
 export const AddressSchema = SchemaFactory.createForClass(Address);

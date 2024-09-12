@@ -17,6 +17,9 @@ export class Car extends Document {
 
   @Prop({ required: true, unique: true })
   plate: string;
+
+  @Prop({ required: true})
+  user: string;
 }
 
 export const CarSchema = SchemaFactory.createForClass(Car);

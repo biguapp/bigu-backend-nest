@@ -35,14 +35,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   readonly role?: Role;
 
-  @ApiProperty({ description: 'Endereços do usuário', type: [CreateAddressDto], required: false })
-  @IsOptional()
-  readonly addresses?: CreateAddressDto[];
-
-  @ApiProperty({ description: 'Carros do usuário', type: [CreateCarDto], required: false })
-  @IsOptional()
-  readonly cars?: CreateCarDto[];
-
   @ApiProperty({ description: 'IDs dos feedbacks do usuário', type: [String], required: false })
   @IsOptional()
   readonly feedbacks?: string[];

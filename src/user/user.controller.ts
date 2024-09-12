@@ -14,83 +14,12 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './interfaces/user.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CreateAddressDto } from '../address/dto/create-address.dto';
-import { CreateCarDto } from '../car/dto/create-car.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @UseGuards(JwtAuthGuard)
-  @Post('/user/self/address')
-  @ApiOperation({ summary: 'Add address to user.' })
-  @ApiResponse({
-    status: 201,
-    description: 'The address has been successfully added.',
-  })
-  async addAddress(
-    @Req() req,
-    @Body() createAddressDto: CreateAddressDto,
-  ) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return await this.userService.addAddressToUser(userId, createAddressDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete('/user/self/address/:id')
-  @ApiOperation({ summary: 'Remove address to user.' })
-  @ApiResponse({
-    status: 200,
-    description: 'The address has been successfully removed.',
-  })
-  async removeAddress(
-    @Req() req,
-    @Param('id') id: string,
-  ) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    await this.userService.removeAddressToUser(userId, id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('/user/self/car')
-  @ApiOperation({ summary: 'Add car to user.' })
-  @ApiResponse({
-    status: 201,
-    description: 'The car has been successfully added.',
-  })
-  async addCar(
-    @Req() req,
-    @Body() createCarDto: CreateCarDto,
-  ) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return await this.userService.addCarToUser(userId, createCarDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/user/self/car')
-  @ApiOperation({ summary: 'Get user cars' })
-  @ApiResponse({
-    status: 200,
-    description: 'All cars from user returned',
-  })
-  async getUserCars(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return await this.userService.getUserCars(userId);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/user/self/address')
-  @ApiOperation({ summary: 'Get user addresses' })
-  @ApiResponse({
-    status: 200,
-    description: 'All address from user returned',
-  })
-  async getUserAddresses(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return await this.userService.getUserAddresses(userId);
-  }
 
 
   // UM USUÁRIO DEVE SER CRIADO EM AUTH.REGISTRO, ESSA ROTA É APENAS PARA TESTES
@@ -105,7 +34,7 @@ export class UserController {
   //   return this.userService.create(createUserDto);
   // }
 
-  @Get('all')
+  @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'All users returned.' })
   async findAll(): Promise<User[]> {
@@ -136,32 +65,14 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/user/self')
-  @ApiOperation({ summary: 'Get user logged' })
-  @ApiResponse({ status: 200, description: 'User returned.' })
-  async findSelf(@Req() req): Promise<User> {
-    const userId = req.user.sub;
-    return await this.userService.findOne(userId);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put('/user/self')
-  @ApiOperation({ summary: 'Edit self' })
-  @ApiResponse({ status: 200, description: 'User edited.' })
-  async update(
-    @Req() req,
-    @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
-    const userId = req.user.sub;
-    return await this.userService.update(userId, updateUserDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete('/user/self')
-  @ApiOperation({ summary: 'Delete self account' })
-  @ApiResponse({ status: 200, description: 'User deleted.' })
-  async remove(@Req() req): Promise<void> {
-    const userId = req.user.sub;
-    return await this.userService.remove(userId);
+  @Delete(':id')
+  @ApiOperation({ summary: 'Deletar um usuário.'})
+  @ApiResponse({ status: 200, description: 'O usuário foi deletado'})
+  async remove(@Param('id') id: string): Promise<User> {
+    try{
+      return this.userService.remove(id);
+    }catch(error){
+      console.log(error)
+    }
   }
 }

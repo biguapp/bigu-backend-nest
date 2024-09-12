@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { AuthService } from './auth.service'; // Serviço que valida o JWT
 
 @Injectable()
@@ -10,16 +10,16 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractToken(request);
 
     if (token && (await this.authService.isTokenBlacklisted(token))) {
-      throw new UnauthorizedException('Token revogado');
+      throw new UnauthorizedException('Token expirado.');
     }
 
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Token inválido');
     }
 
     const user = await this.authService.validateToken(token);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new NotFoundException('Usuário não encontrado.');
     }
 
     request.user = user;

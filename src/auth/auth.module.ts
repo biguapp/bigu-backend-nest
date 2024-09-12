@@ -10,25 +10,21 @@ import { jwtConstants } from './constants';
 import { UserService } from '../user/user.service';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './local.strategy';
-import { AddressModule } from '@src/address/address.module';
-import { CarModule } from '@src/car/car.module';
-import { BlacklistedToken, BlacklistedTokenSchema } from './schemas/token.schema';
+import { AddressModule } from '../address/address.module';
+import { CarModule } from '../car/car.module';
+import { BlacklistedTokenSchema } from './schemas/token.schema';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: jwtConstants.secret, 
-      signOptions: { expiresIn: "1h" },
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '1h' },
     }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-    ]),
-    MongooseModule.forFeature([
       { name: 'BlacklistedToken', schema: BlacklistedTokenSchema },
     ]),
-    AddressModule,
-    CarModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, UserService, LocalStrategy],

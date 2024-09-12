@@ -9,7 +9,7 @@ import { AuthModule } from '@src/auth/auth.module';
 import { RideModule } from '@src/ride/ride.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]), AddressModule, CarModule, AuthModule],
+  imports: [MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]), AuthModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

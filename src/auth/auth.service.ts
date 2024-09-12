@@ -19,7 +19,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @InjectModel('BlacklistedToken')
     private readonly blacklistedTokenModel: Model<BlacklistedToken>,
-    @InjectModel(UserSchema.name) private readonly userModel: Model<User>,
     private readonly userService: UserService,
   ) {}
 
