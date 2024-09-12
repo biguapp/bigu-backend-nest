@@ -16,13 +16,14 @@ import { AddressService } from '../address/address.service';
 import { CarService } from '../car/car.service';
 import { CreateAddressDto } from '../address/dto/create-address.dto';
 import { CreateCarDto } from '../car/dto/create-car.dto';
+import { RideService } from '@src/ride/ride.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly addressService: AddressService,
-    private readonly carService: CarService
+    private readonly carService: CarService,
   ) {}
 
   async addAddressToUser(userId: string, addressDto: CreateAddressDto) {
@@ -44,12 +45,12 @@ export class UserService {
     } else {
       throw new NotFoundException('Endereço não encontrado.');
     }
-    
+
     const addresses = await Promise.all(
       user.addresses.map((addressId) => this.addressService.findOne(addressId)),
     );
-    await user.save()
-    
+    await user.save();
+
     return addresses;
   }
 
@@ -59,13 +60,13 @@ export class UserService {
       throw new NotFoundException('Usuário não encontrado.');
     }
     const index = user.addresses.indexOf(addressId);
-    
+
     if (index !== -1) {
       user.addresses.splice(index, 1);
     }
-    
-    await user.save()
-    await this.addressService.remove(addressId)
+
+    await user.save();
+    await this.addressService.remove(addressId);
   }
 
   async addCarToUser(userId: string, carDto: CreateCarDto) {
@@ -95,8 +96,8 @@ export class UserService {
     const cars = await Promise.all(
       user.cars.map((carId) => this.carService.findOne(carId)),
     );
-    await user.save()
-    
+    await user.save();
+
     return cars;
   }
 
@@ -111,8 +112,8 @@ export class UserService {
         user.cars.map((carId) => this.carService.findOne(carId)),
       );
       return cars;
-    } 
-    return []
+    }
+    return [];
   }
 
   async getUserAddresses(userId: string) {
@@ -123,26 +124,13 @@ export class UserService {
 
     if (user.addresses.length > 0) {
       const addresses = await Promise.all(
-        user.addresses.map((addressId) => this.addressService.findOne(addressId)),
+        user.addresses.map((addressId) =>
+          this.addressService.findOne(addressId),
+        ),
       );
       return addresses;
-    } 
-    return []
-  }
-
-  async getUserHistory(userId: string) {
-    const user = await this.findOne(userId);
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado.');
     }
-
-    if (user.rides.length > 0) {
-      const ridesHistory = await Promise.all(
-        user.rides.map((rideId) => this.addressService.findOne(rideId)),
-      );
-      return ridesHistory;
-    } 
-    return []
+    return [];
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -152,7 +140,8 @@ export class UserService {
     const hasMatricula = await this.verifyMatricula(createUserDto.matricula);
 
     if (hasEmail) throw new BadRequestException('O email já está em uso.');
-    if (hasMatricula)throw new BadRequestException('A matrícula já está em uso.');
+    if (hasMatricula)
+      throw new BadRequestException('A matrícula já está em uso.');
 
     const createdUser = new this.userModel({
       ...createUserDto,

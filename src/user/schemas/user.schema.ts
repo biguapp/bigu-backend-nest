@@ -35,9 +35,6 @@ export class User extends Document {
   cars?: string[];
 
   @Prop([String])
-  rides?: string[];
-
-  @Prop([String])
   feedbacks?: string[];
 
   @Prop({ default: 0 })

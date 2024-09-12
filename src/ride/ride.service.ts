@@ -11,7 +11,7 @@ import { UserService } from '../user/user.service';
 export class RideService {
   constructor(
     @InjectModel('Ride') private readonly rideModel: Model<RideSchema>,
-    private readonly userService: UserService
+    private readonly userService: UserService,
   ) {}
 
   // Criação de um novo passeio
@@ -23,9 +23,9 @@ export class RideService {
     const newRide = new this.rideModel();
     newRide.driverId = createRideDto.driverId;
     if (createRideDto.goingToCollege) {
-      newRide.startAddress = (
-        await this.userService.findOne(newRide.driverId)
-      ).addresses.at(createRideDto.driverAddress);
+      // newRide.startAddress = (
+      //   await this.userService.findOne(newRide.driverId)
+      // ).addresses.at(createRideDto.driverAddress);
       switch (createRideDto.collegeAddress) {
         case 1:
           newRide.startAddress = '66e09414e2323b4802da45c5';
@@ -50,8 +50,8 @@ export class RideService {
   }
 
   async findOne(id: string): Promise<Ride> {
-    console.log(id)
-    console.log(id)
+    console.log(id);
+    console.log(id);
     const ride = await this.rideModel.findById(id).exec();
     if (!ride) {
       throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
@@ -83,22 +83,55 @@ export class RideService {
     return rides.filter((ride) => ride.isOver === false);
   }
 
-  async getDriverRides(userId: string) {
-    const user = await this.userService.findOne(userId);
-
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado.');
-    }
-    if (user.rides.length > 0) {
-      const rides: Ride[] = await Promise.all(
-        user.rides.map((rideId) => this.findOne(rideId)),
-      );
-
-      const rideDriverActive = rides.filter((ride) => ride.driverId === userId && ride.isOver === false)
-      
-      return rideDriverActive;
-    } 
-    return []
+  async getDriverHistory(userId: string) {
+    if (!(await this.userService.findOne(userId))) {
+      const userRides = await this.rideModel
+        .find({ $and: [{ driverId: userId }, { isOver: true }] })
+        .exec();
+      return userRides;
+    } else throw new NotFoundException('Usuário não encontrado');
   }
 
+  async getMemberHistory(userId: string) {
+    if (!(await this.userService.findOne(userId))) {
+      const userRides = await this.rideModel
+        .find({ $and: [{ members: userId }, { isOver: true }] })
+        .exec();
+      return userRides;
+    } else throw new NotFoundException('Usuário não encontrado');
+  }
+
+  async getUserHistory(userId: string) {
+    if (!(await this.userService.findOne(userId))) {
+      const userRides = await this.rideModel
+        .find({
+          $or: [{ driverId: userId }, { members: userId }],
+          $and: [{ isOver: true }],
+        })
+        .exec();
+      return userRides;
+    } else throw new NotFoundException('Usuário não encontrado');
+  }
+
+  async getDriverActiveRides(userId: string) {
+    if (!(await this.userService.findOne(userId))) {
+      const userRides = await this.rideModel
+        .find({
+          $and: [{ driverId: userId }, { isOver: false }],
+        })
+        .exec();
+      return userRides;
+    } else throw new NotFoundException('Usuário não encontrado');
+  }
+
+  async getMemberActiveRides(userId: string) {
+    if (!(await this.userService.findOne(userId))) {
+      const userRides = await this.rideModel
+        .find({
+          $and: [{ members: userId }, { isOver: false }],
+        })
+        .exec();
+      return userRides;
+    } else throw new NotFoundException('Usuário não encontrado');
+  }
 }

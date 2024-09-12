@@ -92,18 +92,6 @@ export class UserController {
     return await this.userService.getUserAddresses(userId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('/user/self/history')
-  @ApiOperation({ summary: 'Get user history' })
-  @ApiResponse({
-    status: 200,
-    description: 'All history from user returned',
-  })
-  async getUserHistory(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return await this.userService.getUserHistory(userId);
-  }
-
 
   // UM USUÁRIO DEVE SER CRIADO EM AUTH.REGISTRO, ESSA ROTA É APENAS PARA TESTES
   // @Post()

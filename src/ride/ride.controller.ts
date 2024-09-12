@@ -55,7 +55,7 @@ export class RideController {
     return this.rideService.remove(+id);
   }
 
-  @Get("/available")
+  @Get('/available')
   @ApiOperation({ summary: 'Get rides available' })
   @ApiResponse({ status: 200, description: 'Get rides available returned' })
   async getRidesAvailable() {
@@ -63,14 +63,61 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/driver')
+  @Get('/driver/active')
   @ApiOperation({ summary: 'Get rides where the user is Driver' })
   @ApiResponse({
     status: 200,
     description: 'Get rides where the user is Driver',
   })
-  async getDriverRides(@Req() req) {
+  async getDriverActiveRides(@Req() req) {
     const userId = req.user.sub; // Pega o userId da requisição
-    return this.rideService.getDriverRides(userId);
+    return this.rideService.getDriverActiveRides(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/member/active')
+  @ApiOperation({ summary: 'Get rides where the user is Member' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get rides where the user is Driver',
+  })
+  async getMemberActiveRides(@Req() req) {
+    const userId = req.user.sub; // Pega o userId da requisição
+    return this.rideService.getMemberActiveRides(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/history/driver')
+  @ApiOperation({ summary: 'Get rides where the user was Driver' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get rides where the user is Driver',
+  })
+  async getDriverHistory(@Req() req) {
+    const userId = req.user.sub; // Pega o userId da requisição
+    return this.rideService.getDriverHistory(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/history/member')
+  @ApiOperation({ summary: 'Get rides where the user was Member' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get rides where the user is Driver',
+  })
+  async getMemberHistory(@Req() req) {
+    const userId = req.user.sub; // Pega o userId da requisição
+    return this.rideService.getMemberHistory(userId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('/history/user')
+  @ApiOperation({ summary: 'Get rides where the user was Member' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get rides where the user is Driver',
+  })
+  async getUserHistory(@Req() req) {
+    const userId = req.user.sub; // Pega o userId da requisição
+    return this.rideService.getUserHistory(userId);
   }
 }

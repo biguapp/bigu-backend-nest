@@ -43,10 +43,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   readonly cars?: CreateCarDto[];
 
-  @ApiProperty({ description: 'IDs das corridas do usuário', type: [String], required: false })
-  @IsOptional()
-  readonly rides?: string[];
-
   @ApiProperty({ description: 'IDs dos feedbacks do usuário', type: [String], required: false })
   @IsOptional()
   readonly feedbacks?: string[];
