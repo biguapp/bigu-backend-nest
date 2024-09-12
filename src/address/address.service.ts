@@ -10,18 +10,17 @@ import { Address as AddressSchema } from './schemas/address.schema';
 export class AddressService {
   constructor(@InjectModel('Address') private addressModel: Model<AddressSchema>) {}
 
-  // Criação de um endereço
-  async create(createAddressDto: CreateAddressDto): Promise<Address> {
-    const newAddress = new this.addressModel(createAddressDto);
-    return await newAddress.save();
+  async create(createAddressDto: CreateAddressDto, userId: string): Promise<Address> {
+    const newAddress = {...createAddressDto, user: userId}
+    const address = new this.addressModel(newAddress);
+    
+    return await address.save();
   }
 
-  // Listar todos os endereços
   async findAll(): Promise<Address[]> {
     return await this.addressModel.find().exec();
   }
 
-  // Buscar um endereço por ID
   async findOne(id: string): Promise<Address> {
     const address = await this.addressModel.findById(id).exec();
     if (!address) {
@@ -30,7 +29,6 @@ export class AddressService {
     return address;
   }
 
-  // Atualizar um endereço por ID
   async update(id: string, updateAddressDto: UpdateAddressDto): Promise<Address> {
     const updatedAddress = await this.addressModel.findByIdAndUpdate(id, updateAddressDto, { new: true }).exec();
     if (!updatedAddress) {
@@ -39,16 +37,20 @@ export class AddressService {
     return updatedAddress;
   }
 
-  // Remover um endereço por ID
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<Address> {
     const result = await this.addressModel.findByIdAndDelete(id).exec();
     if (!result) {
       throw new NotFoundException(`Endereço com ID ${id} não encontrado`);
     }
+    return result
   }
 
-  // Remover todos os endereços
   async removeAll(): Promise<void> {
     await this.addressModel.deleteMany().exec();
+  }
+
+  async getUserAddresses(userId: string) {
+    const userAddress = await this.addressModel.find({user: userId}).exec()
+    return userAddress
   }
 }

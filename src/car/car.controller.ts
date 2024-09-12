@@ -1,44 +1,48 @@
-import { Controller, Get, Put, Post, Body, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, Param, Delete, Req, UseGuards, Res, HttpStatus } from '@nestjs/common';
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto'
 import { Car } from './interfaces/car.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 
 @ApiTags('cars')
 @Controller('cars')
 export class CarController {
   constructor(private readonly carService: CarService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  // @Roles(Role.Driver)
-  @ApiOperation({ summary: 'Create Car' })
-  @ApiResponse({ status: 201, description: 'The car has been successfully created.' })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async create(@Body() createCarDto: CreateCarDto): Promise<Car> {
-    return this.carService.create(createCarDto);
+  @ApiOperation({ summary: 'Criar um carro' })
+  @ApiResponse({ status: 201, description: 'O carro foi criado com sucesso.' })
+  async create(@Req() req, @Body() createCarDto: CreateCarDto): Promise<Car> {
+    try{
+      const userId = req.user.sub;
+      const newCar = await this.carService.create(createCarDto, userId);
+      return newCar
+    }catch(error){
+      console.log(error)
+    }
   }
-
+  
   @Get()
-  // @Roles(Role.Admin)
-  @ApiOperation({ summary: 'Get all cars' })
-  @ApiResponse({ status: 200, description: 'All cars returned.' })
+  @ApiOperation({ summary: 'Retornar todos os carros' })
+  @ApiResponse({ status: 200, description: 'Todos os carros foram retornados.' })
   async findAll(): Promise<Car[]> {
     return this.carService.findAll();
   }
 
   @Get(':id')
-  // @Roles(Role.Car, Role.Admin)
-  @ApiOperation({ summary: 'Get one car' })
-  @ApiResponse({ status: 200, description: 'Car returned.' })
+  @ApiOperation({ summary: 'Retornar um carro com base no id' })
+  @ApiResponse({ status: 200, description: 'O carro foi retornado' })
   async findOne(@Param('id') id: string): Promise<Car> {
     return this.carService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
-  // @Roles(Role.Car, Role.Admin)
-  @ApiOperation({ summary: 'Edit car'})
-  @ApiResponse({ status: 200, description: 'Car edited.'})
+  @ApiOperation({ summary: 'Editar um carro com base no id'})
+  @ApiResponse({ status: 200, description: 'Carro foi editado.'})
   async update(
     @Param('id') id: string,
     @Body() updateCarDto: UpdateCarDto
@@ -46,19 +50,44 @@ export class CarController {
     return this.carService.update(id, updateCarDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  // @Roles(Role.Car, Role.Admin)
-  @ApiOperation({ summary: 'Delete one car'})
-  @ApiResponse({ status: 200, description: 'Car deleted.'})
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.carService.remove(id);
+  @ApiOperation({ summary: 'Deletar um carro'})
+  @ApiResponse({ status: 200, description: 'O carro foi deletado'})
+  async remove(@Param('id') id: string): Promise<Car> {
+    try{
+      return this.carService.remove(id);
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Post('clear')
-  // @Roles(Role.Admin)
-  @ApiOperation({ summary: 'Delete all cars' })
+  @ApiOperation({ summary: 'Deletar todos os carros.' })
   @ApiResponse({ status: 200, description: 'All cars have been successfully deleted.' })
   async clearAll(): Promise<void> {
     return this.carService.removeAll();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/user/cars')
+  @ApiOperation({ summary: 'Retornar os carros de um usuário.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Todos os carros do usuário serão retornados',
+  })
+  async getUserCars(@Req() req, @Res() response) {
+    try{
+      const userId = req.user.sub;
+      const userCars = this.carService.getUserCars(userId);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'Os carro foram encontrados com sucesso.',
+        userCars
+      });
+      
+    }catch(error){
+      console.log(error)
+    }
   }
 }

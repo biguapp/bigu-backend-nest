@@ -10,18 +10,17 @@ import { Car as CarSchema} from './schemas/car.schema';
 export class CarService {
     constructor(@InjectModel('Car') private carModel: Model<CarSchema>) {}
 
-    // Criação de um carro
-    async create(createCarDto: CreateCarDto): Promise<Car> {
-        const newCar = new this.carModel(createCarDto);
-        return await newCar.save();
+    async create(createCarDto: CreateCarDto, userId: string): Promise<Car> {
+        const newCar = {...createCarDto, user: userId}
+        const car = new this.carModel(newCar);
+        
+        return car.save();
     }
 
-    // Listar todos os carros
     async findAll(): Promise<Car[]> {
         return await this.carModel.find().exec();
     }
 
-    // Buscar um carro por ID
     async findOne(id: string): Promise<Car> {
         const car = await this.carModel.findById(id).exec();
         if (!car) {
@@ -30,7 +29,6 @@ export class CarService {
         return car;
     }
 
-    // Atualizar um carro por ID
     async update(id: string, updateCarDto: UpdateCarDto): Promise<Car> {
         const updatedCar = await this.carModel.findByIdAndUpdate(id, updateCarDto, { new: true }).exec();
         if (!updatedCar) {
@@ -39,15 +37,20 @@ export class CarService {
         return updatedCar;
     }
 
-    // Remover um carro por ID
-    async remove(id: string): Promise<void> {
+    async remove(id: string): Promise<Car> {
         const result = await this.carModel.findByIdAndDelete(id).exec();
         if (!result) {
             throw new NotFoundException(`Carro com ID ${id} não encontrado`);
         }
+        return result
     }
 
     async removeAll(): Promise<void> {
         const result = await this.carModel.deleteMany();
+    }
+
+    async getUserCars(userId: string): Promise<Car[]> {
+        const cars = await this.carModel.find({user: userId}).exec()
+        return cars;
     }
 }
