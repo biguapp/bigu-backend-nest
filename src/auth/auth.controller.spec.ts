@@ -2,11 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { BadRequestException } from '@nestjs/common';
-import { CreateUserDto } from '../user/dto/create-user.dto';
-import { LoginUserDto } from '../user/dto/login-user.dto';
-import { User } from '../user/interfaces/user.interface';
-import { Role } from '../enums/enum';
 import { getModelToken } from '@nestjs/mongoose';
 
 describe('AuthController', () => {

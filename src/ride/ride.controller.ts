@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Put,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -120,4 +121,17 @@ export class RideController {
     const userId = req.user.sub; // Pega o userId da requisição
     return this.rideService.getUserHistory(userId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/over')
+  @ApiOperation({ summary: 'Set ride over.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The ride is complete.',
+  })
+  async setRideOver(@Req() req, @Param() rideId){
+    const userId = req.user.sub;
+    return this.rideService.setRideOver(userId, rideId);
+  }
+
 }

@@ -4,18 +4,17 @@ import { User } from '../../user/interfaces/user.interface';
 import { Document } from 'mongoose';
 
 export interface Ride extends Document {
-  readonly driverId?: string;
+  readonly driverId: string;
   readonly members?: string[];
   readonly candidates?: string[];
-  readonly startAddress?: string;
-  readonly destinationAddress?: string;
+  readonly startAddress: string;
+  readonly destinationAddress: string;
   readonly numSeats: number;
-  readonly goingToCollege?: boolean;
-  readonly distance?: number;
+  readonly goingToCollege: boolean;
   readonly price: number;
   readonly scheduledTime: Date;
-  readonly car: Car;
+  readonly car: string;
   readonly description?: string;
-  readonly toWomen?: boolean;
-  readonly isOver?: boolean;
+  readonly toWomen: boolean;
+  readonly isOver: boolean;
 }

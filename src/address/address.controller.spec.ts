@@ -41,6 +41,7 @@ describe('AddressController', () => {
   // Teste para o método create
   it('should create a new address', async () => {
     const createAddressDto: CreateAddressDto = {
+      nome: 'Teste',
       rua: 'Rua Teste',
       numero: '123',
       bairro: 'Bairro Teste',
@@ -49,7 +50,7 @@ describe('AddressController', () => {
       cep: '12345-678',
     };
 
-    const result = await controller.create(createAddressDto);
+    const result = await controller.create(createAddressDto); // mockar um user depois
     expect(result).toEqual({ /* mock do endereço criado */ });
     expect(service.create).toHaveBeenCalledWith(createAddressDto);
   });

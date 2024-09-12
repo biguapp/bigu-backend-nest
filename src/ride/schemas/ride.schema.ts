@@ -6,9 +6,8 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Ride extends Document {
-
-  @Prop()
-  driverId?: string;
+  @Prop({ required: true })
+  driverId: string;
 
   @Prop({ type: [{ type: String }] })
   members?: string[];
@@ -16,20 +15,17 @@ export class Ride extends Document {
   @Prop({ type: [{ type: String }] })
   candidates?: string[];
 
-  @Prop({ type: Address })
-  startAddress?: string;
+  @Prop({ type: String, required: true })
+  startAddress: string;
 
-  @Prop({ type: Address })
-  destinationAddress?: string;
+  @Prop({ type: String, required: true })
+  destinationAddress: string;
 
   @Prop({ required: true })
   numSeats: number;
 
-  @Prop()
-  goingToCollege?: boolean;
-
-  @Prop()
-  distance?: number;
+  @Prop({ required: true })
+  goingToCollege: boolean;
 
   @Prop({ required: true })
   price: number;
@@ -37,17 +33,17 @@ export class Ride extends Document {
   @Prop({ required: true })
   scheduledTime: Date;
 
-  @Prop({ type: Car })
-  car: Car;
+  @Prop({ type: String, required: true })
+  car: string;
 
   @Prop()
   description?: string;
 
-  @Prop()
-  toWomen?: boolean;
+  @Prop({ required: true })
+  toWomen: boolean;
 
-  @Prop()
-  isOver?: boolean;
+  @Prop( { required: true })
+  isOver: boolean;
 }
 
 export const RideSchema = SchemaFactory.createForClass(Ride);
