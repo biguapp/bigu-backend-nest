@@ -10,6 +10,7 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Role } from '../enums/enum';
 import { UserResponseDto } from '../user/dto/response-user.dto';
 import { BlacklistedToken } from './schemas/token.schema';
+import { mapUserToUserResponse } from '@src/utils/Mappers';
 
 @Injectable()
 export class AuthService {
@@ -43,14 +44,7 @@ export class AuthService {
   ): Promise<{ token: string; userResponse: UserResponseDto }> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      const userResponse: UserResponseDto = {
-        name: user.name,
-        sex: user.sex,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        matricula: user.matricula,
-        userId: user._id,
-      };
+      const userResponse = mapUserToUserResponse(user);
       const token = this.jwtService.sign({
         name: user.name,
         sub: user._id,
@@ -74,15 +68,7 @@ export class AuthService {
     createUserDto: CreateUserDto,
   ): Promise<{ token: string; userResponse: UserResponseDto }> {
     const user = await this.userService.create({ ...createUserDto });
-
-    const userResponse: UserResponseDto = {
-      name: user.name,
-      sex: user.sex,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      matricula: user.matricula,
-      userId: user._id,
-    };
+    const userResponse = mapUserToUserResponse(user);
 
     const token = this.jwtService.sign({
       name: user.name,

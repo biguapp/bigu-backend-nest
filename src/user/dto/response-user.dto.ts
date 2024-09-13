@@ -34,6 +34,7 @@ export class UserResponseDto {
   readonly phoneNumber: string;
 
   @ApiProperty()
+  @IsString()
   @IsNotEmpty()
-  readonly userId: unknown;
+  readonly userId: string;
 }
