@@ -8,7 +8,6 @@ export class JwtAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-    console.log(request)
 
     if (token && (await this.authService.isTokenBlacklisted(token))) {
       throw new UnauthorizedException('Token expirado.');

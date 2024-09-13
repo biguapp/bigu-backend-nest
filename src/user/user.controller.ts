@@ -12,6 +12,8 @@ import { UserService } from './user.service';
 import { User } from './interfaces/user.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UserResponseDto } from './dto/response-user.dto';
+import { mapUserToUserResponse } from '@src/utils/Mappers';
 
 @ApiTags('users')
 @Controller('users')
@@ -33,9 +35,11 @@ export class UserController {
 
   @Get()
   @ApiOperation({ summary: 'Retorna todos os usuários.' })
-  async findAll(@Res() response): Promise<User[]> {
+  async findAll(@Res() response): Promise<UserResponseDto[]> {
     try{
-      const users = this.userService.findAll();
+      const usersModel = await this.userService.findAll();
+
+      const users = usersModel.map((user) => mapUserToUserResponse(user));
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -48,9 +52,10 @@ export class UserController {
 
   @Get(':email')
   @ApiOperation({ summary: 'Retorna um usuário pela email' })
-  async findOneByEmail(@Res() response, @Param('email') email: string): Promise<User> {
+  async findOneByEmail(@Res() response, @Param('email') email: string): Promise<UserResponseDto> {
     try{
-      const user = this.userService.findByMatricula(email);
+      const userModel = await this.userService.findByMatricula(email);
+      const user = mapUserToUserResponse(userModel);
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -65,9 +70,10 @@ export class UserController {
   @ApiOperation({ summary: 'Retorna um usuário pela matrícula' })
   async findOneByMatricula(
     @Res() response, @Param('matricula') matricula: string,
-  ): Promise<User> {
+  ): Promise<UserResponseDto> {
     try{
-      const user = this.userService.findByMatricula(matricula);
+      const userModel = await this.userService.findByMatricula(matricula);
+      const user = mapUserToUserResponse(userModel);
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -80,9 +86,10 @@ export class UserController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Retorna um usuário' })
-  async findOne(@Res() response, @Param('id') id: string): Promise<User> {
+  async findOne(@Res() response, @Param('id') id: string): Promise<UserResponseDto> {
     try{
-      const user = this.userService.findOne(id);
+      const userModel = await this.userService.findOne(id);
+      const user = mapUserToUserResponse(userModel);
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -96,9 +103,11 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Deletar um usuário.'})
-  async remove(@Res() response, @Param('id') id: string): Promise<User> {
+  async remove(@Res() response, @Param('id') id: string): Promise<UserResponseDto> {
     try{
-      const userRemoved = this.userService.remove(id);
+      const userModel = await this.userService.remove(id);
+      const userRemoved = mapUserToUserResponse(userModel);
+      
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi removido com sucesso.',
         userRemoved
@@ -111,16 +120,16 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('/user/self')
   @ApiOperation({ summary: 'Get user logged' })
-  @ApiResponse({ status: 200, description: 'User returned.' })
-  async findSelf(@Res() response, @Req() req): Promise<User> {
+  async findSelf(@Res() response, @Req() req): Promise<UserResponseDto> {
     try{
       const userId = req.user.sub;
-      const user = await this.userService.findOne(userId);
+      const userModel = await this.userService.findOne(userId);
+      const user = mapUserToUserResponse(userModel);
+      
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
         user
       });
-    
     }catch(error){
       console.log(error)
     }
