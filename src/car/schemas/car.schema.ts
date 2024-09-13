@@ -16,7 +16,7 @@ export class Car extends Document {
   @Prop({ required: true })
   color: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true})
   plate: string;
 
   @Prop({ required: true})

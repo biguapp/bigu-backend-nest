@@ -1,32 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsOptional,
-  IsNumber,
-  IsBoolean,
-  IsDate,
-  ValidateNested,
-} from 'class-validator';
+import { AddressResponseDto } from '@src/address/dto/response-address.dto';
+import { CarResponseDto } from '@src/car/dto/response-car.dto';
+import { UserResponseDto } from '@src/user/dto/response-user.dto';
+import { IsString, IsNumber, IsBoolean, IsArray } from 'class-validator';
 
-export class CreateRideDto {
+export class RideResponseDto {
   @ApiProperty({ description: 'ID do motorista', example: '1', required: true })
-  @IsOptional()
   @IsString()
-  readonly driver: string;
+  readonly driver: UserResponseDto;
 
   @ApiProperty({
     description: 'Endereço de início do passeio',
-    type: String,
-    required: true,
+    type: AddressResponseDto
   })
-  readonly startAddress: string;
+  readonly startAddress: AddressResponseDto;
 
   @ApiProperty({
     description: 'Endereço de destino do passeio',
-    type: String,
-    required: true,
+    type: AddressResponseDto
   })
-  readonly destinationAddress: string;
+  readonly destinationAddress: AddressResponseDto;
 
   @ApiProperty({ description: 'Número de assentos disponíveis', example: 4 })
   @IsNumber()
@@ -34,8 +27,7 @@ export class CreateRideDto {
 
   @ApiProperty({
     description: 'Indica se o passeio é para o campus universitário',
-    example: true,
-    required: true,
+    example: true
   })
   @IsBoolean()
   readonly goingToCollege: boolean;
@@ -52,25 +44,33 @@ export class CreateRideDto {
 
   @ApiProperty({
     description: 'Informações sobre o carro',
-    type: String,
-    required: true,
+    type: CarResponseDto
   })
-  readonly car: string;
+  readonly car: CarResponseDto;
 
   @ApiProperty({
     description: 'Descrição do passeio',
-    example: 'Passeio para o campus universitário',
-    required: false,
+    example: 'Passeio para o campus universitário'
   })
-  @IsOptional()
   @IsString()
-  readonly description?: string;
+  readonly description: string;
 
   @ApiProperty({
     description: 'Indica se o passeio é exclusivo para mulheres',
-    example: false,
-    required: true,
+    example: false
   })
   @IsBoolean()
   readonly toWomen: boolean;
+
+  @ApiProperty({ description: 'Lista de membros do passeio', type: [UserResponseDto]})
+  @IsArray()
+  readonly members: UserResponseDto[];
+
+  @ApiProperty({ description: 'Lista de candidatos ao passeio', type: [UserResponseDto]})
+  @IsArray()
+  readonly candidates: UserResponseDto[];
+
+  @ApiProperty({ description: 'A corrida finalizou?'})
+  @IsBoolean()
+  readonly isOver: boolean;
 }

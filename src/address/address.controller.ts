@@ -5,7 +5,6 @@ import { UpdateAddressDto } from './dto/update-address.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 import { AddressResponseDto } from './dto/response-address.dto';
-import { mapAddressToAddressResponse } from '@src/utils/Mappers';
 
 @ApiTags('addresses')
 @Controller('addresses')

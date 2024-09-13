@@ -1,13 +1,13 @@
-import { AddressResponseDto } from '@src/address/dto/response-address.dto';
 import { Document } from 'mongoose';
-import { CarResponseDto } from '@src/car/dto/response-car.dto';
 import { Car } from '@src/car/interfaces/car.interface';
+import { User } from '@src/user/interfaces/user.interface';
 import { Address } from '@src/address/interfaces/address.interface';
+import { RideResponseDto } from '../dto/response-ride.dto';
 
 export interface Ride extends Document {
-  readonly driverId: string;
-  readonly members?: string[];
-  readonly candidates?: string[];
+  readonly driver: User;
+  readonly members?: User[];
+  readonly candidates?: User[];
   readonly startAddress: Address;
   readonly destinationAddress: Address;
   readonly numSeats: number;
@@ -18,4 +18,6 @@ export interface Ride extends Document {
   readonly description?: string;
   readonly toWomen: boolean;
   readonly isOver: boolean;
+
+  toDTO(): RideResponseDto
 }

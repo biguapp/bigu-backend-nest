@@ -7,13 +7,15 @@ import { Ride } from './interfaces/ride.interface';
 import { Ride as RideSchema } from './schemas/ride.schema';
 import { AddressService } from '@src/address/address.service';
 import { CarService } from '@src/car/car.service';
+import { UserService } from '@src/user/user.service';
 
 @Injectable()
 export class RideService {
   constructor(
-    @InjectModel('Ride') private readonly rideModel: Model<RideSchema>,
+    @InjectModel('Ride') private readonly rideModel: Model<Ride>,
     private readonly addressService: AddressService,
     private readonly carService: CarService,
+    private readonly userService: UserService
   ) {}
 
   // Criação de um novo passeio
@@ -22,23 +24,17 @@ export class RideService {
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
-    const { startAddress, destinationAddress, car} = createRideDto;
+    //const { startAddress, destinationAddress, car} = createRideDto;
     
     const date = new Date(createRideDto.scheduledTime);
-    const startAddressObj = await this.addressService.findOne(startAddress);
-    const destinationAddressObj = await this.addressService.findOne(destinationAddress);
-    const carObj = await this.carService.findOne(car);
-    
     const ride = {
       ...createRideDto,
       members: [],
       candidates: [],
       isOver: false,
-      startAddress: startAddressObj,
-      destinationAddress: destinationAddressObj,
-      car: carObj,
       scheduledTime: date
     };
+
     const newRide = new this.rideModel(ride);
     return newRide.save();
   }
@@ -80,7 +76,7 @@ export class RideService {
 
   async getDriverHistory(userId: string) {
     const userRides = await this.rideModel
-      .find({ $and: [{ driverId: userId }, { isOver: true }] })
+      .find({ $and: [{ driver: userId }, { isOver: true }] })
       .exec();
     return userRides;
   }
@@ -95,7 +91,7 @@ export class RideService {
   async getUserHistory(userId: string) {
     const userRides = await this.rideModel
       .find({
-        $or: [{ driverId: userId }, { members: userId }],
+        $or: [{ driver: userId }, { members: userId }],
         $and: [{ isOver: true }],
       })
       .exec();
@@ -105,7 +101,7 @@ export class RideService {
   async getDriverActiveRides(userId: string) {
     const userRides = await this.rideModel
       .find({
-        $and: [{ driverId: userId }, { isOver: false }],
+        $and: [{ driver: userId }, { isOver: false }],
       })
       .exec();
     return userRides;
@@ -122,7 +118,7 @@ export class RideService {
 
   async setRideOver(userId: string, rideId: string) {
     const ride = await this.findOne(rideId);
-    if (ride.driverId === userId) {
+    if (ride.driver.id === userId) {
       return await this.update(rideId, { isOver: true });
     } else throw new NotFoundException('Corrida não encontrada.');
   }
