@@ -19,8 +19,7 @@ export class CarController {
   async create(@Res() response, @Req() req, @Body() createCarDto: CreateCarDto): Promise<CarResponseDto> {
     try{
       const userId = req.user.sub;
-      const newCarModel = await this.carService.create(createCarDto, userId);
-      const newCar = mapCarToCarResponse(newCarModel);
+      const newCar = (await this.carService.create(createCarDto, userId)).toDTO();
       
       return response.status(HttpStatus.CREATED).json({
         message: 'O carro foi criado com sucesso.',
@@ -36,7 +35,7 @@ export class CarController {
   async findAll(@Res() response): Promise<CarResponseDto[]> {
     try{
       const carsModel = await this.carService.findAll();
-      const cars = carsModel.map((car) => mapCarToCarResponse(car));
+      const cars = carsModel.map((car) => car.toDTO());
       
       return response.status(HttpStatus.OK).json({
         message: 'Todos os carros foram retornados com sucesso com sucesso.',
@@ -51,8 +50,7 @@ export class CarController {
   @ApiOperation({ summary: 'Retornar um carro com base no id' })
   async findOne(@Param('id') id: string,@Res() response): Promise<CarResponseDto> {
     try{
-      const carModel = await this.carService.findOne(id);
-      const car = mapCarToCarResponse(carModel);
+      const car = (await this.carService.findOne(id)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O carro foi retornado com sucesso.',
@@ -72,8 +70,7 @@ export class CarController {
     @Res() response
   ): Promise<CarResponseDto> {
     try{
-      const carUpdatedModel = await this.carService.update(id, updateCarDto);
-      const carUpdated = mapCarToCarResponse(carUpdatedModel);
+      const carUpdated = (await this.carService.update(id, updateCarDto)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O carro foi editado com sucesso.',
@@ -89,8 +86,7 @@ export class CarController {
   @ApiOperation({ summary: 'Deletar um carro'})
   async remove(@Param('id') id: string, @Res() response): Promise<CarResponseDto> {
     try{
-      const carRemovedModel = await this.carService.remove(id);
-      const carRemoved = mapCarToCarResponse(carRemovedModel);
+      const carRemoved = (await this.carService.remove(id)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O carro foi removido com sucesso.',
@@ -125,7 +121,7 @@ export class CarController {
       const userId = req.user.sub;
       const userCarsModel = await this.carService.getUserCars(userId);
       
-      const userCars = userCarsModel.map((car) => mapCarToCarResponse(car));
+      const userCars = userCarsModel.map((car) => car.toDTO());
 
       return response.status(HttpStatus.OK).json({
         message: 'Os carro foram encontrados com sucesso.',

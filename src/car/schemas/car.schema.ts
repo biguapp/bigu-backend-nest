@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { CarResponseDto } from '../dto/response-car.dto';
 
 @Schema()
 export class Car extends Document {
@@ -19,7 +20,18 @@ export class Car extends Document {
   plate: string;
 
   @Prop({ required: true})
-  user: string;
+  userId: string;
 }
 
 export const CarSchema = SchemaFactory.createForClass(Car);
+
+CarSchema.methods.toDTO = function (): CarResponseDto {
+  return {
+    carId: this.carId,
+    brand: this.brand,
+    carModel: this.carModel,
+    plate: this.plate,
+    modelYear: this.modelYear,
+    color: this.color
+  };
+};

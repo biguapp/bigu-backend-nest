@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import { CarResponseDto } from '../dto/response-car.dto';
 
 export interface Car extends Document {
   readonly brand: string;
@@ -6,4 +7,6 @@ export interface Car extends Document {
   readonly modelYear?: string;
   readonly color: string;
   readonly plate: string;
+
+  toDTO(): CarResponseDto;
 }
