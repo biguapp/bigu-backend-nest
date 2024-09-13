@@ -1,4 +1,3 @@
-import { Role } from '../../enums/enum';
 import { Document } from 'mongoose';
 
 export interface Car extends Document {

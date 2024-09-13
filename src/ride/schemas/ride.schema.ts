@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Car } from '../../car/schemas/car.schema';
 import { Document } from 'mongoose';
-import { ResponseAddressDto } from '@src/address/dto/response-address.dto';
+import { AddressResponseDto } from '@src/address/dto/response-address.dto';
 
 @Schema()
 export class Ride extends Document {
@@ -14,11 +14,11 @@ export class Ride extends Document {
   @Prop({ type: [{ type: String }] })
   candidates?: string[];
 
-  @Prop({ type: ResponseAddressDto, required: true })
-  startAddress: ResponseAddressDto;
+  @Prop({ type: AddressResponseDto, required: true })
+  startAddress: AddressResponseDto;
 
-  @Prop({ type: ResponseAddressDto, required: true })
-  destinationAddress: ResponseAddressDto;
+  @Prop({ type: AddressResponseDto, required: true })
+  destinationAddress: AddressResponseDto;
 
   @Prop({ required: true })
   numSeats: number;
