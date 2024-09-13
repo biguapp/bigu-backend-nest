@@ -1,7 +1,6 @@
 import { Document } from 'mongoose';
-import { Address } from '../../address/interfaces/address.interface';
 import { Role } from '../../enums/enum';
-import { Car } from '../../car/interfaces/car.interface';
+import { UserResponseDto } from '../dto/response-user.dto';
 
 export interface User extends Document {
   readonly name: string;
@@ -13,4 +12,6 @@ export interface User extends Document {
   readonly role?: Role;
   readonly feedbacks?: string[];
   readonly avgScore?: number;
+
+  toDTO(): UserResponseDto;
 }

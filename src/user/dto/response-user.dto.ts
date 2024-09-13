@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class UserResponseDto {
   @ApiProperty({
@@ -37,4 +37,10 @@ export class UserResponseDto {
   @IsString()
   @IsNotEmpty()
   readonly userId: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  readonly avgScore: number;
+
+  feedbacks: string[];
 }

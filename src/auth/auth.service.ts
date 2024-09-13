@@ -3,14 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
-import { User } from '../user/interfaces/user.interface';
-import { User as UserSchema } from '../user/schemas/user.schema';
 import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Role } from '../enums/enum';
 import { UserResponseDto } from '../user/dto/response-user.dto';
 import { BlacklistedToken } from './schemas/token.schema';
-import { mapUserToUserResponse } from '@src/utils/Mappers';
 
 @Injectable()
 export class AuthService {
@@ -44,13 +41,14 @@ export class AuthService {
   ): Promise<{ token: string; userResponse: UserResponseDto }> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      const userResponse = mapUserToUserResponse(user);
       const token = this.jwtService.sign({
         name: user.name,
-        sub: user._id,
+        sub: user.id,
         role: Role.User,
       });
-      return { token, userResponse };
+      const userResponse = user.toDTO()
+
+      return { token,  userResponse};
     }
     throw new UnauthorizedException('Credenciais inválidas');
   }
@@ -68,13 +66,14 @@ export class AuthService {
     createUserDto: CreateUserDto,
   ): Promise<{ token: string; userResponse: UserResponseDto }> {
     const user = await this.userService.create({ ...createUserDto });
-    const userResponse = mapUserToUserResponse(user);
 
     const token = this.jwtService.sign({
       name: user.name,
-      sub: user._id,
+      sub: user.id,
       role: Role.User,
     });
+
+    const userResponse = user.toDTO()
 
     return { token, userResponse };
   }

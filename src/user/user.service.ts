@@ -12,8 +12,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '../enums/enum';
-import { AddressService } from '../address/address.service';
-import { CarService } from '../car/car.service';
 
 @Injectable()
 export class UserService {
@@ -43,7 +41,9 @@ export class UserService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    const users= await this.userModel.find().exec();
+    
+    return users
   }
 
   async findDrivers(): Promise<User[]> {
@@ -57,7 +57,7 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
-    const user = this.userModel.findById(id).exec();
+    const user = await this.userModel.findById(id).exec();
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }

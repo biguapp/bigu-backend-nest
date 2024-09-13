@@ -7,13 +7,14 @@ import {
   UseGuards,
   Res,
   HttpStatus,
+  Put,
+  Body,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from './interfaces/user.interface';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserResponseDto } from './dto/response-user.dto';
-import { mapUserToUserResponse } from '@src/utils/Mappers';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -38,8 +39,7 @@ export class UserController {
   async findAll(@Res() response): Promise<UserResponseDto[]> {
     try{
       const usersModel = await this.userService.findAll();
-
-      const users = usersModel.map((user) => mapUserToUserResponse(user));
+      const users = usersModel.map((user) => user.toDTO())
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -54,8 +54,7 @@ export class UserController {
   @ApiOperation({ summary: 'Retorna um usuário pela email' })
   async findOneByEmail(@Res() response, @Param('email') email: string): Promise<UserResponseDto> {
     try{
-      const userModel = await this.userService.findByMatricula(email);
-      const user = mapUserToUserResponse(userModel);
+      const user = (await this.userService.findByMatricula(email)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -72,8 +71,7 @@ export class UserController {
     @Res() response, @Param('matricula') matricula: string,
   ): Promise<UserResponseDto> {
     try{
-      const userModel = await this.userService.findByMatricula(matricula);
-      const user = mapUserToUserResponse(userModel);
+      const user = (await this.userService.findByMatricula(matricula)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -88,8 +86,7 @@ export class UserController {
   @ApiOperation({ summary: 'Retorna um usuário' })
   async findOne(@Res() response, @Param('id') id: string): Promise<UserResponseDto> {
     try{
-      const userModel = await this.userService.findOne(id);
-      const user = mapUserToUserResponse(userModel);
+      const user = (await this.userService.findOne(id)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
@@ -105,8 +102,7 @@ export class UserController {
   @ApiOperation({ summary: 'Deletar um usuário.'})
   async remove(@Res() response, @Param('id') id: string): Promise<UserResponseDto> {
     try{
-      const userModel = await this.userService.remove(id);
-      const userRemoved = mapUserToUserResponse(userModel);
+      const userRemoved = (await this.userService.remove(id)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi removido com sucesso.',
@@ -117,14 +113,32 @@ export class UserController {
     }
   }
 
+  @Put(':id')
+  @ApiOperation({ summary: 'Editar um usuário' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Res() response
+  ): Promise<UserResponseDto> { 
+    try{
+      const userUpdated = (await this.userService.update(id, updateUserDto)).toDTO();
+      
+      return response.status(HttpStatus.OK).json({
+        message: "O usuário foi atualizado com sucesso.",
+        userUpdated
+      });
+    }catch(error){
+      console.log(error)
+    } 
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('/user/self')
   @ApiOperation({ summary: 'Get user logged' })
   async findSelf(@Res() response, @Req() req): Promise<UserResponseDto> {
     try{
       const userId = req.user.sub;
-      const userModel = await this.userService.findOne(userId);
-      const user = mapUserToUserResponse(userModel);
+      const user = (await this.userService.findOne(userId)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',

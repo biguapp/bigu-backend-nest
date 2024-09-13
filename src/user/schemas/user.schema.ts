@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Address } from '../../address/schemas/address.schema';
-import { Car } from '../../car/schemas/car.schema';
 import { Role } from '../../enums/enum';
 import { Document } from 'mongoose';
+import { UserResponseDto } from '../dto/response-user.dto';
 
 @Schema()
 export class User extends Document {
@@ -36,3 +35,16 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.methods.toDTO = function (): UserResponseDto {
+  return {
+    userId: this.id,
+    name: this.name,
+    email: this.email,
+    sex: this.sex,
+    phoneNumber: this.phoneNumber,
+    matricula: this.matricula,
+    feedbacks: this.feedbacks,
+    avgScore: this.avgScore
+  };
+};

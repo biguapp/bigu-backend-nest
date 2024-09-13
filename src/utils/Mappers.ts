@@ -7,13 +7,15 @@ import { User } from "@src/user/interfaces/user.interface";
 
 export const mapUserToUserResponse = (user: User): UserResponseDto => {
     return {
+        userId: user.id,
         name: user.name,
-        matricula: user.matricula,
-        sex: user.sex,
         email: user.email,
+        sex: user.sex,
         phoneNumber: user.phoneNumber,
-        userId: user._id.toString(),
-    }
+        matricula: user.matricula,
+        feedbacks: user.feedbacks,
+        avgScore: user.avgScore
+      };
 }
 
 export const mapCarToCarResponse = (car: Car): CarResponseDto => {

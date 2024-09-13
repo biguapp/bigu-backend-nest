@@ -17,6 +17,7 @@ import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
+import { Ride } from './schemas/ride.schema';
 
 @ApiTags('rides')
 @Controller('rides')
@@ -41,6 +42,7 @@ export class RideController {
   @ApiOperation({ summary: 'Retornar todas as caronas.' })
   async findAll(@Res() response) {
     try{
+
       const rides = await this.rideService.findAll();
       
       return response.status(HttpStatus.OK).json({
@@ -106,6 +108,8 @@ export class RideController {
   async getRidesAvailable(@Res() response) {
     try{
       const ridesAvailable = await this.rideService.getRidesAvailable();
+
+      console.log(ridesAvailable)
       
       return response.status(HttpStatus.OK).json({
         message: 'Todas as corridas ativas foram retornadas.',
