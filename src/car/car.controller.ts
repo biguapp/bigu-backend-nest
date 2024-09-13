@@ -5,6 +5,8 @@ import { UpdateCarDto } from './dto/update-car.dto'
 import { Car } from './interfaces/car.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
+import { mapCarToCarResponse } from '@src/utils/Mappers';
+import { CarResponseDto } from './dto/response-car.dto';
 
 @ApiTags('cars')
 @Controller('cars')
@@ -14,10 +16,12 @@ export class CarController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Criar um carro' })
-  async create(@Res() response, @Req() req, @Body() createCarDto: CreateCarDto): Promise<Car> {
+  async create(@Res() response, @Req() req, @Body() createCarDto: CreateCarDto): Promise<CarResponseDto> {
     try{
       const userId = req.user.sub;
-      const newCar = await this.carService.create(createCarDto, userId);
+      const newCarModel = await this.carService.create(createCarDto, userId);
+      const newCar = mapCarToCarResponse(newCarModel);
+      
       return response.status(HttpStatus.CREATED).json({
         message: 'O carro foi criado com sucesso.',
         newCar
@@ -29,9 +33,11 @@ export class CarController {
   
   @Get()
   @ApiOperation({ summary: 'Retornar todos os carros' })
-  async findAll(@Res() response): Promise<Car[]> {
+  async findAll(@Res() response): Promise<CarResponseDto[]> {
     try{
-      const cars = await this.carService.findAll();
+      const carsModel = await this.carService.findAll();
+      const cars = carsModel.map((car) => mapCarToCarResponse(car));
+      
       return response.status(HttpStatus.OK).json({
         message: 'Todos os carros foram retornados com sucesso com sucesso.',
         cars
@@ -43,9 +49,11 @@ export class CarController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Retornar um carro com base no id' })
-  async findOne(@Param('id') id: string,@Res() response): Promise<Car> {
+  async findOne(@Param('id') id: string,@Res() response): Promise<CarResponseDto> {
     try{
-      const car = await this.carService.findOne(id);
+      const carModel = await this.carService.findOne(id);
+      const car = mapCarToCarResponse(carModel);
+      
       return response.status(HttpStatus.OK).json({
         message: 'O carro foi retornado com sucesso.',
         car
@@ -62,9 +70,11 @@ export class CarController {
     @Param('id') id: string,
     @Body() updateCarDto: UpdateCarDto,
     @Res() response
-  ): Promise<Car> {
+  ): Promise<CarResponseDto> {
     try{
-      const carUpdated = await this.carService.update(id, updateCarDto);
+      const carUpdatedModel = await this.carService.update(id, updateCarDto);
+      const carUpdated = mapCarToCarResponse(carUpdatedModel);
+      
       return response.status(HttpStatus.OK).json({
         message: 'O carro foi editado com sucesso.',
         carUpdated
@@ -77,9 +87,10 @@ export class CarController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Deletar um carro'})
-  async remove(@Param('id') id: string, @Res() response): Promise<Car> {
+  async remove(@Param('id') id: string, @Res() response): Promise<CarResponseDto> {
     try{
-      const carRemoved = await this.carService.remove(id);
+      const carRemovedModel = await this.carService.remove(id);
+      const carRemoved = mapCarToCarResponse(carRemovedModel);
       
       return response.status(HttpStatus.OK).json({
         message: 'O carro foi removido com sucesso.',
@@ -112,7 +123,9 @@ export class CarController {
   async getUserCars(@Req() req, @Res() response) {
     try{
       const userId = req.user.sub;
-      const userCars = await this.carService.getUserCars(userId);
+      const userCarsModel = await this.carService.getUserCars(userId);
+      
+      const userCars = userCarsModel.map((car) => mapCarToCarResponse(car));
 
       return response.status(HttpStatus.OK).json({
         message: 'Os carro foram encontrados com sucesso.',
