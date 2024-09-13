@@ -2,10 +2,8 @@ import { Controller, Get, Put, Post, Body, Param, Delete, Req, UseGuards, Res, H
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto'
-import { Car } from './interfaces/car.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
-import { mapCarToCarResponse } from '@src/utils/Mappers';
 import { CarResponseDto } from './dto/response-car.dto';
 
 @ApiTags('cars')

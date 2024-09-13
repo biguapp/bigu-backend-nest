@@ -4,11 +4,10 @@ import { Model } from 'mongoose';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
 import { Car } from './interfaces/car.interface';
-import { Car as CarSchema} from './schemas/car.schema';
 
 @Injectable()
 export class CarService {
-    constructor(@InjectModel('Car') private carModel: Model<CarSchema>) {}
+    constructor(@InjectModel('Car') private carModel: Model<Car>) {}
 
     async create(createCarDto: CreateCarDto, userId: string): Promise<Car> {
         const newCar = {...createCarDto, user: userId}

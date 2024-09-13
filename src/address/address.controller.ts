@@ -19,9 +19,7 @@ export class AddressController {
   async create(@Req() req, @Body() createAddressDto: CreateAddressDto, @Res() response): Promise<AddressResponseDto> {
     try{
       const userId = req.user.sub;
-      const userAddressModel = await this.addressService.create(createAddressDto, userId);
-
-      const userAddress = mapAddressToAddressResponse(userAddressModel);
+      const userAddress = (await this.addressService.create(createAddressDto, userId)).toDTO();
       
       return response.status(HttpStatus.CREATED).json({
         message: 'O endereço foi criado com sucesso.',
@@ -38,7 +36,7 @@ export class AddressController {
   async findAll(@Res() response): Promise<AddressResponseDto[]> {
     try{
       const addressesModel = await this.addressService.findAll();
-      const addresses = addressesModel.map((address) => mapAddressToAddressResponse(address));
+      const addresses = addressesModel.map((address) => address.toDTO());
       
       return response.status(HttpStatus.OK).json({
         message: "Todos os endereços foram retornados.",
@@ -53,8 +51,7 @@ export class AddressController {
   @ApiOperation({ summary: 'Retornar um endereço' })
   async findOne(@Param('id') id: string, @Res() response): Promise<AddressResponseDto> {
     try{
-      const addressModel = await this.addressService.findOne(id);
-      const address = mapAddressToAddressResponse(addressModel);
+      const address = (await this.addressService.findOne(id)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: "O endereço foi retornado com sucesso.",
@@ -74,8 +71,7 @@ export class AddressController {
     @Res() response
   ): Promise<AddressResponseDto> { 
     try{
-      const addressUpdatedModel = await this.addressService.update(id, updateAddressDto);
-      const addressUpdated = mapAddressToAddressResponse(addressUpdatedModel);
+      const addressUpdated = (await this.addressService.update(id, updateAddressDto)).toDTO();
       
       return response.status(HttpStatus.OK).json({
         message: "O endereço foi atualizado com sucesso.",
@@ -91,8 +87,7 @@ export class AddressController {
   @ApiOperation({ summary: 'Remover um endereço' })
   async remove(@Res() response, @Param('id') id: string): Promise<AddressResponseDto> {
     try{
-      const addressRemovedModel = await this.addressService.remove(id);
-      const addressRemoved = mapAddressToAddressResponse(addressRemovedModel);
+      const addressRemoved = (await this.addressService.remove(id)).toDTO();
 
       return response.status(HttpStatus.OK).json({
         message: "O endereço foi removido com sucesso.",
@@ -125,7 +120,7 @@ export class AddressController {
     try{
       const userId = req.user.sub;
       const userAddressModel = await this.addressService.getUserAddresses(userId);
-      const userAddress = userAddressModel.map((address) => mapAddressToAddressResponse(address));
+      const userAddress = userAddressModel.map((address) => address.toDTO());
       
       return response.status(HttpStatus.OK).json({
         message: 'Os endereços do usuário foram retornados com sucesso.',
@@ -135,6 +130,5 @@ export class AddressController {
     }catch(error){
       console.log(error)
     }
-    
   }
 }

@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import { AddressResponseDto } from '../dto/response-address.dto';
 
 export interface Address extends Document {
   readonly rua: string;
@@ -8,4 +9,6 @@ export interface Address extends Document {
   readonly cidade: string;
   readonly estado: string;
   readonly cep: string;
+
+  toDTO(): AddressResponseDto;
 }

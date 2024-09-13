@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { AddressResponseDto } from '../dto/response-address.dto';
 
 @Schema()
 export class Address extends Document {
@@ -33,3 +34,14 @@ export class Address extends Document {
 }
 
 export const AddressSchema = SchemaFactory.createForClass(Address);
+
+AddressSchema.methods.toDTO = function (): AddressResponseDto {
+  return {
+    rua: this.rua,
+    cidade: this.cidade,
+    numero: this.numero,
+    bairro: this.bairro,
+    estado: this.estado,
+    addressId: this.addressId
+  };
+};

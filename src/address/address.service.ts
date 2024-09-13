@@ -4,11 +4,10 @@ import { Model } from 'mongoose';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './interfaces/address.interface';
-import { Address as AddressSchema } from './schemas/address.schema';
 
 @Injectable()
 export class AddressService {
-  constructor(@InjectModel('Address') private addressModel: Model<AddressSchema>) {}
+  constructor(@InjectModel('Address') private addressModel: Model<Address>) {}
 
   async create(createAddressDto: CreateAddressDto, userId: string): Promise<Address> {
     const newAddress = {...createAddressDto, user: userId}
@@ -49,7 +48,7 @@ export class AddressService {
     await this.addressModel.deleteMany().exec();
   }
 
-  async getUserAddresses(userId: string) {
+  async getUserAddresses(userId: string): Promise<Address[]> {
     const userAddress = await this.addressModel.find({user: userId}).exec()
     return userAddress
   }
