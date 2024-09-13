@@ -6,13 +6,14 @@ import { Ride, RideSchema } from './schemas/ride.schema';
 import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '@src/auth/auth.module';
+import { CarModule } from '@src/car/car.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Ride.name, schema: RideSchema }]),
-    UserModule,
     AddressModule,
-    AuthModule
+    AuthModule,
+    CarModule
   ],
   controllers: [RideController],
   providers: [RideService],

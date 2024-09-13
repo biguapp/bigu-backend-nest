@@ -1,17 +1,14 @@
 import {
   Controller,
   Get,
-  Put,
-  Post,
-  Body,
   Param,
   Delete,
   Req,
   UseGuards,
-  HttpCode,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './interfaces/user.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -35,42 +32,95 @@ export class UserController {
   // }
 
   @Get()
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'All users returned.' })
-  async findAll(): Promise<User[]> {
-    return await this.userService.findAll();
+  @ApiOperation({ summary: 'Retorna todos os usuários.' })
+  async findAll(@Res() response): Promise<User[]> {
+    try{
+      const users = this.userService.findAll();
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário foi retornado com sucesso.',
+        users
+      });
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Get(':email')
-  @ApiOperation({ summary: 'Get user by email' })
-  @ApiResponse({ status: 200, description: 'User returned.' })
-  async findOneByEmail(@Param('email') email: string): Promise<User> {
-    return await this.userService.findByEmail(email);
+  @ApiOperation({ summary: 'Retorna um usuário pela email' })
+  async findOneByEmail(@Res() response, @Param('email') email: string): Promise<User> {
+    try{
+      const user = this.userService.findByMatricula(email);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário foi retornado com sucesso.',
+        user
+      });
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Get(':matricula')
-  @ApiOperation({ summary: 'Get user by matricula' })
-  @ApiResponse({ status: 200, description: 'User returned.' })
+  @ApiOperation({ summary: 'Retorna um usuário pela matrícula' })
   async findOneByMatricula(
-    @Param('matricula') matricula: string,
+    @Res() response, @Param('matricula') matricula: string,
   ): Promise<User> {
-    return await this.userService.findByMatricula(matricula);
+    try{
+      const user = this.userService.findByMatricula(matricula);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário foi retornado com sucesso.',
+        user
+      });
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get one user' })
-  @ApiResponse({ status: 200, description: 'User returned.' })
-  async findOne(@Param('id') id: string): Promise<User> {
-    return await this.userService.findOne(id);
+  @ApiOperation({ summary: 'Retorna um usuário' })
+  async findOne(@Res() response, @Param('id') id: string): Promise<User> {
+    try{
+      const user = this.userService.findOne(id);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário foi retornado com sucesso.',
+        user
+      });
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Deletar um usuário.'})
-  @ApiResponse({ status: 200, description: 'O usuário foi deletado'})
-  async remove(@Param('id') id: string): Promise<User> {
+  async remove(@Res() response, @Param('id') id: string): Promise<User> {
     try{
-      return this.userService.remove(id);
+      const userRemoved = this.userService.remove(id);
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário foi removido com sucesso.',
+        userRemoved
+      });
+    }catch(error){
+      console.log(error)
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/user/self')
+  @ApiOperation({ summary: 'Get user logged' })
+  @ApiResponse({ status: 200, description: 'User returned.' })
+  async findSelf(@Res() response, @Req() req): Promise<User> {
+    try{
+      const userId = req.user.sub;
+      const user = await this.userService.findOne(userId);
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário foi retornado com sucesso.',
+        user
+      });
+    
     }catch(error){
       console.log(error)
     }

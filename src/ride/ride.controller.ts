@@ -9,6 +9,8 @@ import {
   UseGuards,
   Req,
   Put,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -23,103 +25,185 @@ export class RideController {
 
   @Post()
   @ApiOperation({ summary: 'Criar uma carona' })
-  @ApiResponse({ status: 200, description: 'Carona criada.' })
-  create(@Body() createRideDto: CreateRideDto) {
-    return this.rideService.create(createRideDto);
+  async create(@Body() createRideDto: CreateRideDto, @Res() response) {
+    try{
+      const newRide = await this.rideService.create(createRideDto);
+      return response.status(HttpStatus.CREATED).json({
+        message: 'A carona foi criada com sucesso.',
+        newRide
+      });
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Get()
-  @ApiOperation({ summary: 'Buscar todas as caronas.' })
-  @ApiResponse({ status: 200, description: 'Caronas retornadas.' })
-  findAll() {
-    return this.rideService.findAll();
+  @ApiOperation({ summary: 'Retornar todas as caronas.' })
+  async findAll(@Res() response) {
+    try{
+      const rides = await this.rideService.findAll();
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'Todas as caronas foram retornadas com sucesso.',
+        rides
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Get('/ride/:id')
-  @ApiOperation({ summary: 'Buscar uma carona' })
-  @ApiResponse({ status: 200, description: 'Carona retornada.' })
-  findOne(@Param('id') id: string) {
-    return this.rideService.findOne(id);
+  @ApiOperation({ summary: 'Retornar uma carona' })
+  async findOne(@Param('id') id: string, @Res() response) {
+    try{
+      const ride = await this.rideService.findOne(id);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'A carona foi retornada com sucesso.',
+        ride
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Patch('/ride/:id')
   @ApiOperation({ summary: 'Editar uma carona' })
-  @ApiResponse({ status: 200, description: 'Carona editada.' })
-  update(@Param('id') id: string, @Body() updateRideDto: UpdateRideDto) {
-    return this.rideService.update(id, updateRideDto);
+  async update(@Param('id') id: string, @Body() updateRideDto: UpdateRideDto, @Res() response) {
+    try{
+      const rideUpdated = await this.rideService.update(id, updateRideDto);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'A carona foi atualizada com sucesso.',
+        rideUpdated
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Delete('/ride/:id')
   @ApiOperation({ summary: 'Deletar uma carona' })
-  @ApiResponse({ status: 204, description: 'Carona deletada.' })
-  remove(@Param('id') id: string) {
-    return this.rideService.remove(+id);
+  async remove(@Param('id') id: string, @Res() response) {
+    try{
+      const rideDeleted = await this.rideService.remove(id);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'A carona foi deletada com sucesso.',
+        rideDeleted
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @Get('/available')
-  @ApiOperation({ summary: 'Get rides available' })
-  @ApiResponse({ status: 200, description: 'Get rides available returned' })
-  async getRidesAvailable() {
-    return await this.rideService.getRidesAvailable();
+  @ApiOperation({ summary: 'Retorna todas as caronas ativas.' })
+  async getRidesAvailable(@Res() response) {
+    try{
+      const ridesAvailable = await this.rideService.getRidesAvailable();
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'Todas as corridas ativas foram retornadas.',
+        ridesAvailable
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/driver/active')
-  @ApiOperation({ summary: 'Get rides where the user is Driver' })
-  @ApiResponse({
-    status: 200,
-    description: 'Get rides where the user is Driver',
-  })
-  async getDriverActiveRides(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return this.rideService.getDriverActiveRides(userId);
+  @ApiOperation({ summary: 'Retorna todas as caronas que o usuário é o motorista.' })
+  async getDriverActiveRides(@Req() req, @Res() response) {
+    try{
+      const userId = req.user.sub;
+      const userDriverActivesHistory = await this.rideService.getDriverActiveRides(userId);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'As corridas que o usuário é motorista e estão ativas.',
+        userDriverActivesHistory
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/member/active')
-  @ApiOperation({ summary: 'Get rides where the user is Member' })
-  @ApiResponse({
-    status: 200,
-    description: 'Get rides where the user is Driver',
-  })
-  async getMemberActiveRides(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return this.rideService.getMemberActiveRides(userId);
+  @ApiOperation({ summary: 'Retorna todas as caronas que o usuário é membro.' })
+  async getMemberActiveRides(@Req() req, @Res() response) {
+    try{
+      const userId = req.user.sub;
+      const userMemberActivesHistory = await this.rideService.getMemberActiveRides(userId);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'As corridas que o usuário é membro e estão ativas.',
+        userMemberActivesHistory
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/history/driver')
-  @ApiOperation({ summary: 'Get rides where the user was Driver' })
-  @ApiResponse({
-    status: 200,
-    description: 'Get rides where the user is Driver',
-  })
-  async getDriverHistory(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return this.rideService.getDriverHistory(userId);
+  @Get('/driver/history')
+  @ApiOperation({ summary: 'Retorna todas as caronas que o usuário foi motorista.' })
+  async getDriverHistory(@Req() req, @Res() response) {
+    try{
+      const userId = req.user.sub;
+      const userDriverHistory = await this.rideService.getDriverHistory(userId);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'As corridas que o usuário foi motorista foram retornadas.',
+        userDriverHistory
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/history/member')
-  @ApiOperation({ summary: 'Get rides where the user was Member' })
-  @ApiResponse({
-    status: 200,
-    description: 'Get rides where the user is Driver',
-  })
-  async getMemberHistory(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return this.rideService.getMemberHistory(userId);
+  @Get('/member/history')
+  @ApiOperation({ summary: 'Retorna todas as caronas que o usuário foi membro.' })
+  async getMemberHistory(@Req() req, @Res() response) {
+    try{
+      const userId = req.user.sub;
+      const userMemberHistory = await this.rideService.getMemberHistory(userId);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'As corridas que o usuário foi membro foram retornadas.',
+        userMemberHistory
+      });
+
+    }catch(error){
+      console.log(error)
+    }
   }
   @UseGuards(JwtAuthGuard)
-  @Get('/history/user')
-  @ApiOperation({ summary: 'Get rides where the user was Member' })
-  @ApiResponse({
-    status: 200,
-    description: 'Get rides where the user is Driver',
-  })
-  async getUserHistory(@Req() req) {
-    const userId = req.user.sub; // Pega o userId da requisição
-    return this.rideService.getUserHistory(userId);
+  @Get('/user/history')
+  @ApiOperation({ summary: 'Retorna todas as caronas que o usuário estava como membro ou motorista.' })
+  async getUserHistory(@Req() req, @Res() response) {
+    try{
+      const userId = req.user.sub;
+      const userHistory = await this.rideService.getUserHistory(userId);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'O histórico do usuário foi retornado com sucesso.',
+        userHistory
+      });
+
+    }catch(error){
+      console.log(error)
+    } 
   }
 
   @UseGuards(JwtAuthGuard)

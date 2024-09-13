@@ -5,14 +5,15 @@ import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
 import { Ride } from './interfaces/ride.interface';
 import { Ride as RideSchema } from './schemas/ride.schema';
-import { UserService } from '../user/user.service';
-import { isObject } from 'class-validator';
+import { AddressService } from '@src/address/address.service';
+import { CarService } from '@src/car/car.service';
 
 @Injectable()
 export class RideService {
   constructor(
     @InjectModel('Ride') private readonly rideModel: Model<RideSchema>,
-    private readonly userService: UserService,
+    private readonly addressService: AddressService,
+    private readonly carService: CarService,
   ) {}
 
   // Criação de um novo passeio
@@ -21,19 +22,27 @@ export class RideService {
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
+    const { startAddress, destinationAddress, car} = createRideDto;
+    
     const date = new Date(createRideDto.scheduledTime);
+    const startAddressObj = await this.addressService.findOne(startAddress);
+    const destinationAddressObj = await this.addressService.findOne(destinationAddress);
+    const carObj = await this.carService.findOne(car);
+    
     const ride = {
       ...createRideDto,
       members: [],
       candidates: [],
       isOver: false,
+      startAddress: startAddressObj,
+      destinationAddress: destinationAddressObj,
+      car: carObj,
+      scheduledTime: date
     };
     const newRide = new this.rideModel(ride);
-    newRide.scheduledTime = date;
     return newRide.save();
   }
 
-  // Listar todos os passeios
   async findAll(): Promise<Ride[]> {
     return await this.rideModel.find().exec();
   }
@@ -46,7 +55,6 @@ export class RideService {
     return ride;
   }
 
-  // Atualizar um passeio por ID
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
     const updatedRide = await this.rideModel
       .findByIdAndUpdate(id, updateRideDto, { new: true })
@@ -57,12 +65,12 @@ export class RideService {
     return updatedRide;
   }
 
-  // Remover um passeio por ID
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<Ride> {
     const result = await this.rideModel.findByIdAndDelete(id).exec();
     if (!result) {
       throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
     }
+    return result
   }
 
   async getRidesAvailable(): Promise<Ride[]> {

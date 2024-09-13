@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, Put, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Put, Delete, UseGuards, Req, Res, HttpStatus } from '@nestjs/common';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -15,47 +15,81 @@ export class AddressController {
   @Post()
   @ApiOperation({ summary: 'Criar um endereço' })
   @ApiResponse({ status: 200, description: 'Endereço criado.' })
-  async create(@Req() req, @Body() createAddressDto: CreateAddressDto): Promise<Address> {
+  async create(@Req() req, @Body() createAddressDto: CreateAddressDto, @Res() response): Promise<Address> {
     try{
       const userId = req.user.sub;
-      const address = await this.addressService.create(createAddressDto, userId);
-      return address;
+      const userAddress = await this.addressService.create(createAddressDto, userId);
+      
+      return response.status(HttpStatus.CREATED).json({
+        message: 'O endereço foi criado com sucesso.',
+        userAddress
+      });
+
     }catch(error){
       console.log(error)
     }
   }
 
   @Get()
-  @ApiOperation({ summary: 'Buscar todos os endereços' })
-  @ApiResponse({ status: 200, description: 'Endereços retornados.' })
-  async findAll(): Promise<Address[]> {
-    return this.addressService.findAll();
+  @ApiOperation({ summary: 'Retornar todos os endereços' })
+  async findAll(@Res() response): Promise<Address[]> {
+    try{
+      const addresses = await this.addressService.findAll();
+      
+      return response.status(HttpStatus.OK).json({
+        message: "Todos os endereços foram retornados.",
+        addresses
+      });
+    }catch(error){
+      console.log(error)
+    } 
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar um endereço' })
-  @ApiResponse({ status: 200, description: 'Endereço retornado.' })
-  async findOne(@Param('id') id: string): Promise<Address> {
-    return this.addressService.findOne(id);
+  @ApiOperation({ summary: 'Retornar um endereço' })
+  async findOne(@Param('id') id: string, @Res() response): Promise<Address> {
+    try{
+      const address = await this.addressService.findOne(id);
+      
+      return response.status(HttpStatus.OK).json({
+        message: "O endereço foi retornado com sucesso.",
+        address
+      });
+    }catch(error){
+      console.log(error)
+    } 
+
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Editar um endereço' })
-  @ApiResponse({ status: 200, description: 'Endereço editado.' })
   async update(
     @Param('id') id: string,
-    @Body() updateAddressDto: UpdateAddressDto
-  ): Promise<Address> {
-    return this.addressService.update(id, updateAddressDto);
+    @Body() updateAddressDto: UpdateAddressDto,
+    @Res() response
+  ): Promise<Address> { 
+    try{
+      const addressUpdated= await this.addressService.update(id, updateAddressDto);
+      
+      return response.status(HttpStatus.OK).json({
+        message: "O endereço foi atualizado com sucesso.",
+        addressUpdated
+      });
+    }catch(error){
+      console.log(error)
+    } 
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Remover um endereço' })
-  @ApiResponse({ status: 200, description: 'Endereço removido.' })
-  async remove(@Param('id') id: string): Promise<Address> {
+  async remove(@Res() response, @Param('id') id: string): Promise<Address> {
     try{
-      return await this.addressService.remove(id);
+      const addressRemoved = await this.addressService.remove(id);
+      return response.status(HttpStatus.OK).json({
+        message: "O endereço foi removido com sucesso.",
+        addressRemoved
+      });
     }catch(error){
       console.log(error)
     } 
@@ -63,27 +97,34 @@ export class AddressController {
 
   @Delete()
   @ApiOperation({ summary: 'Remover todos os endereços' })
-  @ApiResponse({ status: 200, description: 'Endereços removidos.' })
-  async removeAll(): Promise<void> {
-    return this.addressService.removeAll();
+  async removeAll(@Res() response): Promise<void> {
+    try{
+      await this.addressService.removeAll();
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'Todos os endereços foram removidos com sucesso.'
+      });
+      
+    }catch(error){
+      console.log(error)
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/user/addresses')
   @ApiOperation({ summary: 'Retorna todos os endereços de um usuário' })
-  @ApiResponse({
-    status: 200,
-    description: 'Retorna todos os endereços de um usuário',
-  })
-  async getUserAddresses(@Req() req): Promise<Address[]> {
+  async getUserAddresses(@Res() response, @Req() req): Promise<Address[]> {
     try{
       const userId = req.user.sub;
       const userAddress = await this.addressService.getUserAddresses(userId);
       
-      return userAddress; 
+      return response.status(HttpStatus.OK).json({
+        message: 'Os endereços do usuário foram retornados com sucesso.',
+        userAddress
+      });
       
     }catch(error){
-
+      console.log(error)
     }
     
   }
