@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, Length } from 'class-validator';
 
-export class ResponseAddressDto {
+export class AddressResponseDto {
   @ApiProperty({ description: 'Nome da rua', example: 'Avenida Paulista' })
   @IsString()
   readonly rua: string;
@@ -27,4 +27,8 @@ export class ResponseAddressDto {
   @IsString()
   @Length(2, 2)
   readonly estado: string;
+
+  @ApiProperty({ description: 'Id do endereço', example: '1' })
+  @IsString()
+  readonly addressId: string;
 }
