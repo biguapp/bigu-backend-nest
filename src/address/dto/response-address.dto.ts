@@ -6,6 +6,10 @@ export class AddressResponseDto {
   @IsString()
   readonly rua: string;
 
+  @ApiProperty({ description: 'Nome do endereço', example: 'Caasa' })
+  @IsString()
+  readonly nome: string;
+
   @ApiProperty({ description: 'Número da residência', example: '1234' })
   @IsString()
   readonly numero: string;

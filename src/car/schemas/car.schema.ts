@@ -27,7 +27,7 @@ export const CarSchema = SchemaFactory.createForClass(Car);
 
 CarSchema.methods.toDTO = function (): CarResponseDto {
   return {
-    carId: this.carId,
+    carId: this.id,
     brand: this.brand,
     carModel: this.carModel,
     plate: this.plate,

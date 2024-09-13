@@ -38,10 +38,11 @@ export const AddressSchema = SchemaFactory.createForClass(Address);
 AddressSchema.methods.toDTO = function (): AddressResponseDto {
   return {
     rua: this.rua,
+    nome: this.nome,
     cidade: this.cidade,
     numero: this.numero,
     bairro: this.bairro,
     estado: this.estado,
-    addressId: this.addressId
+    addressId: this.id
   };
 };

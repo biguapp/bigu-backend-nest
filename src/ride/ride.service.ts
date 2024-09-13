@@ -24,7 +24,6 @@ export class RideService {
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
-    //const { startAddress, destinationAddress, car} = createRideDto;
     
     const date = new Date(createRideDto.scheduledTime);
     const ride = {
@@ -34,7 +33,6 @@ export class RideService {
       isOver: false,
       scheduledTime: date
     };
-
     const newRide = new this.rideModel(ride);
     return newRide.save();
   }
