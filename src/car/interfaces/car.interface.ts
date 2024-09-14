@@ -7,6 +7,7 @@ export interface Car extends Document {
   readonly modelYear?: string;
   readonly color: string;
   readonly plate: string;
+  readonly user: string
 
   toDTO(): CarResponseDto;
 }
