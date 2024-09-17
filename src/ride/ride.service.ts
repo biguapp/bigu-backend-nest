@@ -130,7 +130,7 @@ export class RideService {
       throw new BadRequestException('Você é o motorista dessa carona.');
     else if (ride.members.includes(userIdObj))
       throw new BadRequestException('Você já é membro dessa carona');
-    else if (ride.members.includes(userIdObj))
+    else if (ride.candidates.includes(userIdObj))
       throw new BadRequestException('Você já é candidato a essa carona.');
     else if (ride.members.length === ride.numSeats)
       throw new BadRequestException('Essa carona já está cheia.');
