@@ -6,16 +6,14 @@ import { Observable } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { constants } from 'buffer';
 import { jwtConstants } from '../auth/constants';
-import { PatientService } from '../patient/patient.service';
-import { AdminService } from '../admin/admin.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private readonly jwtService: JwtService,
-    private readonly patientService: PatientService,
-    private readonly adminService: AdminService,
+    private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

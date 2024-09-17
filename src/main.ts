@@ -8,10 +8,16 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', 
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
+
   const config = new DocumentBuilder()
-    .setTitle('Saude Campina API')
+    .setTitle('Bigu API')
     .setDescription(
-      'API para gerenciar e exibir unidades de saúde de Campina Grande',
+      'API para aplicativo de caronas universitárias',
     )
     .setVersion('0.1')
     .addBearerAuth(
@@ -27,6 +33,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
 
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();

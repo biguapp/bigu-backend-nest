@@ -3,15 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
-import { Admin } from '../admin/interfaces/admin.interface';
-import { Admin as AdminSchema } from '../admin/schemas/admin.schema';
-import { Patient } from '../patient/interfaces/patient.interface';
-import { Patient as PatientSchema } from '../patient/schemas/patient.schema';
-import { AdminService } from '../admin/admin.service';
-import { PatientService } from '../patient/patient.service';
-import { CreatePatientDto } from '../patient/dto/create-patient.dto';
-import { CreateAdminDto } from '../admin/dto/create-admin.dto';
+import { UserService } from '../user/user.service';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Role } from '../enums/enum';
+import { UserResponseDto } from '../user/dto/response-user.dto';
+import { BlacklistedToken } from './schemas/token.schema';
 
 @Injectable()
 export class AuthService {
@@ -19,44 +15,75 @@ export class AuthService {
 
   constructor(
     private readonly jwtService: JwtService,
-    @InjectModel(PatientSchema.name) private readonly patientModel: Model<Patient>,
-    @InjectModel(AdminSchema.name) private readonly adminModel: Model<Admin>,
-    private readonly adminService: AdminService,
-    private readonly patientService: PatientService,
+    @InjectModel('BlacklistedToken')
+    private readonly blacklistedTokenModel: Model<BlacklistedToken>,
+    private readonly userService: UserService,
   ) {}
 
-  async validateAdmin(email: string, password: string): Promise<any> {
-    const admin = await this.adminService.findByEmail(email);
-    if (admin && (await bcrypt.compare(password, admin.password))) {
-      return { email: admin.email, sub: admin._id, role: Role.Admin };
+  async blacklistToken(token: string, expiresAt: Date): Promise<void> {
+    const blacklistedToken = new this.blacklistedTokenModel({
+      token,
+      expiresAt,
+    });
+    await blacklistedToken.save();
+  }
+
+  async isTokenBlacklisted(token: string): Promise<boolean> {
+    const tokenInBlacklist = await this.blacklistedTokenModel
+      .findOne({ token })
+      .exec();
+    return !!tokenInBlacklist;
+  }
+
+  async loginUser(
+    email: string,
+    password: string,
+  ): Promise<{ token: string; userResponse: UserResponseDto }> {
+    const user = await this.userService.findByEmail(email);
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const token = this.jwtService.sign({
+        name: user.name,
+        sub: user.id,
+        role: Role.User,
+      });
+      const userResponse = user.toDTO()
+
+      return { token,  userResponse};
     }
-    throw new UnauthorizedException('Invalid credentials 1');
+    throw new UnauthorizedException('Credenciais inválidas');
   }
 
-  async validatePatient(cpf: string, password: string): Promise<any> {
-    const patient = await this.patientService.findByCpf(cpf);
-    if (patient && (await bcrypt.compare(password, patient.password))) {
-      return { name: patient.nome, sub: patient._id, role: Role.Patient };
+  async logout(token: string): Promise<void> {
+    const decoded = this.jwtService.decode(token) as any; // Decodifica o token
+    const expiresAt = new Date(decoded.exp * 1000); // Converte a data de expiração do token
+
+    // Adiciona o token à blacklist
+    const blacklistedToken = new this.blacklistedTokenModel({ token, expiresAt });
+    await blacklistedToken.save();
+  }
+
+  async registerUser(
+    createUserDto: CreateUserDto,
+  ): Promise<{ token: string; userResponse: UserResponseDto }> {
+    const user = await this.userService.create({ ...createUserDto });
+
+    const token = this.jwtService.sign({
+      name: user.name,
+      sub: user.id,
+      role: Role.User,
+    });
+
+    const userResponse = user.toDTO()
+
+    return { token, userResponse };
+  }
+
+  async validateToken(token: string) {
+    try {
+      const decoded = this.jwtService.verify(token);
+      return decoded;
+    } catch (error) {
+      return null;
     }
-    throw new UnauthorizedException('Invalid credentials 1');
   }
-
-  async loginAdmin(email: string, password: string): Promise<string> {
-    const validated = await this.validateAdmin(email, password);
-    return this.jwtService.sign(validated);
-  }
-
-  async loginPatient(cpf: string, password: string): Promise<string> {
-    const validated = await this.validatePatient(cpf, password);
-    return this.jwtService.sign(validated);
-  }
-
-  async registerPatient(createPatientDto: CreatePatientDto): Promise<Patient> {
-    return this.patientService.create({ ...createPatientDto }, Role.Patient);
-  }
-
-  async registerAdmin(createAdminDto: CreateAdminDto): Promise<Admin> {
-    return this.adminService.create({ ...createAdminDto }, Role.Admin);
-  }
-
 }
