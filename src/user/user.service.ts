@@ -117,5 +117,5 @@ export class UserService {
 
   async removeAll(): Promise<void> {
     await this.userModel.deleteMany({});
-  }
+  }  
 }

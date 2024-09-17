@@ -7,13 +7,15 @@ import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '@src/auth/auth.module';
 import { CarModule } from '@src/car/car.module';
+import { ResendModule } from '../resend/resend.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Ride.name, schema: RideSchema }]),
     AddressModule,
     AuthModule,
-    CarModule
+    CarModule,
+    ResendModule.forRoot({ apiKey: 're_Nukcfmn7_7GsfZHBufESb93bfBUEx9ME1'})
   ],
   controllers: [RideController],
   providers: [RideService],

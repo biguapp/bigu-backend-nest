@@ -4,25 +4,25 @@ import { Type } from 'class-transformer';
 import { User } from '../../user/schemas/user.schema';
 import { Address } from '../../address/schemas/address.schema';
 import { Car } from '../../car/schemas/car.schema';
+import { Types } from 'mongoose';
 
 export class UpdateRideDto {
   
-  @ApiProperty({ description: 'ID do motorista', example: 1, required: false })
+  @ApiProperty({ description: 'ID do motorista', required: false })
   @IsOptional()
-  @IsNumber()
-  readonly driverId?: number;
+  readonly driverId?: Types.ObjectId;
 
-  @ApiProperty({ description: 'Lista de membros do passeio', type: [String], required: false })
+  @ApiProperty({ description: 'Lista de membros do passeio', type: [Types.ObjectId], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly members?: string[];
+  readonly members?: Types.ObjectId[];
 
-  @ApiProperty({ description: 'Lista de candidatos ao passeio', type: [String], required: false })
+  @ApiProperty({ description: 'Lista de candidatos ao passeio', type: [Types.ObjectId], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly candidates?: string[];
+  readonly candidates?: Types.ObjectId[];
 
   @ApiProperty({ description: 'Endereço de início do passeio', type: String, required: false })
   @IsOptional()
