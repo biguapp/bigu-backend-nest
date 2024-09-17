@@ -15,7 +15,7 @@ import {
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 import { RideResponseDto } from './dto/response-ride.dto';
 
@@ -35,7 +35,7 @@ export class RideController {
         newRide: newRide
       });
     }catch(error){
-      console.log(error)
+      throw new Error(error)
     }
   }
 
@@ -233,16 +233,16 @@ export class RideController {
     } 
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Put('/over')
-  // @ApiOperation({ summary: 'Set ride over.' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'The ride is complete.',
-  // })
-  // async setRideOver(@Req() req, @Param() rideId){
-  //   const userId = req.user.sub;
-  //   return this.rideService.setRideOver(userId, rideId);
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Put('/over')
+  @ApiOperation({ summary: 'Set ride over.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The ride is complete.',
+  })
+  async setRideOver(@Req() req, @Param() rideId){
+    const userId = req.user.sub;
+    return this.rideService.setRideOver(userId, rideId);
+  }
 
 }

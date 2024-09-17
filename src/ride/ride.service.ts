@@ -117,7 +117,7 @@ export class RideService {
   async setRideOver(userId: string, rideId: string) {
     const ride = await this.findOne(rideId);
     if (ride.driver.id === userId) {
-      return await this.update(rideId, { isOver: true });
+      return await this.update(rideId, { isOver: true } as UpdateRideDto);
     } else throw new NotFoundException('Corrida não encontrada.');
   }
 }
