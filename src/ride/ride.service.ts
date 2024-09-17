@@ -1,12 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
 import { Ride } from './interfaces/ride.interface';
-import { Ride as RideSchema } from './schemas/ride.schema';
-import { AddressService } from '@src/address/address.service';
-import { CarService } from '@src/car/car.service';
+import { ResendService } from '@src/resend/resend.service';
 import { UserService } from '@src/user/user.service';
 import { AskAndAcceptRideDto } from './dto/ask-ride.dto';
 
@@ -14,8 +16,7 @@ import { AskAndAcceptRideDto } from './dto/ask-ride.dto';
 export class RideService {
   constructor(
     @InjectModel('Ride') private readonly rideModel: Model<Ride>,
-    private readonly addressService: AddressService,
-    private readonly carService: CarService,
+    private readonly resendService: ResendService,
     private readonly userService: UserService
   ) {}
 
@@ -25,14 +26,13 @@ export class RideService {
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
-    
     const date = new Date(createRideDto.scheduledTime);
     const ride = {
       ...createRideDto,
       members: [],
       candidates: [],
       isOver: false,
-      scheduledTime: date
+      scheduledTime: date,
     };
     const newRide = new this.rideModel(ride);
     return newRide.save();
@@ -65,7 +65,7 @@ export class RideService {
     if (!result) {
       throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
     }
-    return result
+    return result;
   }
 
   async getRidesAvailable(): Promise<Ride[]> {
@@ -122,32 +122,72 @@ export class RideService {
     } else throw new NotFoundException('Corrida não encontrada.');
   }
 
-  async askRide(askRide: AskAndAcceptRideDto): Promise<String>{
-    const user = await this.userService.findOne(askRide.userId);
-    const ride = await this.rideModel.findById(askRide.rideId);
-
-    const hasSeats = ride.members.length < ride.numSeats;
-    if(hasSeats) ride.candidates.push(user.id);
-    
-    await ride.save()
-
-    return `Sua solicitação foi enviada.`
+  async requestRide(userId: string, rideId: string) {
+    const ride = await this.rideModel.findById(rideId);
+    const rideCandidates = ride.candidates;
+    const userIdObj = new Types.ObjectId(userId);
+    if (ride.driver.id === userId)
+      throw new BadRequestException('Você é o motorista dessa carona.');
+    else if (ride.members.includes(userIdObj))
+      throw new BadRequestException('Você já é membro dessa carona');
+    else if (ride.members.includes(userIdObj))
+      throw new BadRequestException('Você já é candidato a essa carona.');
+    else if (ride.members.length === ride.numSeats)
+      throw new BadRequestException('Essa carona já está cheia.');
+    else {
+      rideCandidates.push(userIdObj);
+      await this.resendService.send({
+        from: 'biguapp@hotmail.com',
+        to: (await this.userService.findOne(ride.driver.id)).email,
+        subject: '[BIGUAPP] Nova solicitação',
+        html: '<strong>Nova solicitação de bigu!</strong>',
+      })
+      return await this.update(rideId, { candidates: rideCandidates });
+    }
   }
 
-  async acceptCandidate(askRide: AskAndAcceptRideDto): Promise<String>{
-    const user = await this.userService.findOne(askRide.userId);
-    const ride = await this.rideModel.findById(askRide.rideId);
+  async acceptCandidate(driverId: string, rideId: string, candidateId: string) {
+    const ride = await this.findOne(rideId);
+    const candidateIdObj = new Types.ObjectId(candidateId);
+    const rideCandidates = ride.candidates;
+    if (ride.driver.id === driverId) {
+      if (rideCandidates.includes(candidateIdObj)) {
+        const idx = rideCandidates.indexOf(candidateIdObj);
+        ride.members.push(candidateIdObj);
+        const newMembers = ride.members;
+        await this.resendService.send({
+          from: 'biguapp@hotmail.com',
+          to: (await this.userService.findOne(ride.driver.id)).email,
+          subject: '[BIGUAPP] Solicitação aceita!',
+          html: '<strong>Você conseguiu um bigu!</strong>',
+        })
+        return (
+          await this.update(rideId, {
+            candidates: rideCandidates.splice(idx, 1),
+            members: newMembers,
+          })
+        ).toDTO();
+      } else throw new NotFoundException('Candidato não encontrado.');
+    } else throw new NotFoundException('Corrida não encontrada.');
+  }
 
-    const hasSeats = ride.members.length < ride.numSeats;
-    
-    if(hasSeats) {
-      const newCandidates = ride.candidates.filter(candidate => candidate !== user.id);
-      ride.candidates = newCandidates;
-      ride.members.push(user.id);
-
-    }
-    await ride.save();
-
-    return `O usuário foi aceito para a carona.`
+  async declineCandidate(
+    driverId: string,
+    rideId: string,
+    candidateId: string,
+  ) {
+    const ride = await this.findOne(rideId);
+    const candidateIdObj = new Types.ObjectId(candidateId);
+    const rideCandidates = ride.candidates;
+    if (ride.driver.id === driverId) {
+      if (rideCandidates.includes(candidateIdObj)) {
+        const idx = rideCandidates.indexOf(candidateIdObj);
+        return (
+          await this.update(rideId, {
+            candidates: rideCandidates.splice(idx, 1),
+          })
+        ).toDTO();
+      } else throw new NotFoundException('Candidato não encontrado.');
+    } else throw new NotFoundException('Corrida não encontrada.');
   }
 }

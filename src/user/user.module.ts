@@ -7,9 +7,13 @@ import { CarModule } from '../car/car.module';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '@src/auth/auth.module';
 import { RideModule } from '@src/ride/ride.module';
+import { ResendModule } from '../resend/resend.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]), AuthModule],
+  imports: [
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    AuthModule,
+  ],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],
