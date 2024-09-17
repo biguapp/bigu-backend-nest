@@ -47,7 +47,7 @@ export class UserService {
   }
 
   async findDrivers(): Promise<User[]> {
-    const drivers = await this.userModel.find({ role: Role.Driver }).exec();
+    const drivers = await this.userModel.find({ role: Role.Driver });
     if (!drivers || drivers.length === 0) {
       throw new NotFoundException(
         'Nenhum usuário com a role Driver encontrado',
@@ -57,7 +57,7 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.userModel.findById(id).exec();
+    const user = await this.userModel.findById(id);
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
@@ -65,7 +65,7 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    const user = await this.userModel.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ email });
     if (!user) {
       throw new NotFoundException('Credenciais inválidas.');
     }
@@ -73,13 +73,13 @@ export class UserService {
   }
 
   async verifyEmail(email: string): Promise<Boolean> {
-    const user = await this.userModel.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ email });
     if (user) return true;
     return false;
   }
 
   async verifyMatricula(matricula: string): Promise<Boolean> {
-    const user = await this.userModel.findOne({ matricula }).exec();
+    const user = await this.userModel.findOne({ matricula });
     if (user) return true;
     return false;
   }
@@ -90,7 +90,7 @@ export class UserService {
   }
 
   async findByMatricula(matricula: string): Promise<User> {
-    const user = await this.userModel.findOne({ matricula }).exec();
+    const user = await this.userModel.findOne({ matricula });
     if (!user) {
       throw new NotFoundException('Matrícula não existente.');
     }
@@ -99,8 +99,7 @@ export class UserService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(id, updateUserDto, { new: true })
-      .exec();
+      .findByIdAndUpdate(id, updateUserDto, { new: true });
     if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -108,7 +107,7 @@ export class UserService {
   }
 
   async remove(id: string): Promise<User> {
-    const result = await this.userModel.findByIdAndDelete(id).exec();
+    const result = await this.userModel.findByIdAndDelete(id);
     if (result) {
       throw new HttpException('Endereço não encontrado', HttpStatus.NOT_FOUND);
     }
