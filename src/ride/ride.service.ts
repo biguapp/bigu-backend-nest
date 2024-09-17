@@ -8,6 +8,7 @@ import { Ride as RideSchema } from './schemas/ride.schema';
 import { AddressService } from '@src/address/address.service';
 import { CarService } from '@src/car/car.service';
 import { UserService } from '@src/user/user.service';
+import { AskAndAcceptRideDto } from './dto/ask-ride.dto';
 
 @Injectable()
 export class RideService {
@@ -119,5 +120,34 @@ export class RideService {
     if (ride.driver.id === userId) {
       return await this.update(rideId, { isOver: true } as UpdateRideDto);
     } else throw new NotFoundException('Corrida não encontrada.');
+  }
+
+  async askRide(askRide: AskAndAcceptRideDto): Promise<String>{
+    const user = await this.userService.findOne(askRide.userId);
+    const ride = await this.rideModel.findById(askRide.rideId);
+
+    const hasSeats = ride.members.length < ride.numSeats;
+    if(hasSeats) ride.candidates.push(user.id);
+    
+    await ride.save()
+
+    return `Sua solicitação foi enviada.`
+  }
+
+  async acceptCandidate(askRide: AskAndAcceptRideDto): Promise<String>{
+    const user = await this.userService.findOne(askRide.userId);
+    const ride = await this.rideModel.findById(askRide.rideId);
+
+    const hasSeats = ride.members.length < ride.numSeats;
+    
+    if(hasSeats) {
+      const newCandidates = ride.candidates.filter(candidate => candidate !== user.id);
+      ride.candidates = newCandidates;
+      ride.members.push(user.id);
+
+    }
+    await ride.save();
+
+    return `O usuário foi aceito para a carona.`
   }
 }

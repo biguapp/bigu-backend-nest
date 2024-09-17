@@ -5,19 +5,19 @@ import { Address } from '@src/address/interfaces/address.interface';
 import { RideResponseDto } from '../dto/response-ride.dto';
 
 export interface Ride extends Document {
-  readonly driver: User;
-  readonly members?: User[];
-  readonly candidates?: User[];
-  readonly startAddress: Address;
-  readonly destinationAddress: Address;
-  readonly numSeats: number;
-  readonly goingToCollege: boolean;
-  readonly price: number;
-  readonly scheduledTime: Date;
-  readonly car: Car;
-  readonly description?: string;
-  readonly toWomen: boolean;
-  readonly isOver: boolean;
+  driver: User;
+  members?: User[];
+  candidates?: User[];
+  startAddress: Address;
+  destinationAddress: Address;
+  numSeats: number;
+  goingToCollege: boolean;
+  price: number;
+  scheduledTime: Date;
+  car: Car;
+  description?: string;
+  toWomen: boolean;
+  isOver: boolean;
 
   toDTO(): RideResponseDto
 }

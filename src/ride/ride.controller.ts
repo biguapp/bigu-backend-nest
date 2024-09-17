@@ -11,6 +11,7 @@ import {
   Put,
   Res,
   HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -18,6 +19,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 import { RideResponseDto } from './dto/response-ride.dto';
+import { AskAndAcceptRideDto } from './dto/ask-ride.dto';
 
 @ApiTags('rides')
 @Controller('rides')
@@ -234,6 +236,30 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Put('/ask-ride')
+  @ApiOperation({ summary: 'Ask ride' })
+  @HttpCode(200)
+  async askRide(@Body() askRide: AskAndAcceptRideDto){
+    try{
+      return { message: await this.rideService.askRide(askRide) };
+    }catch(error){
+      console.log(error)
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/accept-candidate')
+  @ApiOperation({ summary: 'Accept a candidate' })
+  @HttpCode(200)
+  async acceptCandidate(@Body() askRide: AskAndAcceptRideDto){
+    try{
+      return { message: await this.rideService.acceptCandidate(askRide) };
+    }catch(error){
+      console.log(error)
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put('/over')
   @ApiOperation({ summary: 'Set ride over.' })
   @ApiResponse({
@@ -244,5 +270,4 @@ export class RideController {
     const userId = req.user.sub;
     return this.rideService.setRideOver(userId, rideId);
   }
-
 }
