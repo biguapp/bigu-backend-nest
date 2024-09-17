@@ -197,9 +197,42 @@ export class RideService {
       if (rideCandidates.includes(candidateIdObj)) {
         const idx = rideCandidates.indexOf(candidateIdObj);
         rideCandidates.splice(idx, 1)
+        await this.resendService.send({
+          from: 'biguapp@hotmail.com',
+          to: (await this.userService.findOne(ride.driver.toString())).email,
+          subject: '[BIGUAPP] Solicitação rejeitada!',
+          html: '<strong>Você perdeu um bigu!</strong>',
+        })
         return (
           await this.update(rideId, {
             candidates: rideCandidates,
+          })
+        ).toDTO();
+      } else throw new NotFoundException('Candidato não encontrado.');
+    } else throw new NotFoundException('Corrida não encontrada.');
+  }
+
+  async removeMember(
+    driverId: string,
+    rideId: string,
+    memberId: string,
+  ) {
+    const ride = await this.findOne(rideId);
+    const memberIdObj = new Types.ObjectId(memberId);
+    const rideMembers = ride.members;
+    if (ride.driver.toString() === driverId) {
+      if (rideMembers.includes(memberIdObj)) {
+        const idx = rideMembers.indexOf(memberIdObj);
+        rideMembers.splice(idx, 1)
+        await this.resendService.send({
+          from: 'biguapp@hotmail.com',
+          to: (await this.userService.findOne(ride.driver.toString())).email,
+          subject: '[BIGUAPP] Remoção da carona!',
+          html: '<strong>Você perdeu um bigu!</strong>',
+        })
+        return (
+          await this.update(rideId, {
+            members: rideMembers,
           })
         ).toDTO();
       } else throw new NotFoundException('Candidato não encontrado.');

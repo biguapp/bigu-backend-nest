@@ -308,4 +308,16 @@ export class RideController {
     const userId = req.user.sub;
     return await this.rideService.declineCandidate(userId, rideId, candidateId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/remove/member/:rideId/:memberId')
+  @ApiOperation({ summary: 'Decline candidate in ride.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Candidate declined.',
+  })
+  async removeMember(@Req() req, @Param('rideId') rideId, @Param('memberId') memberId) {
+    const userId = req.user.sub;
+    return await this.rideService.removeMember(userId, rideId, memberId);
+  }
 }
