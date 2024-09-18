@@ -26,6 +26,10 @@ export class RideController {
 
   @Post()
   @ApiOperation({ summary: 'Criar uma carona' })
+  @ApiResponse({
+    status: 201,
+    description: 'A carona foi criada com sucesso.',
+  })
   async create(
     @Body() createRideDto: CreateRideDto,
     @Res() response,
@@ -44,6 +48,10 @@ export class RideController {
 
   @Get()
   @ApiOperation({ summary: 'Retornar todas as caronas.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as caronas foram retornadas com sucesso.',
+  })
   async findAll(@Res() response): Promise<RideResponseDto[]> {
     try {
       const ridesModel = await this.rideService.findAll();
@@ -60,6 +68,10 @@ export class RideController {
 
   @Get('/ride/:id')
   @ApiOperation({ summary: 'Retornar uma carona' })
+  @ApiResponse({
+    status: 200,
+    description: 'A carona foi retornada com sucesso.',
+  })
   async findOne(
     @Param('id') id: string,
     @Res() response,
@@ -79,6 +91,10 @@ export class RideController {
 
   @Patch('/ride/:id')
   @ApiOperation({ summary: 'Editar uma carona' })
+  @ApiResponse({
+    status: 200,
+    description: 'A carona foi atualizada com sucesso.',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateRideDto: UpdateRideDto,
@@ -99,6 +115,10 @@ export class RideController {
 
   @Delete('/ride/:id')
   @ApiOperation({ summary: 'Deletar uma carona' })
+  @ApiResponse({
+    status: 200,
+    description: 'A carona foi deletada com sucesso.',
+  })
   async remove(
     @Param('id') id: string,
     @Res() response,
@@ -118,6 +138,10 @@ export class RideController {
 
   @Get('/available')
   @ApiOperation({ summary: 'Retorna todas as caronas ativas.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as caronas ativas foram retornadas.',
+  })
   async getRidesAvailable(@Res() response): Promise<RideResponseDto[]> {
     try {
       const ridesAvailableModel = await this.rideService.getRidesAvailable();
@@ -138,6 +162,10 @@ export class RideController {
   @Get('/driver/active')
   @ApiOperation({
     summary: 'Retorna todas as caronas que o usuário é o motorista.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as corridas que o usuário é motorista foram retornadas.',
   })
   async getDriverActiveRides(
     @Req() req,
@@ -162,7 +190,13 @@ export class RideController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/member/active')
-  @ApiOperation({ summary: 'Retorna todas as caronas que o usuário é membro.' })
+  @ApiOperation({
+    summary: 'Retorna todas as caronas que o usuário é membro.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as corridas que o usuário é membro foram retornadas.',
+  })
   async getMemberActiveRides(
     @Req() req,
     @Res() response,
@@ -188,6 +222,10 @@ export class RideController {
   @Get('/driver/history')
   @ApiOperation({
     summary: 'Retorna todas as caronas que o usuário foi motorista.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'O histórico do usuário como motorista foi retornado.',
   })
   async getDriverHistory(
     @Req() req,
@@ -215,6 +253,10 @@ export class RideController {
   @ApiOperation({
     summary: 'Retorna todas as caronas que o usuário foi membro.',
   })
+  @ApiResponse({
+    status: 200,
+    description: 'O histórico do usuário como membro foi retornado.',
+  })
   async getMemberHistory(
     @Req() req,
     @Res() response,
@@ -235,11 +277,16 @@ export class RideController {
       console.log(error);
     }
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('/user/history')
   @ApiOperation({
     summary:
       'Retorna todas as caronas que o usuário estava como membro ou motorista.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'O histórico completo do usuário foi retornado.',
   })
   async getUserHistory(
     @Req() req,
@@ -263,10 +310,10 @@ export class RideController {
 
   @UseGuards(JwtAuthGuard)
   @Put('/over')
-  @ApiOperation({ summary: 'Set ride over.' })
+  @ApiOperation({ summary: 'Marcar carona como concluída.' })
   @ApiResponse({
     status: 200,
-    description: 'The ride is complete.',
+    description: 'A carona foi marcada como concluída.',
   })
   async setRideOver(@Req() req, @Param() rideId) {
     const userId = req.user.sub;
@@ -275,10 +322,10 @@ export class RideController {
 
   @UseGuards(JwtAuthGuard)
   @Put('/request/:rideId/:addressId')
-  @ApiOperation({ summary: 'Request join in ride.' })
+  @ApiOperation({ summary: 'Solicitar participação em uma carona.' })
   @ApiResponse({
     status: 200,
-    description: 'Request join in ride.',
+    description: 'Participação solicitada com sucesso.',
   })
   async requestRide(@Req() req, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
     const userId = req.user.sub;
@@ -287,10 +334,10 @@ export class RideController {
 
   @UseGuards(JwtAuthGuard)
   @Put('/accept/candidate/:rideId/:candidateId')
-  @ApiOperation({ summary: 'Accept candidate in ride.' })
+  @ApiOperation({ summary: 'Aceitar candidato para a carona.' })
   @ApiResponse({
     status: 200,
-    description: 'Candidate accepted.',
+    description: 'Candidato aceito com sucesso.',
   })
   async acceptCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
     const userId = req.user.sub;
@@ -299,10 +346,10 @@ export class RideController {
 
   @UseGuards(JwtAuthGuard)
   @Put('/decline/candidate/:rideId/:candidateId')
-  @ApiOperation({ summary: 'Decline candidate in ride.' })
+  @ApiOperation({ summary: 'Recusar candidato para a carona.' })
   @ApiResponse({
     status: 200,
-    description: 'Candidate declined.',
+    description: 'Candidato recusado com sucesso.',
   })
   async declineCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
     const userId = req.user.sub;
@@ -311,10 +358,10 @@ export class RideController {
 
   @UseGuards(JwtAuthGuard)
   @Put('/remove/member/:rideId/:memberId')
-  @ApiOperation({ summary: 'Remove member in ride.' })
+  @ApiOperation({ summary: 'Remover membro da carona.' })
   @ApiResponse({
     status: 200,
-    description: 'Member removed.',
+    description: 'Membro removido da carona com sucesso.',
   })
   async removeMember(@Req() req, @Param('rideId') rideId, @Param('memberId') memberId) {
     const userId = req.user.sub;
@@ -323,10 +370,10 @@ export class RideController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/candidates')
-  @ApiOperation({ summary: 'All candidates from this driver rides' })
+  @ApiOperation({ summary: 'Obter todos os candidatos das caronas do motorista.' })
   @ApiResponse({
     status: 200,
-    description: 'All candidates from this driver rides.',
+    description: 'Todos os candidatos retornados com sucesso.',
   })
   async getCandidates(@Req() req) {
     const userId = req.user.sub;
