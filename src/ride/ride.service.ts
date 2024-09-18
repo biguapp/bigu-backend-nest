@@ -8,8 +8,8 @@ import { Model, Types } from 'mongoose';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
 import { Ride } from './interfaces/ride.interface';
-import { ResendService } from '@src/resend/resend.service';
-import { UserService } from '@src/user/user.service';
+import { ResendService } from '../resend/resend.service';
+import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 
@@ -166,7 +166,9 @@ export class RideService {
       user: userIdObj,
       address: addressIdObj,
     } as Candidate);
+    
 
+    // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
     await this.resendService.send({
       from: 'biguapp@hotmail.com',
       to: (await this.userService.findOne(ride.driver.toString())).email,
@@ -196,12 +198,16 @@ export class RideService {
         });
         ride.members.push(member);
         const newMembers = ride.members;
+
+        // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
         await this.resendService.send({
           from: 'biguapp@hotmail.com',
-          to: 'italo.ramalho@ccc.ufcg.edu.br', //(await this.userService.findOne(ride.driver.toString())).email,
+          to: (await this.userService.findOne(ride.driver.toString())).email,
           subject: '[BIGUAPP] Solicitação aceita!',
           html: '<strong>Você conseguiu um bigu!</strong>',
         });
+
+
         rideCandidates.splice(idx, 1);
         console.log(rideCandidates)
         console.log(newMembers);
@@ -227,12 +233,16 @@ export class RideService {
       if (rideCandidatesId.includes(candidateId)) {
         const idx = rideCandidatesId.indexOf(candidateId);
         rideCandidates.splice(idx, 1);
+
+        // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
         await this.resendService.send({
           from: 'biguapp@hotmail.com',
-          to: 'italo.ramalho@ccc.ufcg.edu.br', //(await this.userService.findOne(ride.driver.toString())).email,
+          to: (await this.userService.findOne(ride.driver.toString())).email,
           subject: '[BIGUAPP] Solicitação rejeitada!',
           html: '<strong>Procure outro bigu!</strong>',
         });
+
+
         return (
           await this.update(rideId, {
             candidates: rideCandidates,
@@ -250,12 +260,16 @@ export class RideService {
       if (rideMembersId.includes(memberId)) {
         const idx = rideMembersId.indexOf(memberId);
         rideMembers.splice(idx, 1);
+
+        // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
         await this.resendService.send({
           from: 'biguapp@hotmail.com',
-          to: 'italo.ramalho@ccc.ufcg.edu.br', //(await this.userService.findOne(ride.driver.toString())).email,
+          to: (await this.userService.findOne(ride.driver.toString())).email,
           subject: '[BIGUAPP] Remoção da carona!',
           html: '<strong>Você perdeu um bigu!</strong>',
         });
+
+
         return (
           await this.update(rideId, {
             members: rideMembers,

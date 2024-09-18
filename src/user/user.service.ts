@@ -109,12 +109,8 @@ export class UserService {
   async remove(id: string): Promise<User> {
     const result = await this.userModel.findByIdAndDelete(id);
     if (result) {
-      throw new HttpException('Endereço não encontrado', HttpStatus.NOT_FOUND);
+      throw new HttpException('Usuario não encontrado', HttpStatus.NOT_FOUND);
     }
     return result
   }
-
-  async removeAll(): Promise<void> {
-    await this.userModel.deleteMany({});
-  }  
 }
