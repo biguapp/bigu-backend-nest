@@ -1,14 +1,14 @@
-import { 
-  Controller, 
-  Get, 
-  Param, 
-  Delete, 
-  Req, 
-  UseGuards, 
-  Res, 
-  HttpStatus, 
-  Put, 
-  Body 
+import {
+  Controller,
+  Get,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+  Res,
+  HttpStatus,
+  Put,
+  Body,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
@@ -58,8 +58,8 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   async findOneByEmail(
-    @Res() response, 
-    @Param('email') email: string
+    @Res() response,
+    @Param('email') email: string,
   ): Promise<UserResponseDto> {
     try {
       const user = (await this.userService.findByEmail(email)).toDTO();
@@ -88,8 +88,8 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   async findOneByMatricula(
-    @Res() response, 
-    @Param('matricula') matricula: string
+    @Res() response,
+    @Param('matricula') matricula: string,
   ): Promise<UserResponseDto> {
     try {
       const user = (await this.userService.findByMatricula(matricula)).toDTO();
@@ -103,6 +103,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('id/:id')
   @ApiOperation({ summary: 'Retorna um usuário pelo ID' })
   @ApiParam({
@@ -117,7 +118,10 @@ export class UserController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
-  async findOne(@Res() response, @Param('id') id: string): Promise<UserResponseDto> {
+  async findOne(
+    @Res() response,
+    @Param('id') id: string,
+  ): Promise<UserResponseDto> {
     try {
       const user = (await this.userService.findOne(id)).toDTO();
 
@@ -145,9 +149,10 @@ export class UserController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
-  async remove(@Res() response, @Param('id') id: string): Promise<UserResponseDto> {
+  async remove(@Res() response, @Req() req): Promise<UserResponseDto> {
     try {
-      const userRemoved = (await this.userService.remove(id)).toDTO();
+      const userId = req.user.sub;
+      const userRemoved = (await this.userService.remove(userId)).toDTO();
 
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi removido com sucesso.',
@@ -174,12 +179,15 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   async update(
-    @Param('id') id: string,
+    @Req() req,
     @Body() updateUserDto: UpdateUserDto,
-    @Res() response
+    @Res() response,
   ): Promise<UserResponseDto> {
     try {
-      const userUpdated = (await this.userService.update(id, updateUserDto)).toDTO();
+      const userId = req.user.sub;
+      const userUpdated = (
+        await this.userService.update(userId, updateUserDto)
+      ).toDTO();
 
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi atualizado com sucesso.',
