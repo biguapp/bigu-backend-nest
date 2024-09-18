@@ -3,14 +3,15 @@ import { Document, Types } from 'mongoose';
 import { RideResponseDto } from '../dto/response-ride.dto';
 import { Candidate, CandidateSchema } from './candidate.schema';
 import { CANCELLED } from 'dns';
+import { Member } from './member.schema';
 
 @Schema()
 export class Ride extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   driver: Types.ObjectId;
 
-  @Prop({ type: [Types.ObjectId], ref: 'User' })
-  members?: Types.ObjectId[];
+  @Prop({ type: [Member], ref: 'User' })
+  members?: Member[];
 
   @Prop({ type: [Candidate], ref: 'User' })
   candidates?: Candidate[];
@@ -51,7 +52,17 @@ export const RideSchema = SchemaFactory.createForClass(Ride);
 RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
   const driver = await (this.model('User').findById(this.driver));
   const members = await Promise.all(
-    (this.members || []).map(memberId => this.model('User').findById(memberId).exec())
+    this.members.map(async member => {
+      const [user, address] = await Promise.all([
+        this.model('User').findById(member.user).exec(),
+        this.model('Address').findById(member.address).exec()
+      ]);
+
+      return {
+        user: user ? user.toDTO() : null,
+        address: address ? address.toDTO() : null
+      };
+    })
   );
   const canditates = await Promise.all(
     this.candidates.map(async candidate => {
@@ -72,7 +83,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
 
   return {
     driver: driver.toDTO(),
-    members: members.map(member => member.toDTO()),
+    members: members,
     candidates: canditates,
     startAddress: startAddress.toDTO(),
     destinationAddress: destinationAddress.toDTO(),

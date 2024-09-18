@@ -8,10 +8,14 @@ import { AddressModule } from '../address/address.module';
 import { AuthModule } from '@src/auth/auth.module';
 import { CarModule } from '@src/car/car.module';
 import { ResendModule } from '../resend/resend.module';
+import { Member, MemberSchema } from './schemas/member.schema';
+import { Candidate, CandidateSchema } from './schemas/candidate.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Ride.name, schema: RideSchema }]),
+    MongooseModule.forFeature([{ name: Member.name, schema: MemberSchema}]),
+    MongooseModule.forFeature([{ name: Candidate.name, schema: CandidateSchema}]),
     AddressModule,
     AuthModule,
     CarModule,

@@ -285,29 +285,29 @@ export class RideController {
     return this.rideService.requestRide(userId, rideId, addressId);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Put('/accept/candidate/:rideId/:candidateId')
-  // @ApiOperation({ summary: 'Accept candidate in ride.' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Candidate accepted.',
-  // })
-  // async acceptCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
-  //   const userId = req.user.sub;
-  //   return await this.rideService.acceptCandidate(userId, rideId, candidateId);
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Put('/accept/candidate/:rideId/:candidateId')
+  @ApiOperation({ summary: 'Accept candidate in ride.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Candidate accepted.',
+  })
+  async acceptCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
+    const userId = req.user.sub;
+    return await this.rideService.acceptCandidate(userId, rideId, candidateId);
+  }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Put('/decline/candidate/:rideId/:candidateId')
-  // @ApiOperation({ summary: 'Decline candidate in ride.' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Candidate declined.',
-  // })
-  // async declineCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
-  //   const userId = req.user.sub;
-  //   return await this.rideService.declineCandidate(userId, rideId, candidateId);
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Put('/decline/candidate/:rideId/:candidateId')
+  @ApiOperation({ summary: 'Decline candidate in ride.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Candidate declined.',
+  })
+  async declineCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
+    const userId = req.user.sub;
+    return await this.rideService.declineCandidate(userId, rideId, candidateId);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Put('/remove/member/:rideId/:memberId')

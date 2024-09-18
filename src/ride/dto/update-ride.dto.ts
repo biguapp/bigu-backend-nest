@@ -4,6 +4,7 @@ import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Types } from 'mongoose';
 import { Candidate } from '../interfaces/candidate.interface';
 import { Candidate as CandidateSchema} from '../schemas/candidate.schema';
+import { Member } from '../schemas/member.schema';
 
 export class UpdateRideDto extends PartialType(CreateRideDto){
   
@@ -13,9 +14,9 @@ export class UpdateRideDto extends PartialType(CreateRideDto){
   @ValidateNested({ each: true })
   readonly candidates?: Candidate[];
 
-  @ApiProperty({ description: 'Lista de membros ao passeio', type: [Types.ObjectId], required: false })
+  @ApiProperty({ description: 'Lista de membros ao passeio', type: [Member], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly members?: Types.ObjectId[];
+  readonly members?: Member[];
 }
