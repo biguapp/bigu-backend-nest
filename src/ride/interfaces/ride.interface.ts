@@ -7,6 +7,7 @@ import { Candidate } from './candidate.interface';
 import { Member } from '../schemas/member.schema';
 
 export interface Ride extends Document {
+  readonly rideId: string;
   readonly driver: User;
   readonly members?: Member[];
   readonly candidates?: Candidate[];

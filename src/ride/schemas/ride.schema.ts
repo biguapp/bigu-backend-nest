@@ -7,6 +7,7 @@ import { Member } from './member.schema';
 
 @Schema()
 export class Ride extends Document {
+  
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   driver: Types.ObjectId;
 
@@ -82,6 +83,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
   const car = await this.model('Car').findById(this.car).exec();
 
   return {
+    rideId: this.id,
     driver: driver.toDTO(),
     members: members,
     candidates: canditates,
