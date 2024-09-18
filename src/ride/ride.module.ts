@@ -10,19 +10,28 @@ import { CarModule } from '@src/car/car.module';
 import { ResendModule } from '../resend/resend.module';
 import { Member, MemberSchema } from './schemas/member.schema';
 import { Candidate, CandidateSchema } from './schemas/candidate.schema';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Ride.name, schema: RideSchema }]),
-    MongooseModule.forFeature([{ name: Member.name, schema: MemberSchema}]),
-    MongooseModule.forFeature([{ name: Candidate.name, schema: CandidateSchema}]),
+    MongooseModule.forFeature([{ name: Member.name, schema: MemberSchema }]),
+    MongooseModule.forFeature([
+      { name: Candidate.name, schema: CandidateSchema },
+    ]),
     AddressModule,
     AuthModule,
     CarModule,
-    ResendModule.forRoot({ apiKey: 're_Nukcfmn7_7GsfZHBufESb93bfBUEx9ME1'})
+    ResendModule,
   ],
   controllers: [RideController],
-  providers: [RideService],
+  providers: [RideService,
+    {
+      provide: 'RESEND_API_KEY',
+      useFactory: (ConfigService: ConfigService) => ConfigService.get<string>('RESEND_KEY'),
+      inject: [ConfigService]
+    }
+  ],
   exports: [RideService],
 })
 export class RideModule {}

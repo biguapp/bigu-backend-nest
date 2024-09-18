@@ -1,7 +1,7 @@
 import { ModuleMetadata } from '@nestjs/common'
 
 export interface ResendOptions {
-  apiKey: 're_Nukcfmn7_7GsfZHBufESb93bfBUEx9ME1'
+  apiKey: string
 }
 
 export interface ResendOptionsAsync extends Pick<ModuleMetadata, 'imports'> {

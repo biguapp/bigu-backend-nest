@@ -1,8 +1,14 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-    imports: [MongooseModule.forRoot('mongodb+srv://italoramalho:utOBFAyYgHyt4BWl@saude-campina-db.wzaljqi.mongodb.net/?retryWrites=true&w=majority&appName=saude-campina-db')],
+    imports: [MongooseModule.forRootAsync({
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+            uri: config.get('MONGODB_URI')
+        })
+    })],
 })
 
 export class DatabaseModule{}

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,20 +9,24 @@ import { Model, Types } from 'mongoose';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
 import { Ride } from './interfaces/ride.interface';
-import { ResendService } from '../resend/resend.service';
 import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
+import { ConfigService } from '@nestjs/config';
+import { Resend } from 'resend';
 
 @Injectable()
 export class RideService {
+  private readonly resend: Resend;
   constructor(
     @InjectModel('Ride') private readonly rideModel: Model<Ride>,
-    @InjectModel('Member') private memberModel: Model<Member>,
-    @InjectModel('Candidate') private candidateModel: Model<Candidate>,
-    private readonly resendService: ResendService,
+    @InjectModel('Member') private readonly memberModel: Model<Member>,
+    @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
-  ) {}
+    @Inject('RESEND_API_KEY') private readonly resendKey: string, // Injetando a chave aqui
+  ) {
+    this.resend = new Resend(this.resendKey);
+  }
 
   // Criação de um novo passeio
   // 66e093bfe2323b4802da45c3 - ENTRADA PRINCIPAL
@@ -166,11 +171,10 @@ export class RideService {
       user: userIdObj,
       address: addressIdObj,
     } as Candidate);
-    
 
     // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-    await this.resendService.send({
-      from: 'biguapp@hotmail.com',
+    await this.resend.emails.send({
+      from: 'onboarding@resend.dev',
       to: (await this.userService.findOne(ride.driver.toString())).email,
       subject: '[BIGUAPP] Nova solicitação',
       html: '<strong>Nova solicitação de bigu!</strong>',
@@ -200,16 +204,15 @@ export class RideService {
         const newMembers = ride.members;
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        await this.resendService.send({
-          from: 'biguapp@hotmail.com',
+        await this.resend.emails.send({
+          from: 'onboarding@resend.dev',
           to: (await this.userService.findOne(ride.driver.toString())).email,
           subject: '[BIGUAPP] Solicitação aceita!',
           html: '<strong>Você conseguiu um bigu!</strong>',
         });
 
-
         rideCandidates.splice(idx, 1);
-        console.log(rideCandidates)
+        console.log(rideCandidates);
         console.log(newMembers);
         return (
           await this.update(rideId, {
@@ -228,20 +231,21 @@ export class RideService {
   ) {
     const ride = await this.findOne(rideId);
     const rideCandidates = ride.candidates;
-    const rideCandidatesId = rideCandidates.map((candidate) => candidate.user.toString());
+    const rideCandidatesId = rideCandidates.map((candidate) =>
+      candidate.user.toString(),
+    );
     if (ride.driver.toString() === driverId) {
       if (rideCandidatesId.includes(candidateId)) {
         const idx = rideCandidatesId.indexOf(candidateId);
         rideCandidates.splice(idx, 1);
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        await this.resendService.send({
-          from: 'biguapp@hotmail.com',
+        await this.resend.emails.send({
+          from: 'onboarding@resend.dev',
           to: (await this.userService.findOne(ride.driver.toString())).email,
           subject: '[BIGUAPP] Solicitação rejeitada!',
           html: '<strong>Procure outro bigu!</strong>',
         });
-
 
         return (
           await this.update(rideId, {
@@ -262,13 +266,12 @@ export class RideService {
         rideMembers.splice(idx, 1);
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        await this.resendService.send({
-          from: 'biguapp@hotmail.com',
+        await this.resend.emails.send({
+          from: 'onboarding@resend.dev',
           to: (await this.userService.findOne(ride.driver.toString())).email,
           subject: '[BIGUAPP] Remoção da carona!',
           html: '<strong>Você perdeu um bigu!</strong>',
         });
-
 
         return (
           await this.update(rideId, {

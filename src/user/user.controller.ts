@@ -158,6 +158,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar um usuário' })
   @ApiParam({
@@ -190,7 +191,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/user/self')
+  @Get('/user')
   @ApiOperation({ summary: 'Retorna o usuário autenticado' })
   @ApiResponse({
     status: 200,
