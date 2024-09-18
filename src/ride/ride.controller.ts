@@ -333,27 +333,15 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('/accept/candidate/:rideId/:candidateId')
-  @ApiOperation({ summary: 'Aceitar candidato para a carona.' })
+  @Put('/answer/:rideId/candidate/:candidateId')
+  @ApiOperation({ summary: 'Recusar ou aceitar candidato para a carona.' })
   @ApiResponse({
     status: 200,
-    description: 'Candidato aceito com sucesso.',
+    description: 'Candidato recusado ou aceitado com sucesso.',
   })
-  async acceptCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
+  async declineOrAcceptCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId, @Body() body: { status: string}) {
     const userId = req.user.sub;
-    return await this.rideService.acceptCandidate(userId, rideId, candidateId);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put('/decline/candidate/:rideId/:candidateId')
-  @ApiOperation({ summary: 'Recusar candidato para a carona.' })
-  @ApiResponse({
-    status: 200,
-    description: 'Candidato recusado com sucesso.',
-  })
-  async declineCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId) {
-    const userId = req.user.sub;
-    return await this.rideService.declineCandidate(userId, rideId, candidateId);
+    return await this.rideService.declineOrAcceptCandidate(userId, rideId, candidateId, body.status);
   }
 
   @UseGuards(JwtAuthGuard)

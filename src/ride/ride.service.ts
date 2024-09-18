@@ -173,12 +173,12 @@ export class RideService {
     } as Candidate);
 
     // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-    await this.resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: (await this.userService.findOne(ride.driver.toString())).email,
-      subject: '[BIGUAPP] Nova solicitação',
-      html: '<strong>Nova solicitação de bigu!</strong>',
-    });
+    // await this.resend.emails.send({
+    //   from: 'onboarding@resend.dev',
+    //   to: (await this.userService.findOne(ride.driver.toString())).email,
+    //   subject: '[BIGUAPP] Nova solicitação',
+    //   html: '<strong>Nova solicitação de bigu!</strong>',
+    // });
 
     return await this.update(rideId, { candidates: rideCandidates });
   }
@@ -204,16 +204,14 @@ export class RideService {
         const newMembers = ride.members;
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        await this.resend.emails.send({
-          from: 'onboarding@resend.dev',
-          to: (await this.userService.findOne(ride.driver.toString())).email,
-          subject: '[BIGUAPP] Solicitação aceita!',
-          html: '<strong>Você conseguiu um bigu!</strong>',
-        });
+        // await this.resend.emails.send({
+        //   from: 'onboarding@resend.dev',
+        //   to: (await this.userService.findOne(ride.driver.toString())).email,
+        //   subject: '[BIGUAPP] Solicitação aceita!',
+        //   html: '<strong>Você conseguiu um bigu!</strong>',
+        // });
 
         rideCandidates.splice(idx, 1);
-        console.log(rideCandidates);
-        console.log(newMembers);
         return (
           await this.update(rideId, {
             candidates: rideCandidates,
@@ -227,7 +225,7 @@ export class RideService {
   async declineCandidate(
     driverId: string,
     rideId: string,
-    candidateId: string,
+    candidateId: string
   ) {
     const ride = await this.findOne(rideId);
     const rideCandidates = ride.candidates;
@@ -240,12 +238,12 @@ export class RideService {
         rideCandidates.splice(idx, 1);
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        await this.resend.emails.send({
-          from: 'onboarding@resend.dev',
-          to: (await this.userService.findOne(ride.driver.toString())).email,
-          subject: '[BIGUAPP] Solicitação rejeitada!',
-          html: '<strong>Procure outro bigu!</strong>',
-        });
+        // await this.resend.emails.send({
+        //   from: 'onboarding@resend.dev',
+        //   to: (await this.userService.findOne(ride.driver.toString())).email,
+        //   subject: '[BIGUAPP] Solicitação rejeitada!',
+        //   html: '<strong>Procure outro bigu!</strong>',
+        // });
 
         return (
           await this.update(rideId, {
@@ -254,6 +252,19 @@ export class RideService {
         ).toDTO();
       } else throw new NotFoundException('Candidato não encontrado.');
     } else throw new NotFoundException('Corrida não encontrada.');
+  }
+
+  async declineOrAcceptCandidate(
+    driverId: string,
+    rideId: string,
+    candidateId: string,
+    status: string
+  ) {
+    if(status === "declined"){
+      return await this.declineCandidate(driverId, rideId, candidateId)
+    }else{
+      return await this.acceptCandidate(driverId, rideId, candidateId)
+    }
   }
 
   async removeMember(driverId: string, rideId: string, memberId: string) {
@@ -266,12 +277,12 @@ export class RideService {
         rideMembers.splice(idx, 1);
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        await this.resend.emails.send({
-          from: 'onboarding@resend.dev',
-          to: (await this.userService.findOne(ride.driver.toString())).email,
-          subject: '[BIGUAPP] Remoção da carona!',
-          html: '<strong>Você perdeu um bigu!</strong>',
-        });
+        // await this.resend.emails.send({
+        //   from: 'onboarding@resend.dev',
+        //   to: (await this.userService.findOne(ride.driver.toString())).email,
+        //   subject: '[BIGUAPP] Remoção da carona!',
+        //   html: '<strong>Você perdeu um bigu!</strong>',
+        // });
 
         return (
           await this.update(rideId, {
