@@ -18,6 +18,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 import { RideResponseDto } from './dto/response-ride.dto';
+import { UserResponseDto } from '@src/user/dto/response-user.dto';
 
 @ApiTags('rides')
 @Controller('rides')
@@ -131,6 +132,24 @@ export class RideController {
       });
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/ride/:id/passengers')
+  @ApiOperation({ summary: 'Retorna todos os passageiros de uma carona' })
+  async getPassengersFromRide(
+    @Param('id') id: string,
+    @Res() response,
+  ): Promise<UserResponseDto[]> {
+    try {
+      const rideMembers = await this.rideService.getRideMembers(id);
+        return response.status(HttpStatus.OK).json({
+          message: 'Os passageiros confirmados na carona.',
+          rideMembers,
+        });
+    } catch (error) {
+      console.log(error)
     }
   }
 
