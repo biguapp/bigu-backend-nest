@@ -136,24 +136,6 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/ride/:id/passengers')
-  @ApiOperation({ summary: 'Retorna todos os passageiros de uma carona' })
-  async getPassengersFromRide(
-    @Param('id') id: string,
-    @Res() response,
-  ): Promise<UserResponseDto[]> {
-    try {
-      const rideMembers = await this.rideService.getRideMembers(id);
-        return response.status(HttpStatus.OK).json({
-          message: 'Os passageiros confirmados na carona.',
-          rideMembers,
-        });
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Get('/driver/active')
   @ApiOperation({
     summary: 'Retorna todas as caronas que o usuário é o motorista.',
