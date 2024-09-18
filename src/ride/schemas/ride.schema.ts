@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { RideResponseDto } from '../dto/response-ride.dto';
+import { Candidate, CandidateSchema } from './candidate.schema';
+import { CANCELLED } from 'dns';
 
 @Schema()
 export class Ride extends Document {
@@ -10,8 +12,8 @@ export class Ride extends Document {
   @Prop({ type: [Types.ObjectId], ref: 'User' })
   members?: Types.ObjectId[];
 
-  @Prop({ type: [Types.ObjectId], ref: 'User' })
-  candidates?: Types.ObjectId[];
+  @Prop({ type: [Candidate], ref: 'User' })
+  candidates?: Candidate[];
 
   @Prop({ type: Types.ObjectId, ref: 'Address', required: true })
   startAddress: Types.ObjectId;
@@ -51,8 +53,18 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
   const members = await Promise.all(
     (this.members || []).map(memberId => this.model('User').findById(memberId).exec())
   );
-  const candidates = await Promise.all(
-    (this.candidates || []).map(candidateId => this.model('User').findById(candidateId).exec())
+  const canditates = await Promise.all(
+    this.candidates.map(async candidate => {
+      const [user, address] = await Promise.all([
+        this.model('User').findById(candidate.user).exec(),
+        this.model('Address').findById(candidate.address).exec()
+      ]);
+
+      return {
+        user: user ? user.toDTO() : null, // Certifique-se de que toDTO está definido em User
+        address: address ? address.toDTO() : null // Certifique-se de que toDTO está definido em Address
+      };
+    })
   );
   const startAddress = await this.model('Address').findById(this.startAddress).exec();
   const destinationAddress = await this.model('Address').findById(this.destinationAddress).exec();
@@ -61,7 +73,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
   return {
     driver: driver.toDTO(),
     members: members.map(member => member.toDTO()),
-    candidates: candidates.map(candidate => candidate.toDTO()),
+    candidates: canditates,
     startAddress: startAddress.toDTO(),
     destinationAddress: destinationAddress.toDTO(),
     numSeats: this.numSeats,

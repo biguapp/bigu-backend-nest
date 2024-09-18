@@ -11,6 +11,7 @@ import { Ride } from './interfaces/ride.interface';
 import { ResendService } from '@src/resend/resend.service';
 import { UserService } from '@src/user/user.service';
 import { AskAndAcceptRideDto } from './dto/ask-ride.dto';
+import { Candidate } from './interfaces/candidate.interface';
 
 @Injectable()
 export class RideService {
@@ -101,9 +102,10 @@ export class RideService {
   }
 
   async getDriverActiveRides(userId: string) {
+    const objId = new Types.ObjectId(userId);
     const userRides = await this.rideModel
       .find({
-        $and: [{ driver: userId }, { isOver: false }],
+        $and: [{ driver: objId }, { isOver: false }],
       })
       .exec();
     return userRides;
@@ -125,8 +127,9 @@ export class RideService {
     } else throw new NotFoundException('Corrida não encontrada.');
   }
 
-  async requestRide(userId: string, rideId: string) {
+  async requestRide(userId: string, rideId: string, addressId: string) {
     const rideIdObj = new Types.ObjectId(rideId);
+    const addressIdObj = new Types.ObjectId(addressId);
     
     const ride = await this.rideModel.findById(rideIdObj);
     const rideCandidates = ride.candidates || [];
@@ -140,7 +143,7 @@ export class RideService {
         throw new BadRequestException('Você já é membro dessa carona.');
     }
     
-    if (ride.candidates.some(candidate => candidate.toString() === userIdObj.toString())) {
+    if (ride.candidates.some(candidate => candidate.user.toString() === userIdObj.toString())) {
         throw new BadRequestException('Você já é candidato a essa carona.');
     }
     
@@ -148,7 +151,8 @@ export class RideService {
         throw new BadRequestException('Essa carona já está cheia.');
     }
 
-    rideCandidates.push(userIdObj);
+    rideCandidates.push({user: userIdObj, address: addressIdObj} as Candidate);
+    
     await this.resendService.send({
         from: 'biguapp@hotmail.com',
         to: (await this.userService.findOne(ride.driver.toString())).email,
@@ -159,58 +163,58 @@ export class RideService {
     return await this.update(rideId, { candidates: rideCandidates });
   }
 
-  async acceptCandidate(driverId: string, rideId: string, candidateId: string) {
-    const ride = await this.findOne(rideId);
-    const candidateIdObj = new Types.ObjectId(candidateId);
-    const rideCandidates = ride.candidates;
-    if (ride.driver.toString() === driverId) {
-      if (rideCandidates.includes(candidateIdObj)) {
-        const idx = rideCandidates.indexOf(candidateIdObj);
-        ride.members.push(candidateIdObj);
-        const newMembers = ride.members;
-        await this.resendService.send({
-          from: 'biguapp@hotmail.com',
-          to: (await this.userService.findOne(ride.driver.toString())).email,
-          subject: '[BIGUAPP] Solicitação aceita!',
-          html: '<strong>Você conseguiu um bigu!</strong>',
-        })
-        rideCandidates.splice(idx, 1)
-        return (
-          await this.update(rideId, {
-            candidates: rideCandidates,
-            members: newMembers,
-          })
-        ).toDTO();
-      } else throw new NotFoundException('Candidato não encontrado.');
-    } else throw new NotFoundException('Corrida não encontrada.');
-  }
+  // async acceptCandidate(driverId: string, rideId: string, candidateId: string) {
+  //   const ride = await this.findOne(rideId);
+  //   const candidateIdObj = new Types.ObjectId(candidateId);
+  //   const rideCandidates = ride.candidates;
+  //   if (ride.driver.toString() === driverId) {
+  //     if (rideCandidates.includes(candidateIdObj)) {
+  //       const idx = rideCandidates.indexOf(candidateIdObj);
+  //       ride.members.push(candidateIdObj);
+  //       const newMembers = ride.members;
+  //       await this.resendService.send({
+  //         from: 'biguapp@hotmail.com',
+  //         to: (await this.userService.findOne(ride.driver.toString())).email,
+  //         subject: '[BIGUAPP] Solicitação aceita!',
+  //         html: '<strong>Você conseguiu um bigu!</strong>',
+  //       })
+  //       rideCandidates.splice(idx, 1)
+  //       return (
+  //         await this.update(rideId, {
+  //           candidates: rideCandidates,
+  //           members: newMembers,
+  //         })
+  //       ).toDTO();
+  //     } else throw new NotFoundException('Candidato não encontrado.');
+  //   } else throw new NotFoundException('Corrida não encontrada.');
+  // }
 
-  async declineCandidate(
-    driverId: string,
-    rideId: string,
-    candidateId: string,
-  ) {
-    const ride = await this.findOne(rideId);
-    const candidateIdObj = new Types.ObjectId(candidateId);
-    const rideCandidates = ride.candidates;
-    if (ride.driver.toString() === driverId) {
-      if (rideCandidates.includes(candidateIdObj)) {
-        const idx = rideCandidates.indexOf(candidateIdObj);
-        rideCandidates.splice(idx, 1)
-        await this.resendService.send({
-          from: 'biguapp@hotmail.com',
-          to: (await this.userService.findOne(ride.driver.toString())).email,
-          subject: '[BIGUAPP] Solicitação rejeitada!',
-          html: '<strong>Você perdeu um bigu!</strong>',
-        })
-        return (
-          await this.update(rideId, {
-            candidates: rideCandidates,
-          })
-        ).toDTO();
-      } else throw new NotFoundException('Candidato não encontrado.');
-    } else throw new NotFoundException('Corrida não encontrada.');
-  }
+  // async declineCandidate(
+  //   driverId: string,
+  //   rideId: string,
+  //   candidateId: string,
+  // ) {
+  //   const ride = await this.findOne(rideId);
+  //   const candidateIdObj = new Types.ObjectId(candidateId);
+  //   const rideCandidates = ride.candidates;
+  //   if (ride.driver.toString() === driverId) {
+  //     if (rideCandidates.includes(candidateIdObj)) {
+  //       const idx = rideCandidates.indexOf(candidateIdObj);
+  //       rideCandidates.splice(idx, 1)
+  //       await this.resendService.send({
+  //         from: 'biguapp@hotmail.com',
+  //         to: (await this.userService.findOne(ride.driver.toString())).email,
+  //         subject: '[BIGUAPP] Solicitação rejeitada!',
+  //         html: '<strong>Você perdeu um bigu!</strong>',
+  //       })
+  //       return (
+  //         await this.update(rideId, {
+  //           candidates: rideCandidates,
+  //         })
+  //       ).toDTO();
+  //     } else throw new NotFoundException('Candidato não encontrado.');
+  //   } else throw new NotFoundException('Corrida não encontrada.');
+  // }
 
   async removeMember(
     driverId: string,
@@ -237,5 +241,16 @@ export class RideService {
         ).toDTO();
       } else throw new NotFoundException('Candidato não encontrado.');
     } else throw new NotFoundException('Corrida não encontrada.');
+  }
+
+  async getCandidates(driverId: string){
+    const objId = new Types.ObjectId(driverId);
+    const userRides = await this.rideModel
+      .find({ $and: [{ driver: objId }, { isOver: false }] });
+    let candidates: Candidate[] = []
+    userRides.forEach((item) => {
+      candidates = candidates.concat(item.candidates)
+    })
+    return candidates
   }
 }

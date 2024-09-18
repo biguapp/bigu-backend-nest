@@ -3,11 +3,12 @@ import { Car } from '@src/car/interfaces/car.interface';
 import { User } from '@src/user/interfaces/user.interface';
 import { Address } from '@src/address/interfaces/address.interface';
 import { RideResponseDto } from '../dto/response-ride.dto';
+import { Candidate } from './candidate.interface';
 
 export interface Ride extends Document {
   readonly driver: User;
   readonly members?: Types.ObjectId[];
-  readonly candidates?: Types.ObjectId[];
+  readonly candidates?: Candidate[];
   readonly startAddress: Address;
   readonly destinationAddress: Address;
   readonly numSeats: number;
