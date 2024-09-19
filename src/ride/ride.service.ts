@@ -150,7 +150,7 @@ export class RideService {
     }
 
     if (
-      ride.members.some((member) => member.toString() === userIdObj.toString())
+      ride.members.some((member) => member.user.toString() === userIdObj.toString())
     ) {
       throw new BadRequestException('Você já é membro dessa carona.');
     }
