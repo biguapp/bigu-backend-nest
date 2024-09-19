@@ -345,7 +345,7 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('/remove/member/:rideId/:memberId')
+  @Delete('/ride/:rideId/member/:memberId')
   @ApiOperation({ summary: 'Remover membro da carona.' })
   @ApiResponse({
     status: 200,
@@ -366,5 +366,17 @@ export class RideController {
   async getCandidates(@Req() req) {
     const userId = req.user.sub;
     return await this.rideService.getCandidates(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/leave/:rideId')
+  @ApiOperation({ summary: 'Deixar de fazer parte de uma carona.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Membro deixou de fazer parte de uma carona.',
+  })
+  async leaveRide(@Req() req, @Param('rideId') rideId) {
+    const userId = req.user.sub;
+    return await this.rideService.removeMember(userId, rideId, userId);
   }
 }

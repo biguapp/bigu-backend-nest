@@ -271,7 +271,7 @@ export class RideService {
     const ride = await this.findOne(rideId);
     const rideMembers = ride.members;
     const rideMembersId = rideMembers.map((member) => member.user.toString());
-    if (ride.driver.toString() === driverId) {
+    if (ride.driver.toString() === driverId || driverId === memberId) {
       if (rideMembersId.includes(memberId)) {
         const idx = rideMembersId.indexOf(memberId);
         rideMembers.splice(idx, 1);
