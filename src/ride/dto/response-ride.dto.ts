@@ -5,6 +5,10 @@ import { UserResponseDto } from '@src/user/dto/response-user.dto';
 import { IsString, IsNumber, IsBoolean, IsArray } from 'class-validator';
 
 export class RideResponseDto {
+
+  @ApiProperty({ description: 'Id da corrida', example: '1', required: true })
+  readonly rideId: string
+  
   @ApiProperty({ description: 'ID do motorista', example: '1', required: true })
   @IsString()
   readonly driver: UserResponseDto;

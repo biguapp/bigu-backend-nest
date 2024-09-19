@@ -13,6 +13,8 @@ import { CarService } from './car/car.service';
 import { CarModule } from './car/car.module';
 import { UserService } from './user/user.service';
 import { RideModule } from './ride/ride.module';
+import { ResendModule } from './resend/resend.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -23,6 +25,10 @@ import { RideModule } from './ride/ride.module';
     AddressModule,
     CarModule,
     RideModule,
+    ResendModule,
+    ConfigModule.forRoot({
+      isGlobal: true
+    })
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: RolesGuard }],
