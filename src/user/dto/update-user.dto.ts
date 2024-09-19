@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsOptional, Matches } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
 import { CreateAddressDto } from '../../address/dto/create-address.dto';
 import { Role } from '../../enums/enum';
@@ -17,6 +17,9 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
 
   @ApiProperty({ description: 'Email do usuário', example: 'joao.silva@ufcg.edu.br', required: false })
   @IsOptional()
+  @Matches(/^[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)*ufcg\.edu\.br$/, {
+    message: 'O email de cadastro deve ser o acadêmico.'
+  })
   readonly email?: string;
 
   @ApiProperty({ description: 'Matrícula do usuário', example: '2021001234', required: false })
@@ -42,4 +45,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({ description: 'Pontuação média do usuário', example: 0, required: false })
   @IsOptional()
   readonly avgScore?: number;
+
+  readonly verificationCode?: string;
+
+  readonly isVerified?: boolean;
 }

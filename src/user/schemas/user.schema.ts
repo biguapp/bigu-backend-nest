@@ -32,6 +32,12 @@ export class User extends Document {
 
   @Prop({ default: 0 })
   avgScore: number;
+
+  @Prop({ required: true })
+  verificationCode: string;
+
+  @Prop( { required: true, default: false})
+  isVerified: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -45,6 +51,7 @@ UserSchema.methods.toDTO = function (): UserResponseDto {
     phoneNumber: this.phoneNumber,
     matricula: this.matricula,
     feedbacks: this.feedbacks,
-    avgScore: this.avgScore
+    avgScore: this.avgScore,
+    isVerified: this.isVerified
   };
 };

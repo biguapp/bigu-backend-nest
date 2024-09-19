@@ -7,10 +7,9 @@ import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '@src/auth/auth.module';
 import { CarModule } from '@src/car/car.module';
-import { ResendModule } from '../resend/resend.module';
 import { Member, MemberSchema } from './schemas/member.schema';
 import { Candidate, CandidateSchema } from './schemas/candidate.schema';
-import { ConfigService } from '@nestjs/config';
+import { MailjetModule } from 'nest-mailjet';
 
 @Module({
   imports: [
@@ -22,16 +21,15 @@ import { ConfigService } from '@nestjs/config';
     AddressModule,
     AuthModule,
     CarModule,
-    ResendModule,
+    MailjetModule.registerAsync({
+      useFactory: () => ({
+        apiKey: process.env.MAILJET_API_KEY,
+        apiSecret: process.env.MAILJET_API_SECRET,
+      }),
+    }),
   ],
   controllers: [RideController],
-  providers: [RideService,
-    {
-      provide: 'RESEND_API_KEY',
-      useFactory: (ConfigService: ConfigService) => ConfigService.get<string>('RESEND_KEY'),
-      inject: [ConfigService]
-    }
-  ],
+  providers: [RideService],
   exports: [RideService],
 })
 export class RideModule {}

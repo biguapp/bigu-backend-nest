@@ -12,21 +12,17 @@ import { Ride } from './interfaces/ride.interface';
 import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
-import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import { MailjetService } from 'nest-mailjet';
 
 @Injectable()
 export class RideService {
-  private readonly resend: Resend;
   constructor(
     @InjectModel('Ride') private readonly rideModel: Model<Ride>,
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
-    @Inject('RESEND_API_KEY') private readonly resendKey: string, // Injetando a chave aqui
-  ) {
-    this.resend = new Resend(this.resendKey);
-  }
+    private readonly mailjetService: MailjetService,
+  ) {}
 
   // Criação de um novo passeio
   // 66e093bfe2323b4802da45c3 - ENTRADA PRINCIPAL
@@ -150,7 +146,9 @@ export class RideService {
     }
 
     if (
-      ride.members.some((member) => member.user.toString() === userIdObj.toString())
+      ride.members.some(
+        (member) => member.user.toString() === userIdObj.toString(),
+      )
     ) {
       throw new BadRequestException('Você já é membro dessa carona.');
     }
@@ -173,12 +171,11 @@ export class RideService {
     } as Candidate);
 
     // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-    // await this.resend.emails.send({
-    //   from: 'onboarding@resend.dev',
-    //   to: (await this.userService.findOne(ride.driver.toString())).email,
-    //   subject: '[BIGUAPP] Nova solicitação',
-    //   html: '<strong>Nova solicitação de bigu!</strong>',
-    // });
+    await this.sendEmail(
+      (await this.userService.findOne(ride.driver.toString())).email,
+      '[BIGUAPP] Nova solicitação',
+      'Nova solicitação de bigu!',
+    );
 
     return await this.update(rideId, { candidates: rideCandidates });
   }
@@ -204,12 +201,11 @@ export class RideService {
         const newMembers = ride.members;
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        // await this.resend.emails.send({
-        //   from: 'onboarding@resend.dev',
-        //   to: (await this.userService.findOne(ride.driver.toString())).email,
-        //   subject: '[BIGUAPP] Solicitação aceita!',
-        //   html: '<strong>Você conseguiu um bigu!</strong>',
-        // });
+        await this.sendEmail(
+          (await this.userService.findOne(ride.driver.toString())).email,
+          '[BIGUAPP] Solicitação aceita!',
+          'Você conseguiu um bigu!',
+        );
 
         rideCandidates.splice(idx, 1);
         return (
@@ -225,7 +221,7 @@ export class RideService {
   async declineCandidate(
     driverId: string,
     rideId: string,
-    candidateId: string
+    candidateId: string,
   ) {
     const ride = await this.findOne(rideId);
     const rideCandidates = ride.candidates;
@@ -238,12 +234,11 @@ export class RideService {
         rideCandidates.splice(idx, 1);
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        // await this.resend.emails.send({
-        //   from: 'onboarding@resend.dev',
-        //   to: (await this.userService.findOne(ride.driver.toString())).email,
-        //   subject: '[BIGUAPP] Solicitação rejeitada!',
-        //   html: '<strong>Procure outro bigu!</strong>',
-        // });
+        await this.sendEmail(
+          (await this.userService.findOne(ride.driver.toString())).email,
+          '[BIGUAPP] Solicitação rejeitada!',
+          'Procure outro bigu!',
+        );
 
         return (
           await this.update(rideId, {
@@ -258,12 +253,12 @@ export class RideService {
     driverId: string,
     rideId: string,
     candidateId: string,
-    status: string
+    status: string,
   ) {
-    if(status === "declined"){
-      return await this.declineCandidate(driverId, rideId, candidateId)
-    }else{
-      return await this.acceptCandidate(driverId, rideId, candidateId)
+    if (status === 'declined') {
+      return await this.declineCandidate(driverId, rideId, candidateId);
+    } else {
+      return await this.acceptCandidate(driverId, rideId, candidateId);
     }
   }
 
@@ -277,12 +272,11 @@ export class RideService {
         rideMembers.splice(idx, 1);
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        // await this.resend.emails.send({
-        //   from: 'onboarding@resend.dev',
-        //   to: (await this.userService.findOne(ride.driver.toString())).email,
-        //   subject: '[BIGUAPP] Remoção da carona!',
-        //   html: '<strong>Você perdeu um bigu!</strong>',
-        // });
+        await this.sendEmail(
+          (await this.userService.findOne(ride.driver.toString())).email,
+          '[BIGUAPP] Remoção da carona!',
+          'Você perdeu um bigu!',
+        );
 
         return (
           await this.update(rideId, {
@@ -303,5 +297,30 @@ export class RideService {
       candidates = candidates.concat(item.candidates);
     });
     return candidates;
+  }
+
+  private async sendEmail(
+    email: string,
+    subject: string,
+    text: string,
+  ): Promise<string> {
+    const repl = await this.mailjetService.send({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAILJET_SENDER_EMAIL,
+          },
+          To: [
+            {
+              Email: email,
+            },
+          ],
+          Subject: subject,
+          TextPart: text,
+        },
+      ],
+    });
+
+    return repl.body.Messages[0].Status;
   }
 }

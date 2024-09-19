@@ -19,7 +19,7 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto, verificationCode: string): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const hasEmail = await this.verifyEmail(createUserDto.email);
@@ -33,6 +33,7 @@ export class UserService {
       ...createUserDto,
       role: 'user',
       password: hashedPassword,
+      verificationCode: verificationCode
     });
 
     const user = await createdUser.save();

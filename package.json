@@ -34,11 +34,11 @@
     "class-validator": "^0.14.1",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.2",
+    "nest-mailjet": "^0.3.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.0",
-    "resend": "^4.0.0",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1"
   },
