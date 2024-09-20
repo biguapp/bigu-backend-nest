@@ -43,7 +43,6 @@ export class RideService {
       startAddress: new Types.ObjectId(createRideDto.startAddress),
       destinationAddress: new Types.ObjectId(createRideDto.destinationAddress),
       car: new Types.ObjectId(createRideDto.car),
-      toWomen: createRideDto.toWomen,
       members: [],
       candidates: [],
       isOver: false,
