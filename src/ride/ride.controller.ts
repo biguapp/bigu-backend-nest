@@ -159,6 +159,29 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('/toWomen')
+  @ApiOperation({ summary: 'Retorna todas as caronas só para mulheres ativas.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as caronas para mulheres ativas foram retornadas.',
+  })
+  async getRidesAvailableToWomen(@Res() response): Promise<RideResponseDto[]> {
+    try {
+      const ridesAvailableToWomenModel = await this.rideService.getRidesAvailableToWomen();
+      const ridesAvailableToWomen = await Promise.all(
+        ridesAvailableToWomenModel.map((ride) => ride.toDTO()),
+      );
+
+      return response.status(HttpStatus.OK).json({
+        message: 'Todas as caronas para mulheres ativas foram retornadas.',
+        ridesAvailableToWomen,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('/driver/active')
   @ApiOperation({
     summary: 'Retorna todas as caronas que o usuário é o motorista.',
