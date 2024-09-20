@@ -30,6 +30,12 @@ export class RideService {
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
+    const driver = await this.userService.findOne(createRideDto.driver)
+
+    if (createRideDto.toWomen && driver.sex === 'Masculino') {
+      throw new BadRequestException('Um motorista homem não pode criar caronas só para mulheres.');
+    }
+
     const date = new Date(createRideDto.scheduledTime);
     const ride = {
       ...createRideDto,
@@ -37,6 +43,7 @@ export class RideService {
       startAddress: new Types.ObjectId(createRideDto.startAddress),
       destinationAddress: new Types.ObjectId(createRideDto.destinationAddress),
       car: new Types.ObjectId(createRideDto.car),
+      toWomen: createRideDto.toWomen,
       members: [],
       candidates: [],
       isOver: false,
@@ -81,6 +88,11 @@ export class RideService {
   async getRidesAvailable(): Promise<Ride[]> {
     const rides = await this.rideModel.find().exec();
     return rides.filter((ride) => ride.isOver === false);
+  }
+
+  async getRidesAvailableToWomen(): Promise<Ride[]> {
+    const rides = await this.rideModel.find().exec();
+    return rides.filter((ride) => ride.isOver === false && ride.toWomen === true);
   }
 
   async getDriverHistory(userId: string) {
@@ -138,6 +150,7 @@ export class RideService {
     const addressIdObj = new Types.ObjectId(addressId);
 
     const ride = await this.rideModel.findById(rideIdObj);
+    const user = await this.userService.findOne(userId);
     const rideCandidates = ride.candidates || [];
     const userIdObj = new Types.ObjectId(userId);
 
@@ -159,6 +172,10 @@ export class RideService {
       )
     ) {
       throw new BadRequestException('Você já é candidato a essa carona.');
+    }
+
+    if (ride.toWomen && user.sex === 'Masculino') {
+      throw new BadRequestException('Essa carona é só para mulheres.');
     }
 
     if (ride.members.length === ride.numSeats) {
