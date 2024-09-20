@@ -14,13 +14,13 @@ export class RideResponseDto {
   readonly driver: UserResponseDto;
 
   @ApiProperty({
-    description: 'Endereço de início do passeio',
+    description: 'Endereço de início da carona',
     type: AddressResponseDto
   })
   readonly startAddress: AddressResponseDto;
 
   @ApiProperty({
-    description: 'Endereço de destino do passeio',
+    description: 'Endereço de destino da carona',
     type: AddressResponseDto
   })
   readonly destinationAddress: AddressResponseDto;
@@ -30,18 +30,18 @@ export class RideResponseDto {
   readonly numSeats: number;
 
   @ApiProperty({
-    description: 'Indica se o passeio é para o campus universitário',
+    description: 'Indica se a carona é para o campus universitário',
     example: true
   })
   @IsBoolean()
   readonly goingToCollege: boolean;
 
-  @ApiProperty({ description: 'Preço do passeio', example: 20.0 })
+  @ApiProperty({ description: 'Preço da carona', example: 20.0 })
   @IsNumber()
   readonly price: number;
 
   @ApiProperty({
-    description: 'Data e hora agendadas para o passeio',
+    description: 'Data e hora agendadas para a carona',
     example: '2024-09-10T15:30:00Z',
   })
   readonly scheduledTime: string;
@@ -53,24 +53,24 @@ export class RideResponseDto {
   readonly car: CarResponseDto;
 
   @ApiProperty({
-    description: 'Descrição do passeio',
-    example: 'Passeio para o campus universitário'
+    description: 'Descrição da carona',
+    example: 'Carona para o campus universitário'
   })
   @IsString()
   readonly description: string;
 
   @ApiProperty({
-    description: 'Indica se o passeio é exclusivo para mulheres',
+    description: 'Indica se a carona é exclusivo para mulheres',
     example: false
   })
   @IsBoolean()
   readonly toWomen: boolean;
 
-  @ApiProperty({ description: 'Lista de membros do passeio', type: [UserResponseDto]})
+  @ApiProperty({ description: 'Lista de membros da carona', type: [UserResponseDto]})
   @IsArray()
   readonly members: UserResponseDto[];
 
-  @ApiProperty({ description: 'Lista de candidatos ao passeio', type: [UserResponseDto]})
+  @ApiProperty({ description: 'Lista de candidatos aa carona', type: [UserResponseDto]})
   @IsArray()
   readonly candidates: UserResponseDto[];
 

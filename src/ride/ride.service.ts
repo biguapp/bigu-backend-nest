@@ -24,7 +24,7 @@ export class RideService {
     private readonly mailjetService: MailjetService,
   ) {}
 
-  // Criação de um novo passeio
+  // Criação de uma nova carona
   // 66e093bfe2323b4802da45c3 - ENTRADA PRINCIPAL
   // 66e09414e2323b4802da45c5 - ENTRADA CEEI
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
@@ -53,7 +53,7 @@ export class RideService {
   async findOne(id: string): Promise<Ride> {
     const ride = await this.rideModel.findById(id);
     if (!ride) {
-      throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
+      throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
     return ride;
   }
@@ -65,7 +65,7 @@ export class RideService {
       { new: true },
     );
     if (!updatedRide) {
-      throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
+      throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
     return updatedRide;
   }
@@ -73,7 +73,7 @@ export class RideService {
   async remove(id: string): Promise<Ride> {
     const result = await this.rideModel.findByIdAndDelete(id).exec();
     if (!result) {
-      throw new NotFoundException(`Passeio com ID ${id} não encontrado`);
+      throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
     return result;
   }

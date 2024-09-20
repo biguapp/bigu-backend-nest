@@ -15,14 +15,14 @@ export class CreateRideDto {
   readonly driver: string;
 
   @ApiProperty({
-    description: 'Endereço de início do passeio',
+    description: 'Endereço de início da carona',
     type: String,
     required: true,
   })
   readonly startAddress: string;
 
   @ApiProperty({
-    description: 'Endereço de destino do passeio',
+    description: 'Endereço de destino da carona',
     type: String,
     required: true,
   })
@@ -33,19 +33,19 @@ export class CreateRideDto {
   readonly numSeats: number;
 
   @ApiProperty({
-    description: 'Indica se o passeio é para o campus universitário',
+    description: 'Indica se a carona é para o campus universitário',
     example: true,
     required: true,
   })
   @IsBoolean()
   readonly goingToCollege: boolean;
 
-  @ApiProperty({ description: 'Preço do passeio', example: 20.0 })
+  @ApiProperty({ description: 'Preço da carona', example: 20.0 })
   @IsNumber()
   readonly price: number;
 
   @ApiProperty({
-    description: 'Data e hora agendadas para o passeio',
+    description: 'Data e hora agendadas para a carona',
     example: '2024-09-10T15:30:00Z',
   })
   readonly scheduledTime: string;
@@ -58,8 +58,8 @@ export class CreateRideDto {
   readonly car: string;
 
   @ApiProperty({
-    description: 'Descrição do passeio',
-    example: 'Passeio para o campus universitário',
+    description: 'Descrição da carona',
+    example: 'Carona para o campus universitário',
     required: false,
   })
   @IsOptional()
@@ -67,7 +67,7 @@ export class CreateRideDto {
   readonly description?: string;
 
   @ApiProperty({
-    description: 'Indica se o passeio é exclusivo para mulheres',
+    description: 'Indica se a carona é exclusivo para mulheres',
     example: false,
     required: true,
   })
