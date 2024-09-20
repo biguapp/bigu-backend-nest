@@ -95,15 +95,17 @@ export class RideService {
   }
 
   async getDriverHistory(userId: string) {
+    const objId = new Types.ObjectId(userId);
     const userRides = await this.rideModel
-      .find({ $and: [{ driver: userId }, { isOver: true }] })
+      .find({ $and: [{ driver: objId }, { isOver: true }] })
       .exec();
     return userRides;
   }
 
   async getMemberHistory(userId: string) {
+    const objId = new Types.ObjectId(userId);
     const userRides = await this.rideModel
-      .find({ $and: [{ members: userId }, { isOver: true }] })
+      .find({ $and: [{ members: objId }, { isOver: true }] })
       .exec();
     return userRides;
   }
