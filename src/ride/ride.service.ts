@@ -145,6 +145,7 @@ export class RideService {
     const addressIdObj = new Types.ObjectId(addressId);
 
     const ride = await this.rideModel.findById(rideIdObj);
+    const user = await this.userService.findOne(userId);
     const rideCandidates = ride.candidates || [];
     const userIdObj = new Types.ObjectId(userId);
 
@@ -166,6 +167,10 @@ export class RideService {
       )
     ) {
       throw new BadRequestException('Você já é candidato a essa carona.');
+    }
+
+    if (ride.toWomen && user.sex === 'Masculino') {
+      throw new BadRequestException('Essa carona é só para mulheres.');
     }
 
     if (ride.members.length === ride.numSeats) {
