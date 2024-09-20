@@ -87,6 +87,7 @@ export class AddressController {
     } 
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @ApiOperation({ summary: 'Editar um endereço' })
   @ApiParam({
@@ -144,25 +145,6 @@ export class AddressController {
     } catch (error) {
       console.log(error);
     } 
-  }
-
-  @Delete()
-  @ApiOperation({ summary: 'Remover todos os endereços' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Todos os endereços removidos com sucesso.' 
-  })
-  @ApiResponse({ status: 500, description: 'Erro no servidor.' })
-  async removeAll(@Res() response): Promise<void> {
-    try {
-      await this.addressService.removeAll();
-      
-      return response.status(HttpStatus.OK).json({
-        message: 'Todos os endereços foram removidos com sucesso.'
-      });
-    } catch (error) {
-      console.log(error);
-    }
   }
 
   @UseGuards(JwtAuthGuard)

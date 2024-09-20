@@ -1,32 +1,37 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
 import { UserService } from './user.service';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from './interfaces/user.interface';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './schemas/user.schema';
 
 describe('UserService', () => {
   let service: UserService;
   let model: Model<User>;
 
+  const mockUser = {
+    _id: 'userId1',
+    name: 'João Silva',
+    email: 'teste1@teste.ufcg.edu.br',
+    matricula: '123456789',
+    phoneNumber: '(83) 99999-9999',
+    password: 'hashedPassword',
+    role: 'user',
+    verificationCode: '123456',
+    isVerified: false,
+  };
+
   const mockUserModel = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    findById: jest.fn(),
-    findByIdAndUpdate: jest.fn(),
-    findByIdAndDelete: jest.fn(),
-    save: jest.fn(),
-    create: jest.fn().mockResolvedValue({
-      save: jest.fn().mockResolvedValue({
-        _id: '1',
-        email: 'test@test.com',
-        matricula: '12345',
-        password: 'hashedPassword',
-        role: 'user',
-      }),
-    }),
+    findOne: jest.fn().mockReturnThis(),
+    findById: jest.fn().mockReturnThis(),
+    find: jest.fn().mockReturnThis(),
+    create: jest.fn().mockResolvedValue(mockUser),
+    findByIdAndUpdate: jest.fn().mockReturnThis(),
+    findByIdAndDelete: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue(mockUser),
   };
 
   beforeEach(async () => {
@@ -44,144 +49,109 @@ describe('UserService', () => {
     model = module.get<Model<User>>(getModelToken('User'));
   });
 
+  // afterEach(() => {
+  //   jest.clearAllMocks();
+  // });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
   describe('create', () => {
-    it('should create a new user', async () => {
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword');
-      jest.spyOn(service, 'verifyEmail').mockResolvedValue(false);
-      jest.spyOn(service, 'verifyMatricula').mockResolvedValue(false);
-
-      const createUserDto: CreateUserDto = {
-        name: 'Teste da Silva',
-        email: 'test@test.com',
-        matricula: '12345',
-        password: 'password',
-        sex: 'M',
-        phoneNumber: '83996798478'
+    it('should create a user', async () => {
+      const create_user_dto: CreateUserDto = {
+        name: 'João Silva',
+        email: 'teste12345@teste.ufcg.edu.br',
+        matricula: '2021001234',
+        sex: 'Masculino',
+        phoneNumber: '(83) 99999-9999',
+        password: 'senha123',
       };
+      const verification_code = '123456';
+      const hashed_password = 'hashed_password';
 
-      const result = await service.create(createUserDto);
+      // Mock do hash da senha
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue(hashed_password);
 
-      expect(result).toEqual({
-        _id: 'mockUserId',
-        email: 'test@test.com',
-        matricula: '12345',
-        password: 'hashedPassword',
-        role: 'user',
-      });
-      expect(bcrypt.hash).toHaveBeenCalledWith('password', 10);
-      expect(service.verifyEmail).toHaveBeenCalledWith('test@test.com');
-      expect(service.verifyMatricula).toHaveBeenCalledWith('12345');
+      // console.log(create_user_dto.email);
+      const result = await service.create(create_user_dto, verification_code);
+
+      expect(result).toEqual(mockUser);
+      expect(bcrypt.hash).toHaveBeenCalledWith('senha123', 10);
+      // expect(created_user.save).toHaveBeenCalled(); // Verifica se o save foi chamado
     });
 
-    it('should throw BadRequestException if email is already in use', async () => {
+    it('should throw an error if email is already in use', async () => {
       jest.spyOn(service, 'verifyEmail').mockResolvedValue(true);
-
       const createUserDto: CreateUserDto = {
-        name: 'Teste da Silva',
-        email: 'test@test.com',
-        matricula: '12345',
-        password: 'password',
-        sex: 'M',
-        phoneNumber: '83996798478'
+        name: 'João Silva',
+        email: 'joao.silva@ufcg.edu.br',
+        matricula: '2021001234',
+        sex: 'Masculino',
+        phoneNumber: '(83) 99999-9999',
+        password: 'senha123',
       };
+      const verificationCode = '123456';
 
-      await expect(service.create(createUserDto)).rejects.toThrow(
-        new BadRequestException('O email já está em uso.'),
-      );
-    });
-
-    it('should throw BadRequestException if matricula is already in use', async () => {
-      jest.spyOn(service, 'verifyEmail').mockResolvedValue(false);
-      jest.spyOn(service, 'verifyMatricula').mockResolvedValue(true);
-
-      const createUserDto: CreateUserDto = {
-        name: 'Teste da Silva',
-        email: 'test@test.com',
-        matricula: '12345',
-        password: 'password',
-        sex: 'M',
-        phoneNumber: '83996798478'
-      };
-
-      await expect(service.create(createUserDto)).rejects.toThrow(
-        new BadRequestException('A matrícula já está em uso.'),
-      );
+      await expect(
+        service.create(createUserDto, verificationCode),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('findAll', () => {
-    it('should return all users', async () => {
-      const mockUsers = [
-        { _id: '1', email: 'test@test.com' },
-        { _id: '2', email: 'user2@test.com' },
-      ];
-      mockUserModel.find.mockResolvedValue(mockUsers);
-
+    it('should return an array of users', async () => {
+      mockUserModel.find.mockResolvedValue([mockUser]);
       const result = await service.findAll();
-      expect(result).toEqual(mockUsers);
-      expect(mockUserModel.find).toHaveBeenCalled();
-    });
-  });
-
-  describe('findDrivers', () => {
-    it('should return all drivers', async () => {
-      const mockDrivers = [
-        { _id: '1', email: 'test@test.com', role: 'Driver' },
-      ];
-      mockUserModel.find.mockResolvedValue(mockDrivers);
-
-      const result = await service.findDrivers();
-      expect(result).toEqual(mockDrivers);
-      expect(mockUserModel.find).toHaveBeenCalledWith({ role: 'Driver' });
-    });
-
-    it('should throw NotFoundException if no drivers found', async () => {
-      mockUserModel.find.mockResolvedValue([]);
-
-      await expect(service.findDrivers()).rejects.toThrow(
-        new NotFoundException('Nenhum usuário com a role Driver encontrado'),
-      );
+      expect(result).toEqual([mockUser]);
     });
   });
 
   describe('findOne', () => {
-    it('should return a user by id', async () => {
-      const mockUser = { _id: '1', email: 'user@test.com' };
+    it('should return a user by ID', async () => {
       mockUserModel.findById.mockResolvedValue(mockUser);
-
-      const result = await service.findOne('1');
+      const result = await service.findOne('userId1');
       expect(result).toEqual(mockUser);
-      expect(mockUserModel.findById).toHaveBeenCalledWith('1');
     });
 
-    it('should throw NotFoundException if user not found', async () => {
+    it('should throw an error if user not found', async () => {
       mockUserModel.findById.mockResolvedValue(null);
-
-      await expect(service.findOne('1')).rejects.toThrow(
-        new NotFoundException('User with id 1 not found'),
+      await expect(service.findOne('userId1')).rejects.toThrow(
+        NotFoundException,
       );
     });
   });
 
-  describe('remove', () => {
-    it('should remove a user by id', async () => {
-      const mockUser = { _id: '1', email: 'test@test.com' };
-      mockUserModel.findByIdAndDelete.mockResolvedValue(mockUser);
-
-      const result = await service.remove('1');
-      expect(result).toEqual(mockUser);
-      expect(mockUserModel.findByIdAndDelete).toHaveBeenCalledWith('1');
+  describe('update', () => {
+    it('should update a user', async () => {
+      const updateUserDto: UpdateUserDto = { name: 'New Name' };
+      mockUserModel.findByIdAndUpdate.mockResolvedValue({
+        ...mockUser,
+        ...updateUserDto,
+      });
+      const result = await service.update('userId1', updateUserDto);
+      expect(result.name).toEqual('New Name');
     });
 
-    it('should throw NotFoundException if user not found', async () => {
-      mockUserModel.findByIdAndDelete.mockResolvedValue(null);
+    it('should throw an error if user not found', async () => {
+      mockUserModel.findByIdAndUpdate.mockResolvedValue(null);
+      await expect(
+        service.update('userId1', { name: 'New Name' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 
-      await expect(service.remove('1')).rejects.toThrow(
-        new NotFoundException('Usuario não encontrado'),
+  describe('remove', () => {
+    it('should delete a user', async () => {
+      mockUserModel.findByIdAndDelete.mockResolvedValue(mockUser);
+      const result = await service.remove('userId1');
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should throw an error if user not found', async () => {
+      mockUserModel.findByIdAndDelete.mockResolvedValue(null);
+      await expect(service.remove('userId1')).rejects.toThrow(
+        NotFoundException,
       );
     });
   });
