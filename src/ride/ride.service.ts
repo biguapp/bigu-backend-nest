@@ -90,6 +90,11 @@ export class RideService {
     return rides.filter((ride) => ride.isOver === false);
   }
 
+  async getRidesAvailableToWomen(): Promise<Ride[]> {
+    const rides = await this.rideModel.find().exec();
+    return rides.filter((ride) => ride.isOver === false && ride.toWomen === true);
+  }
+
   async getDriverHistory(userId: string) {
     const userRides = await this.rideModel
       .find({ $and: [{ driver: userId }, { isOver: true }] })
