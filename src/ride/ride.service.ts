@@ -30,6 +30,12 @@ export class RideService {
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
+    const driver = await this.userService.findOne(createRideDto.driver)
+
+    if (createRideDto.toWomen && driver.sex === 'Masculino') {
+      throw new BadRequestException('Um motorista homem não pode criar caronas só para mulheres.');
+    }
+
     const date = new Date(createRideDto.scheduledTime);
     const ride = {
       ...createRideDto,
@@ -37,6 +43,7 @@ export class RideService {
       startAddress: new Types.ObjectId(createRideDto.startAddress),
       destinationAddress: new Types.ObjectId(createRideDto.destinationAddress),
       car: new Types.ObjectId(createRideDto.car),
+      toWomen: createRideDto.toWomen,
       members: [],
       candidates: [],
       isOver: false,
