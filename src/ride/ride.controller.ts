@@ -11,6 +11,7 @@ import {
   Put,
   Res,
   HttpStatus,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -46,7 +47,7 @@ export class RideController {
         message: 'A carona foi criada com sucesso.',
         newRide: newRide,
       });
-      
+
     } catch (error) {
       console.error('Erro ao criar carona: ', error);
 
@@ -63,6 +64,10 @@ export class RideController {
     status: 200,
     description: 'Todas as caronas foram retornadas com sucesso.',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar caronas.',
+  })
   async findAll(@Res() response): Promise<RideResponseDto[]> {
     try {
       const ridesModel = await this.rideService.findAll();
@@ -72,8 +77,11 @@ export class RideController {
         message: 'Todas as caronas foram retornadas com sucesso.',
         rides,
       });
+
     } catch (error) {
-      console.log(error);
+      console.error('Erro ao encontrar caronas: ', error);
+      
+      throw new InternalServerErrorException('Erro ao encontrar caronas.');
     }
   }
 
