@@ -184,6 +184,35 @@ export class RideController {
     }
   }
 
+  @Get('/available')
+  @ApiOperation({ summary: 'Retorna todas as caronas disponíveis.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as caronas disponíveis foram retornadas.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar caronas disponíveis.',
+  })
+  async getAvailableRides(@Res() response): Promise<RideResponseDto[]> {
+    try {
+      const availableRidesModel = await this.rideService.findAll({ isOver: false, $expr: { $gt: ['$numSeats', { $size: '$members' }] } });
+      const availableRides = await Promise.all(
+        availableRidesModel.map((ride) => ride.toDTO()),
+      );
+
+      return response.status(HttpStatus.OK).json({
+        message: 'Todas as caronas disponíveis foram retornadas.',
+        availableRides,
+      });
+
+    } catch (error) {
+      console.error('Erro ao encontrar caronas disponíveis: ', error);
+      
+      throw new InternalServerErrorException('Erro ao encontrar caronas disponíveis.');
+    }
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('/toWomen')
   @ApiOperation({ summary: 'Retorna todas as caronas só para mulheres ativas.' })
