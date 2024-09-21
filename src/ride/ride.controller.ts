@@ -237,7 +237,7 @@ export class RideController {
   })
   async getAvailableRides(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const availableRidesModel = await this.rideService.findAll({ isOver: false, $expr: { $gt: ['$numSeats', { $size: '$members' }] } });
+      const availableRidesModel = await this.rideService.findAll({ isOver: false, numSeats: { $gt: { $size: '$members' } } });
       const availableRides = await Promise.all(
         availableRidesModel.map((ride) => ride.toDTO()),
       );
@@ -260,7 +260,7 @@ export class RideController {
 
   //refatorado
   @UseGuards(JwtAuthGuard)
-  @Get('/toWomen')
+  @Get('/active/toWomen')
   @ApiOperation({ summary: 'Retorna todas as caronas só para mulheres ativas.' })
   @ApiResponse({
     status: 200,
@@ -270,16 +270,16 @@ export class RideController {
     status: 500,
     description: 'Erro ao retornar caronas ativas para mulheres.',
   })
-  async getRidesAvailableToWomen(@Res() response): Promise<RideResponseDto[]> {
+  async getActiveRidesToWomen(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const ridesAvailableToWomenModel = await this.rideService.findAll({ isOver: false, toWomen: true });
-      const ridesAvailableToWomen = await Promise.all(
-        ridesAvailableToWomenModel.map((ride) => ride.toDTO()),
+      const activeRidesToWomenModel = await this.rideService.findAll({ isOver: false, toWomen: true });
+      const activeRidesToWomen = await Promise.all(
+        activeRidesToWomenModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas para mulheres ativas foram retornadas.',
-        ridesAvailableToWomen,
+        activeRidesToWomen,
       });
     } catch (error) {
       console.log('Erro ao encontrar caronas ativas para mulheres', error);
@@ -290,6 +290,44 @@ export class RideController {
       });
     }
   }
+
+  //refatorado
+  @UseGuards(JwtAuthGuard)
+  @Get('/available/toWomen')
+  @ApiOperation({ summary: 'Retorna todas as caronas só para mulheres disponíveis.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as caronas para mulheres disponíveis foram retornadas.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar caronas disponíveis para mulheres.',
+  })
+  async getRidesAvailableToWomen(@Res() response): Promise<RideResponseDto[]> {
+    try {
+      const ridesAvailableToWomenModel = await this.rideService.findAll({
+         isOver: false, 
+         toWomen: true, 
+         numSeats: { $gt: { $size: '$members' } }
+        });
+      const ridesAvailableToWomen = await Promise.all(
+        ridesAvailableToWomenModel.map((ride) => ride.toDTO()),
+      );
+
+      return response.status(HttpStatus.OK).json({
+        message: 'Todas as caronas para mulheres disponíveis foram retornadas.',
+        ridesAvailableToWomen,
+      });
+    } catch (error) {
+      console.error('Erro ao encontrar caronas disponíveis para mulheres', error);
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar caronas disponíveis para mulheres.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
+  }
+
 
   @UseGuards(JwtAuthGuard)
   @Get('/driver/active')
