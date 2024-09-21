@@ -65,8 +65,8 @@ export class RideService {
     }
   }
 
-  async findAll(): Promise<Ride[]> {
-    return await this.rideModel.find();
+  async findAll(filter: any = {}): Promise<Ride[]> {
+    return await this.rideModel.find(filter);
   }
 
   async findOne(id: string): Promise<Ride> {
@@ -95,11 +95,6 @@ export class RideService {
       throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
     return result;
-  }
-
-  async getRidesAvailable(): Promise<Ride[]> {
-    const rides = await this.rideModel.find().exec();
-    return rides.filter((ride) => ride.isOver === false);
   }
 
   async getRidesAvailableToWomen(): Promise<Ride[]> {

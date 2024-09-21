@@ -155,25 +155,32 @@ export class RideController {
     }
   }
 
-  @Get('/available')
+  @Get('/active')
   @ApiOperation({ summary: 'Retorna todas as caronas ativas.' })
   @ApiResponse({
     status: 200,
     description: 'Todas as caronas ativas foram retornadas.',
   })
-  async getRidesAvailable(@Res() response): Promise<RideResponseDto[]> {
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar caronas ativas.',
+  })
+  async getActiveRides(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const ridesAvailableModel = await this.rideService.getRidesAvailable();
-      const ridesAvailable = await Promise.all(
-        ridesAvailableModel.map((ride) => ride.toDTO()),
+      const activeRidesModel = await this.rideService.findAll({ isOver: false });
+      const activeRides = await Promise.all(
+        activeRidesModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as corridas ativas foram retornadas.',
-        ridesAvailable,
+        activeRides,
       });
+
     } catch (error) {
-      console.log(error);
+      console.error('Erro ao encontrar caronas: ', error);
+      
+      throw new InternalServerErrorException('Erro ao encontrar caronas.');
     }
   }
 
