@@ -13,7 +13,7 @@ export class CarService {
         const newCar = {...createCarDto, user: userId}
         const car = new this.carModel(newCar);
         
-        return car.save();
+        return await car.save();
     }
 
     async findAll(): Promise<Car[]> {

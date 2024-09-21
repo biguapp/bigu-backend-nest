@@ -20,7 +20,7 @@ export class Car extends Document {
   plate: string;
 
   @Prop({ required: true})
-  userId: string;
+  user: string;
 }
 
 export const CarSchema = SchemaFactory.createForClass(Car);
