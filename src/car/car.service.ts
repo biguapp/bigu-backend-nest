@@ -47,7 +47,7 @@ export class CarService {
   }
 
   async remove(id: string): Promise<Car> {
-    const exists = await this.rideModel.findOne({ car: id });
+    const exists = await this.rideModel.findOne({ car: id, isOver: false });
     if (exists)
       throw new BadRequestException(
         'O carro está sendo utilizado em uma carona e não pode ser removido.',

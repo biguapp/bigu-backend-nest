@@ -53,7 +53,7 @@ export class AddressService {
   }
 
   async remove(id: string): Promise<Address> {
-    const exists = await this.rideModel.findOne({ car: id });
+    const exists = await this.rideModel.findOne({ car: id, isOver: false });
     if (exists)
       throw new BadRequestException(
         'O endereço está sendo utilizado em uma carona e não pode ser removido.',
