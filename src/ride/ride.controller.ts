@@ -12,6 +12,7 @@ import {
   Res,
   HttpStatus,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -25,6 +26,8 @@ import { RideResponseDto } from './dto/response-ride.dto';
 export class RideController {
   constructor(private readonly rideService: RideService) {}
 
+  //refatorado
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Criar uma carona' })
   @ApiResponse({
@@ -58,6 +61,8 @@ export class RideController {
     }
   }
 
+  //refatorado
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Retornar todas as caronas.' })
   @ApiResponse({
@@ -88,6 +93,8 @@ export class RideController {
     }
   }
 
+  //refatorado
+  @UseGuards(JwtAuthGuard)
   @Get('/ride/:id')
   @ApiOperation({ summary: 'Retornar uma carona' })
   @ApiResponse({
@@ -117,13 +124,23 @@ export class RideController {
     } catch (error) {
       console.error('Erro ao encontrar carona pelo id: ', error);
       
-      return response.status(error.status).json({
-        message: 'Erro ao retornar caronas.',
-        error: error.message,
-      })
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'A carona não foi encontrada.',
+          error: error.message,
+        });
+      }
+  
+      // Se for qualquer outro erro (erro interno, etc.)
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar a carona.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
+  //refatorado
+  @UseGuards(JwtAuthGuard)
   @Patch('/ride/:id')
   @ApiOperation({ summary: 'Editar uma carona' })
   @ApiResponse({
@@ -148,6 +165,7 @@ export class RideController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('/ride/:id')
   @ApiOperation({ summary: 'Deletar uma carona' })
   @ApiResponse({
@@ -171,6 +189,8 @@ export class RideController {
     }
   }
 
+  //refatorado
+  @UseGuards(JwtAuthGuard)
   @Get('/active')
   @ApiOperation({ summary: 'Retorna todas as caronas ativas.' })
   @ApiResponse({
@@ -194,12 +214,17 @@ export class RideController {
       });
 
     } catch (error) {
-      console.error('Erro ao encontrar caronas: ', error);
+      console.error('Erro ao encontrar caronas ativas: ', error);
       
-      throw new InternalServerErrorException('Erro ao encontrar caronas.');
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar caronas ativas.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
+  //refatorado
+  @UseGuards(JwtAuthGuard)
   @Get('/available')
   @ApiOperation({ summary: 'Retorna todas as caronas disponíveis.' })
   @ApiResponse({
@@ -225,7 +250,10 @@ export class RideController {
     } catch (error) {
       console.error('Erro ao encontrar caronas disponíveis: ', error);
       
-      throw new InternalServerErrorException('Erro ao encontrar caronas disponíveis.');
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar caronas disponíveis.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
