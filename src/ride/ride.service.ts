@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -31,12 +32,19 @@ export class RideService {
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
     const driver = await this.userService.findOne(createRideDto.driver)
+    if (!driver) {
+      throw new NotFoundException('O motorista não foi encontrado na base de dados.');
+    }
 
     if (createRideDto.toWomen && driver.sex === 'Masculino') {
       throw new BadRequestException('Um motorista homem não pode criar caronas só para mulheres.');
     }
 
     const date = new Date(createRideDto.scheduledTime);
+    if (date < new Date()) {
+      throw new BadRequestException('A data agendada não pode ser no passado.');
+    }
+
     const ride = {
       ...createRideDto,
       driver: new Types.ObjectId(createRideDto.driver),
@@ -48,8 +56,13 @@ export class RideService {
       isOver: false,
       scheduledTime: date,
     };
-    const newRide = await this.rideModel.create(ride);
-    return newRide;
+    
+    try {
+      return await this.rideModel.create(ride);
+    } catch (error) {
+      console.error('Erro ao criar carona: ', error);
+      throw new InternalServerErrorException('Erro ao criar uma carona');
+    }
   }
 
   async findAll(): Promise<Ride[]> {

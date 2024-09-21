@@ -30,6 +30,10 @@ export class RideController {
     status: 201,
     description: 'A carona foi criada com sucesso.',
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Houve um erro ao criar a carona.',
+  })
   async create(
     @Body() createRideDto: CreateRideDto,
     @Res() response,
@@ -37,12 +41,19 @@ export class RideController {
     try {
       const newRideModel = await this.rideService.create(createRideDto);
       const newRide = await newRideModel.toDTO();
+
       return response.status(HttpStatus.CREATED).json({
         message: 'A carona foi criada com sucesso.',
         newRide: newRide,
       });
+      
     } catch (error) {
-      console.log(error);
+      console.error('Erro ao criar carona: ', error);
+
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        message: 'Erro ao criar carona.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
