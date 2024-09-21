@@ -98,11 +98,6 @@ export class RideService {
     return result;
   }
 
-  async getRidesAvailableToWomen(): Promise<Ride[]> {
-    const rides = await this.rideModel.find().exec();
-    return rides.filter((ride) => ride.isOver === false && ride.toWomen === true);
-  }
-
   async getDriverHistory(userId: string) {
     const objId = new Types.ObjectId(userId);
     const userRides = await this.rideModel

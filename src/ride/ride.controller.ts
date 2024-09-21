@@ -257,6 +257,8 @@ export class RideController {
     }
   }
 
+
+  //refatorado
   @UseGuards(JwtAuthGuard)
   @Get('/toWomen')
   @ApiOperation({ summary: 'Retorna todas as caronas só para mulheres ativas.' })
@@ -264,9 +266,13 @@ export class RideController {
     status: 200,
     description: 'Todas as caronas para mulheres ativas foram retornadas.',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar caronas ativas para mulheres.',
+  })
   async getRidesAvailableToWomen(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const ridesAvailableToWomenModel = await this.rideService.getRidesAvailableToWomen();
+      const ridesAvailableToWomenModel = await this.rideService.findAll({ isOver: false, toWomen: true });
       const ridesAvailableToWomen = await Promise.all(
         ridesAvailableToWomenModel.map((ride) => ride.toDTO()),
       );
@@ -276,7 +282,12 @@ export class RideController {
         ridesAvailableToWomen,
       });
     } catch (error) {
-      console.log(error);
+      console.log('Erro ao encontrar caronas ativas para mulheres', error);
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar caronas ativas.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
