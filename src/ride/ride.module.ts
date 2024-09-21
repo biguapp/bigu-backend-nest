@@ -18,9 +18,7 @@ import { MailjetModule } from 'nest-mailjet';
     MongooseModule.forFeature([
       { name: Candidate.name, schema: CandidateSchema },
     ]),
-    AddressModule,
     AuthModule,
-    CarModule,
     MailjetModule.registerAsync({
       useFactory: () => ({
         apiKey: process.env.MAILJET_API_KEY,
