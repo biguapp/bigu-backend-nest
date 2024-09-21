@@ -81,7 +81,10 @@ export class RideController {
     } catch (error) {
       console.error('Erro ao encontrar caronas: ', error);
       
-      throw new InternalServerErrorException('Erro ao encontrar caronas.');
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar caronas.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -90,6 +93,14 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'A carona foi retornada com sucesso.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona desejada não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Houve um erro ao procurar pela carona.',
   })
   async findOne(
     @Param('id') id: string,
@@ -104,7 +115,12 @@ export class RideController {
         ride,
       });
     } catch (error) {
-      console.log(error);
+      console.error('Erro ao encontrar carona pelo id: ', error);
+      
+      return response.status(error.status).json({
+        message: 'Erro ao retornar caronas.',
+        error: error.message,
+      })
     }
   }
 

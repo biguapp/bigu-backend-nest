@@ -60,21 +60,32 @@ export class RideService {
     try {
       return await this.rideModel.create(ride);
     } catch (error) {
-      console.error('Erro ao criar carona: ', error);
       throw new InternalServerErrorException('Erro ao criar uma carona');
     }
   }
 
   async findAll(filter: any = {}): Promise<Ride[]> {
-    return await this.rideModel.find(filter);
+    try {
+      return await this.rideModel.find(filter);
+    } catch (error) {
+      throw new InternalServerErrorException('Erro ao resgatar as caronas');
+    }
+    
   }
 
   async findOne(id: string): Promise<Ride> {
-    const ride = await this.rideModel.findById(id);
-    if (!ride) {
-      throw new NotFoundException(`Carona com ID ${id} não encontrado`);
+    try {
+      const ride = await this.rideModel.findById(id);
+
+      if (!ride) {
+        throw new NotFoundException(`Carona com ID ${id} não encontrado`);
+      }
+
+      return ride;
+
+    } catch (error) {
+      throw new InternalServerErrorException('Erro ao resgatar a carona');
     }
-    return ride;
   }
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
