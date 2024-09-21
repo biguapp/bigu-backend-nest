@@ -237,7 +237,7 @@ export class RideController {
   })
   async getAvailableRides(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const availableRidesModel = await this.rideService.findAll({ isOver: false, numSeats: { $gt: { $size: '$members' } } });
+      const availableRidesModel = await this.rideService.findAll({ isOver: false, $expr: { $gt: ['$numSeats', { $size: '$members' }] } });
       const availableRides = await Promise.all(
         availableRidesModel.map((ride) => ride.toDTO()),
       );
@@ -308,7 +308,7 @@ export class RideController {
       const ridesAvailableToWomenModel = await this.rideService.findAll({
          isOver: false, 
          toWomen: true, 
-         numSeats: { $gt: { $size: '$members' } }
+         $expr: { $gt: ['$numSeats', { $size: '$members' }] }
         });
       const ridesAvailableToWomen = await Promise.all(
         ridesAvailableToWomenModel.map((ride) => ride.toDTO()),
