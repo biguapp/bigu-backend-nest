@@ -4,6 +4,7 @@ import {
   HttpStatus,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -15,35 +16,41 @@ import { Role } from '../enums/enum';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel('User') private readonly userModel: Model<User>,
-  ) {}
+  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(
+    createUserDto: CreateUserDto,
+    verificationCode: string,
+  ): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    const hasEmail = await this.verifyEmail(createUserDto.email);
-    const hasMatricula = await this.verifyMatricula(createUserDto.matricula);
+    const [hasEmail, hasMatricula] = await Promise.all([
+      this.verifyEmail(createUserDto.email),
+      this.verifyMatricula(createUserDto.matricula),
+    ]);
 
     if (hasEmail) throw new BadRequestException('O email já está em uso.');
     if (hasMatricula)
       throw new BadRequestException('A matrícula já está em uso.');
 
-    const createdUser = new this.userModel({
-      ...createUserDto,
-      role: 'user',
-      password: hashedPassword,
-    });
+    try {
+      const user = await this.userModel.create({
+        ...createUserDto,
+        role: 'user',
+        password: hashedPassword,
+        verificationCode: verificationCode,
+      });
 
-    const user = await createdUser.save();
-
-    return user;
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('Erro ao criar usuário.');
+    }
   }
 
   async findAll(): Promise<User[]> {
-    const users= await this.userModel.find().exec();
-    
-    return users
+    const users = await this.userModel.find();
+
+    return users;
   }
 
   async findDrivers(): Promise<User[]> {
@@ -73,15 +80,23 @@ export class UserService {
   }
 
   async verifyEmail(email: string): Promise<Boolean> {
-    const user = await this.userModel.findOne({ email });
-    if (user) return true;
-    return false;
+    try {
+      const user = await this.findByEmail(email);
+      if (user.email === email) return true;
+      return false;
+    } catch (NotFoundException) {
+      return false;
+    }
   }
 
   async verifyMatricula(matricula: string): Promise<Boolean> {
-    const user = await this.userModel.findOne({ matricula });
-    if (user) return true;
-    return false;
+    try {
+      const user = await this.findByMatricula(matricula);
+      if (user.matricula === matricula) return true;
+      return false;
+    } catch (NotFoundException) {
+      return false;
+    }
   }
 
   verifyMinSizePassword(password: string): Boolean {
@@ -98,8 +113,11 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const updatedUser = await this.userModel
-      .findByIdAndUpdate(id, updateUserDto, { new: true });
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      id,
+      updateUserDto,
+      { new: true },
+    );
     if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -108,9 +126,9 @@ export class UserService {
 
   async remove(id: string): Promise<User> {
     const result = await this.userModel.findByIdAndDelete(id);
-    if (result) {
-      throw new HttpException('Usuario não encontrado', HttpStatus.NOT_FOUND);
+    if (!result) {
+      throw new NotFoundException('Usuario não encontrado');
     }
-    return result
+    return result;
   }
 }

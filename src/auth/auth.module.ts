@@ -10,12 +10,17 @@ import { jwtConstants } from './constants';
 import { UserService } from '../user/user.service';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './local.strategy';
-import { AddressModule } from '../address/address.module';
-import { CarModule } from '../car/car.module';
 import { BlacklistedTokenSchema } from './schemas/token.schema';
+import { MailjetModule } from 'nest-mailjet';
 
 @Module({
   imports: [
+    MailjetModule.registerAsync({
+      useFactory: () => ({
+        apiKey: process.env.MAILJET_API_KEY,
+        apiSecret: process.env.MAILJET_API_SECRET,
+      }),
+    }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: jwtConstants.secret,
@@ -27,7 +32,13 @@ import { BlacklistedTokenSchema } from './schemas/token.schema';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, UserService, LocalStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    UserService,
+    LocalStrategy,
+  ],
   exports: [AuthService, JwtAuthGuard, UserService],
 })
 export class AuthModule {}

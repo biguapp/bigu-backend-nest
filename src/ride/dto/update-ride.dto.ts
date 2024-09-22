@@ -8,13 +8,13 @@ import { Member } from '../schemas/member.schema';
 
 export class UpdateRideDto extends PartialType(CreateRideDto){
   
-  @ApiProperty({ description: 'Lista de candidatos ao passeio', type: [CandidateSchema], required: false })
+  @ApiProperty({ description: 'Lista de candidatos aa carona', type: [CandidateSchema], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   readonly candidates?: Candidate[];
 
-  @ApiProperty({ description: 'Lista de membros ao passeio', type: [Member], required: false })
+  @ApiProperty({ description: 'Lista de membros aa carona', type: [Member], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

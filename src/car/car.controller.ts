@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Post, Body, Param, Delete, Req, UseGuards, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, Param, Delete, Req, UseGuards, Res, HttpStatus, InternalServerErrorException } from '@nestjs/common';
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
@@ -30,7 +30,8 @@ export class CarController {
         newCar,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      throw new InternalServerErrorException('Não foi possível criar o carro: ' + error)
     }
   }
 

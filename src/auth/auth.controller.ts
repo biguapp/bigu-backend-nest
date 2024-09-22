@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards, Req, Param, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -42,5 +42,15 @@ export class AuthController {
     const { token, userResponse } =
       await this.authService.registerUser(createUserDto);
     return { user: userResponse, token: token };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('confirm/user/:code')
+  @ApiOperation({ summary: 'Confirm account.'})
+  @ApiResponse({ status: 200, description: 'Account verified.'})
+  @HttpCode(200)
+  async confirmAccount(@Req() req, @Param('code') code){
+    const userId = req.user.sub;
+    return await this.authService.confirmRegistration(userId, code);
   }
 }

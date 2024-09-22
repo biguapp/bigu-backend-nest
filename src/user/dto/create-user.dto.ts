@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, Matches, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Role } from '../../enums/enum';
 import { CreateAddressDto } from '../../address/dto/create-address.dto';
@@ -15,6 +15,9 @@ export class CreateUserDto {
   @ApiProperty({ description: 'Email do usuário', example: 'joao.silva@ufcg.edu.br' })
   @IsEmail()
   @IsNotEmpty()
+  @Matches(/^[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)*ufcg\.edu\.br$/, {
+    message: 'O email de cadastro deve ser o acadêmico.'
+  })
   readonly email: string;
 
   @ApiProperty({ description: 'Matrícula do usuário', example: '2021001234' })

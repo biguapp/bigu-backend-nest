@@ -43,4 +43,6 @@ export class UserResponseDto {
   readonly avgScore: number;
 
   feedbacks: string[];
+
+  readonly isVerified: boolean;
 }
