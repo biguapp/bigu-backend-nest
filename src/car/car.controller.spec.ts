@@ -1,10 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CarController } from './car.controller';
 import { CarService } from './car.service';
+import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 describe('CarController', () => {
   let controller: CarController;
   let service: CarService;
+
+  const mockAuthService = {
+    validateUser: jest.fn().mockResolvedValue(true),
+  };
+
+  const mockJwtAuthGuard = {
+    canActivate: jest.fn(() => true), // Permite a ativação do guard nas rotas protegidas
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,8 +32,14 @@ describe('CarController', () => {
             removeAll: jest.fn(),
           },
         },
+        {
+          provide: AuthService,
+          useValue: mockAuthService, // Mock AuthService
+        },
       ],
-    }).compile();
+    }).overrideGuard(JwtAuthGuard) // Sobrescreve o guard para evitar erros
+    .useValue(mockJwtAuthGuard) // Mock JwtAuthGuard
+    .compile();
 
     controller = module.get<CarController>(CarController);
     service = module.get<CarService>(CarService);

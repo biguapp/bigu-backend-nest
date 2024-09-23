@@ -5,6 +5,9 @@ import { Model } from 'mongoose';
 import { Ride } from './schemas/ride.schema';
 import { UserService } from '../user/user.service'; // Ajuste o caminho se necessário
 import { AddressService } from '../address/address.service';
+import { Member } from './schemas/member.schema';
+import { Candidate } from './schemas/candidate.schema';
+import { MailjetService } from 'nest-mailjet';
 
 describe('RideService', () => {
   let service: RideService;
@@ -18,13 +21,21 @@ describe('RideService', () => {
     // Adicione outros métodos conforme necessário
   };
 
+  const mockMemberModel = {
+
+  };
+
+  const mockCandidateModel = {
+
+  };
+
   // Mock do UserService
   const mockUserService = {
     // Adicione métodos mockados do UserService, se necessário
   };
 
-  const mockAddressService = {
-
+  const mockMailjetService = {
+    
   };
 
   beforeEach(async () => {
@@ -36,13 +47,22 @@ describe('RideService', () => {
           useValue: mockRideModel,
         },
         {
+          provide: getModelToken(Member.name),
+          useValue: mockMemberModel,
+        },
+        {
+          provide: getModelToken(Candidate.name),
+          useValue: mockCandidateModel,
+        },
+        {
           provide: UserService,
           useValue: mockUserService,
         },
         {
-          provide: AddressService,
-          useValue: mockAddressService,
-        }
+          provide: MailjetService,
+          useValue: mockMailjetService,
+        },
+      
       ],
     }).compile();
 

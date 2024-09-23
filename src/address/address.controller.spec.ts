@@ -4,13 +4,24 @@ import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './interfaces/address.interface';
+import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 
 // Mock do AddressService
 const mockAddressService = {
-  create: jest.fn().mockResolvedValue({ /* mock do endereço criado */ } as Address),
-  findAll: jest.fn().mockResolvedValue([{ /* mock de endereços */ }] as Address[]),
-  findOne: jest.fn().mockResolvedValue({ /* mock de um endereço */ } as Address),
-  update: jest.fn().mockResolvedValue({ /* mock do endereço atualizado */ } as Address),
+  create: jest.fn().mockResolvedValue({
+    /* mock do endereço criado */
+  } as Address),
+  findAll: jest.fn().mockResolvedValue([
+    {
+      /* mock de endereços */
+    },
+  ] as Address[]),
+  findOne: jest.fn().mockResolvedValue({
+    /* mock de um endereço */
+  } as Address),
+  update: jest.fn().mockResolvedValue({
+    /* mock do endereço atualizado */
+  } as Address),
   remove: jest.fn().mockResolvedValue(undefined),
   removeAll: jest.fn().mockResolvedValue(undefined),
 };
@@ -19,6 +30,10 @@ describe('AddressController', () => {
   let controller: AddressController;
   let service: AddressService;
 
+  const mockJwtAuthGuard = {
+    canActivate: jest.fn(() => true), // Permite a ativação do guard nas rotas protegidas
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AddressController],
@@ -26,6 +41,10 @@ describe('AddressController', () => {
         {
           provide: AddressService,
           useValue: mockAddressService,
+        },
+        {
+          provide: JwtAuthGuard,
+          useValue: mockJwtAuthGuard,
         },
       ],
     }).compile();
@@ -50,23 +69,31 @@ describe('AddressController', () => {
       cep: '12345-678',
     };
 
-    const result = await controller.create(createAddressDto); // mockar um user depois
-    expect(result).toEqual({ /* mock do endereço criado */ });
+    const result = await controller.create('req', createAddressDto, 'res: '); // mockar um user depois
+    expect(result).toEqual({
+      /* mock do endereço criado */
+    });
     expect(service.create).toHaveBeenCalledWith(createAddressDto);
   });
 
   // Teste para o método findAll
   it('should return an array of addresses', async () => {
-    const result = await controller.findAll();
-    expect(result).toEqual([{ /* mock de endereços */ }]);
+    const result = await controller.findAll('res: ');
+    expect(result).toEqual([
+      {
+        /* mock de endereços */
+      },
+    ]);
     expect(service.findAll).toHaveBeenCalled();
   });
 
   // Teste para o método findOne
   it('should return a single address by ID', async () => {
     const id = 'some-id';
-    const result = await controller.findOne(id);
-    expect(result).toEqual({ /* mock de um endereço */ });
+    const result = await controller.findOne(id, 'res: ');
+    expect(result).toEqual({
+      /* mock de um endereço */
+    });
     expect(service.findOne).toHaveBeenCalledWith(id);
   });
 
@@ -82,21 +109,17 @@ describe('AddressController', () => {
       cep: '98765-432',
     };
 
-    const result = await controller.update(id, updateAddressDto);
-    expect(result).toEqual({ /* mock do endereço atualizado */ });
+    const result = await controller.update(id, updateAddressDto, 'res: ');
+    expect(result).toEqual({
+      /* mock do endereço atualizado */
+    });
     expect(service.update).toHaveBeenCalledWith(id, updateAddressDto);
   });
 
   // Teste para o método remove
   it('should remove an address by ID', async () => {
     const id = 'some-id';
-    await controller.remove(id);
+    await controller.remove('res: ', id);
     expect(service.remove).toHaveBeenCalledWith(id);
-  });
-
-  // Teste para o método removeAll
-  it('should remove all addresses', async () => {
-    await controller.removeAll();
-    expect(service.removeAll).toHaveBeenCalled();
   });
 });

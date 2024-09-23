@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from '../user/dto/login-user.dto';
-import { UserResponseDto } from '@src/user/dto/response-user.dto';
+import { UserResponseDto } from '../user/dto/response-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('auth')
@@ -17,11 +17,17 @@ export class AuthController {
   @HttpCode(200)
   async loginUser(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
-    const { token, userResponse } = await this.authService.loginUser(
-      email,
-      password,
-    );
-    return { token: token, user: userResponse };
+    const { accessToken, refreshToken, userResponse } =
+      await this.authService.loginUser(email, password);
+    return { accessToken, refreshToken, user: userResponse };
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Access token refreshed' })
+  @HttpCode(200)
+  async refreshAccessToken(@Body('refreshToken') refreshToken: string) {
+    return await this.authService.refreshAccessToken(refreshToken);
   }
 
   @Post('logout')
@@ -39,17 +45,17 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User registered' })
   @HttpCode(201)
   async registerUser(@Body() createUserDto: CreateUserDto) {
-    const { token, userResponse } =
+    const { accessToken, refreshToken, userResponse } =
       await this.authService.registerUser(createUserDto);
-    return { user: userResponse, token: token };
+    return { user: userResponse, accessToken, refreshToken };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('confirm/user/:code')
-  @ApiOperation({ summary: 'Confirm account.'})
-  @ApiResponse({ status: 200, description: 'Account verified.'})
+  @ApiOperation({ summary: 'Confirm account.' })
+  @ApiResponse({ status: 200, description: 'Account verified.' })
   @HttpCode(200)
-  async confirmAccount(@Req() req, @Param('code') code){
+  async confirmAccount(@Req() req, @Param('code') code: string) {
     const userId = req.user.sub;
     return await this.authService.confirmRegistration(userId, code);
   }

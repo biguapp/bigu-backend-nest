@@ -39,19 +39,51 @@ export class AuthService {
   async loginUser(
     email: string,
     password: string,
-  ): Promise<{ token: string; userResponse: UserResponseDto }> {
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    userResponse: UserResponseDto;
+  }> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      const token = this.jwtService.sign({
-        name: user.name,
-        sub: user.id,
-        role: Role.User,
-      });
+      const accessToken = this.jwtService.sign(
+        { name: user.name, sub: user.id, role: Role.User },
+        { expiresIn: '15m' }, // Access Token válido por 15 minutos
+      );
+
+      const refreshToken = this.jwtService.sign(
+        { name: user.name, sub: user.id, role: Role.User },
+        { expiresIn: '7d' }, // Refresh Token válido por 7 dias
+      );
       const userResponse = user.toDTO();
 
-      return { token, userResponse };
+      return { accessToken, refreshToken, userResponse };
     }
     throw new UnauthorizedException('Credenciais inválidas');
+  }
+
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<{ accessToken: string }> {
+    try {
+      const payload = this.jwtService.verify(refreshToken);
+
+      // Valida se o refresh token não está na blacklist
+      const isBlacklisted = await this.isTokenBlacklisted(refreshToken);
+      if (isBlacklisted) {
+        throw new UnauthorizedException('Refresh token inválido');
+      }
+
+      // Cria um novo Access Token
+      const newAccessToken = this.jwtService.sign(
+        { name: payload.name, sub: payload.sub, role: payload.role },
+        { expiresIn: '15m' }, // Access Token válido por 15 minutos
+      );
+
+      return { accessToken: newAccessToken };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido ou expirado');
+    }
   }
 
   async logout(token: string): Promise<void> {
@@ -89,14 +121,31 @@ export class AuthService {
           TextPart: `Seu código de verificação é: ${code}`,
         },
       ],
-    })
+    });
 
     return repl.body.Messages[0].Status;
   }
 
-  async registerUser(
-    createUserDto: CreateUserDto,
-  ): Promise<{ token: string; userResponse: UserResponseDto }> {
+  private generateRefreshToken(userId: string): string {
+    return this.jwtService.sign(
+      { sub: userId },
+      { expiresIn: '7d', secret: process.env.JWT_REFRESH_SECRET },
+    );
+  }
+
+  // Gera um access token com duração mais curta
+  private generateAccessToken(userId: string, role: string): string {
+    return this.jwtService.sign(
+      { sub: userId, role },
+      { expiresIn: '15m', secret: process.env.JWT_ACCESS_SECRET },
+    );
+  }
+
+  async registerUser(createUserDto: CreateUserDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    userResponse: UserResponseDto;
+  }> {
     const verificationCode = this.generateVerificationCode();
     const user = await this.userService.create(
       { ...createUserDto },
@@ -104,15 +153,12 @@ export class AuthService {
     );
     await this.sendVerificationEmail(createUserDto.email, verificationCode);
 
-    const token = this.jwtService.sign({
-      name: user.name,
-      sub: user.id,
-      role: Role.User,
-    });
+    const accessToken = this.generateAccessToken(user.id, user.role);
+    const refreshToken = this.generateRefreshToken(user.id);
 
     const userResponse = user.toDTO();
 
-    return { token, userResponse };
+    return { accessToken, refreshToken, userResponse };
   }
 
   async confirmRegistration(userId: string, code: string): Promise<string> {

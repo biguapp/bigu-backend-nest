@@ -24,6 +24,12 @@ describe('AddressService', () => {
             deleteMany: jest.fn(),
           },
         },
+        {
+          provide: getModelToken('Ride'),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

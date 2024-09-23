@@ -6,6 +6,7 @@ import { CarService } from '../car/car.service';
 import { JwtService } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
 import { User } from '../user/interfaces/user.interface';
+import { MailjetService } from 'nest-mailjet';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -37,6 +38,12 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: {
             sign: jest.fn().mockReturnValue('mockJwtToken'),
+          },
+        },
+        {
+          provide: MailjetService,
+          useValue: {
+            send: jest.fn().mockReturnValue('mockEmailSent'),
           },
         },
         {
