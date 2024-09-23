@@ -5,6 +5,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from '../user/dto/login-user.dto';
 import { UserResponseDto } from '../user/dto/response-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RequestResetPasswordDto } from './dto/request-reset-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -59,4 +61,23 @@ export class AuthController {
     const userId = req.user.sub;
     return await this.authService.confirmRegistration(userId, code);
   }
+
+  @Post('request-password-reset')
+  @ApiOperation({ summary: 'Solicitar recuperação de senha' })
+  @ApiResponse({ status: 200, description: 'Código de verificação enviado.' })
+  async requestPasswordReset(@Body() requestResetPasswordDto: RequestResetPasswordDto) {
+    return this.authService.requestPasswordReset(requestResetPasswordDto.email);
+  }
+
+  @Put('reset-password/:code')
+  @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
+  @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
+  async resetPassword(
+    @Param('code') code: string,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(code, resetPasswordDto.password);
+  }
+
+
 }
