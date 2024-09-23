@@ -115,9 +115,10 @@ export class RideService {
   }
 
   async getUserHistory(userId: string) {
+    const objId = new Types.ObjectId(userId);
     const userRides = await this.rideModel
       .find({
-        $or: [{ driver: userId }, { members: userId }],
+        $or: [{ driver: objId }, { members: objId }],
         $and: [{ isOver: true }],
       })
       .exec();
