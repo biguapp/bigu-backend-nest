@@ -135,9 +135,10 @@ export class CarController {
     try {
       const carRemoved = (await this.carService.remove(id)).toDTO();
 
-      return response.status(HttpStatus.OK).json({
+      return response.json({
         message: 'O carro foi removido com sucesso.',
         carRemoved,
+        status: HttpStatus.OK
       });
     } catch (error) {
       console.log(error);
