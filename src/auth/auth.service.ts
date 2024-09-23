@@ -46,15 +46,9 @@ export class AuthService {
   }> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      const accessToken = this.jwtService.sign(
-        { name: user.name, sub: user.id, role: Role.User },
-        { expiresIn: '15m' }, // Access Token válido por 15 minutos
-      );
+      const accessToken = this.generateAccessToken(user.id, Role.User);
 
-      const refreshToken = this.jwtService.sign(
-        { name: user.name, sub: user.id, role: Role.User },
-        { expiresIn: '7d' }, // Refresh Token válido por 7 dias
-      );
+      const refreshToken = this.generateRefreshToken(user.id);
       const userResponse = user.toDTO();
 
       return { accessToken, refreshToken, userResponse };
