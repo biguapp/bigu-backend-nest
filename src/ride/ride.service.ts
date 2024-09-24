@@ -14,7 +14,6 @@ import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { MailjetService } from 'nest-mailjet';
-import { RideChatService } from '../ride-chat/ride-chat.service';
 
 @Injectable()
 export class RideService {
@@ -24,7 +23,6 @@ export class RideService {
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
     private readonly mailjetService: MailjetService,
-    private readonly rideChatService: RideChatService,
   ) {}
 
   // Criação de uma nova carona
@@ -65,7 +63,6 @@ export class RideService {
 
     try {
       const rideCreated = await this.rideModel.create(ride);
-      await this.rideChatService.createChat(rideCreated.id, driver.id);
       return rideCreated;
     } catch (error) {
       throw new InternalServerErrorException('Erro ao criar uma carona');
@@ -114,7 +111,6 @@ export class RideService {
       '[BIGU] Carona cancelada :(',
       `Sua carona foi cancelada.`,
     );
-    this.rideChatService.deleteChat(id);
     return result;
   }
 
@@ -167,7 +163,6 @@ export class RideService {
   async setRideOver(userId: string, rideId: string) {
     const ride = await this.findOne(rideId);
     if (ride.driver.id === userId) {
-      await this.rideChatService.deleteChat(ride.id);
       return await this.update(rideId, { isOver: true } as UpdateRideDto);
     } else throw new NotFoundException('Corrida não encontrada.');
   }
@@ -253,7 +248,6 @@ export class RideService {
 
         rideCandidates.splice(idx, 1);
 
-        await this.rideChatService.addMemberToChat(ride.id, candidateId);
         return (
           await this.update(rideId, {
             candidates: rideCandidates,
@@ -323,7 +317,6 @@ export class RideService {
           '[BIGUAPP] Remoção da carona!',
           'Você perdeu um bigu!',
         );
-        await this.rideChatService.removeMemberFromChat(ride.id, memberId);
         return (
           await this.update(rideId, {
             members: rideMembers,

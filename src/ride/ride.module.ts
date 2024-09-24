@@ -10,9 +10,6 @@ import { CarModule } from '@src/car/car.module';
 import { Member, MemberSchema } from './schemas/member.schema';
 import { Candidate, CandidateSchema } from './schemas/candidate.schema';
 import { MailjetModule } from 'nest-mailjet';
-import { RideChatService } from '../ride-chat/ride-chat.service';
-import { RideChatModule } from '../ride-chat/ride-chat.module';
-import { RideChat, RideChatSchema } from '../ride-chat/schema/ride-chat.schema';
 
 @Module({
   imports: [
@@ -21,7 +18,6 @@ import { RideChat, RideChatSchema } from '../ride-chat/schema/ride-chat.schema';
     MongooseModule.forFeature([
       { name: Candidate.name, schema: CandidateSchema },
     ]),
-    MongooseModule.forFeature([{ name: RideChat.name, schema: RideChatSchema}]),
     AuthModule,
     MailjetModule.registerAsync({
       useFactory: () => ({
@@ -29,10 +25,9 @@ import { RideChat, RideChatSchema } from '../ride-chat/schema/ride-chat.schema';
         apiSecret: process.env.MAILJET_API_SECRET,
       }),
     }),
-    RideChatModule,
   ],
   controllers: [RideController],
-  providers: [RideService, RideChatService],
+  providers: [RideService],
   exports: [RideService],
 })
 export class RideModule {}
