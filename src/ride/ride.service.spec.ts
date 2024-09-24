@@ -63,6 +63,7 @@ describe('RideService', () => {
           useValue: mockMailjetService,
         },
       
+      
       ],
     }).compile();
 

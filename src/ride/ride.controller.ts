@@ -112,14 +112,17 @@ export class RideController {
   async findOne(
     @Param('id') id: string,
     @Res() response,
-  ): Promise<RideResponseDto> {
+  ): Promise<void> {
     try {
-      const rideModel = await this.rideService.findOne(id);
-      const ride = await rideModel.toDTO();
-
-      return response.status(HttpStatus.OK).json({
+      const ride = await this.rideService.findOne(id);
+      if (!ride) {
+        return response.status(404).json({
+          message: 'Carona não encontrada.',
+        });
+      }
+      return response.status(200).json({
         message: 'A carona foi retornada com sucesso.',
-        ride,
+        ride: ride.toDTO(),
       });
     } catch (error) {
       console.error('Erro ao encontrar carona pelo id: ', error);

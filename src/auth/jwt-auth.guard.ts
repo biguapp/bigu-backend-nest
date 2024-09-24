@@ -19,7 +19,7 @@ export class JwtAuthGuard implements CanActivate {
 
     const user = await this.authService.validateToken(token);
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado.');
+      throw new UnauthorizedException('Token inválido');
     }
 
     request.user = user;

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, UseGuards, Req, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards, Req, Param, Put, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -28,7 +28,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({ status: 200, description: 'Access token refreshed' })
   @HttpCode(200)
-  async refreshAccessToken(@Body('refreshToken') refreshToken: string) {
+  async refreshAccessToken(@Body('refreshToken') refreshToken: string, @Res() response) {
     return await this.authService.refreshAccessToken(refreshToken);
   }
 

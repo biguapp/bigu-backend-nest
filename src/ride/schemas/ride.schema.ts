@@ -92,7 +92,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
     numSeats: this.numSeats,
     goingToCollege: this.goingToCollege,
     price: this.price,
-    scheduledTime: this.scheduledTime.toISOString(),
+    scheduledTime: this.scheduledTime.toLocaleString(),
     car: car.toDTO(),
     description: this.description,
     toWomen: this.toWomen,

@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Put,
   Body,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
@@ -32,6 +33,9 @@ export class UserController {
   async findAll(@Res() response): Promise<UserResponseDto[]> {
     try {
       const usersModel = await this.userService.findAll();
+      if (!usersModel) {
+        throw new NotFoundException('Erro findAll');
+      }
       const users = usersModel.map((user) => user.toDTO());
 
       return response.status(HttpStatus.OK).json({
@@ -63,13 +67,20 @@ export class UserController {
   ): Promise<UserResponseDto> {
     try {
       const user = (await this.userService.findByEmail(email)).toDTO();
-
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
         user,
       });
     } catch (error) {
-      console.log(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Usuário não encontrado.',
+        });
+      }
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao procurar usuário.',
+        error: error.message,
+      });
     }
   }
 

@@ -24,7 +24,7 @@ import { MailjetModule } from 'nest-mailjet';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '1h' },
+      signOptions: { expiresIn: '15m' },
     }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
