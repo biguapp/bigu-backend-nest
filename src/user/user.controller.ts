@@ -291,18 +291,4 @@ export class UserController {
       path: 'Imagem salva diretamente no banco de dados.',
     };
   }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('profile-picture/')
-  async getProfilePicture(@Req() req, @Res() res) {
-    const userId = req.user.sub;
-    const user = await this.userService.findOne(userId);
-    if (!user) 
-      throw new NotFoundException('Usuário não encontrado');
-    else if (!user.profileImage)
-      throw new NotFoundException('O usuário não possui foto do perfil.');
-
-    res.setHeader('Content-Type', 'image/jpeg'); // ou 'image/png'
-    res.status(HttpStatus.OK).send(user.profileImage.buffer); // Envia o buffer diretamente como resposta
-  }
 }
