@@ -8,6 +8,7 @@ import { AddressService } from '../address/address.service';
 import { Member } from './schemas/member.schema';
 import { Candidate } from './schemas/candidate.schema';
 import { MailjetService } from 'nest-mailjet';
+import { RideChatService } from '@src/ride-chat/ride-chat.service';
 
 describe('RideService', () => {
   let service: RideService;
@@ -22,6 +23,10 @@ describe('RideService', () => {
   };
 
   const mockMemberModel = {
+
+  };
+
+  const mockRideChatService = {
 
   };
 
@@ -61,6 +66,10 @@ describe('RideService', () => {
         {
           provide: MailjetService,
           useValue: mockMailjetService,
+        },
+        {
+          provide: RideChatService,
+          useValue: mockRideChatService,
         },
       
       ],

@@ -14,6 +14,7 @@ import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { MailjetService } from 'nest-mailjet';
+import { RideChatService } from '@src/ride-chat/ride-chat.service';
 
 @Injectable()
 export class RideService {
@@ -23,6 +24,7 @@ export class RideService {
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
     private readonly mailjetService: MailjetService,
+    private readonly rideChatService: RideChatService,
   ) {}
 
   // Criação de uma nova carona
@@ -31,13 +33,17 @@ export class RideService {
   // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
-    const driver = await this.userService.findOne(createRideDto.driver)
+    const driver = await this.userService.findOne(createRideDto.driver);
     if (!driver) {
-      throw new NotFoundException('O motorista não foi encontrado na base de dados.');
+      throw new NotFoundException(
+        'O motorista não foi encontrado na base de dados.',
+      );
     }
 
     if (createRideDto.toWomen && driver.sex === 'Masculino') {
-      throw new BadRequestException('Um motorista homem não pode criar caronas só para mulheres.');
+      throw new BadRequestException(
+        'Um motorista homem não pode criar caronas só para mulheres.',
+      );
     }
 
     const date = new Date(createRideDto.scheduledTime);
@@ -56,16 +62,18 @@ export class RideService {
       isOver: false,
       scheduledTime: date,
     };
-    
+
     try {
-      return await this.rideModel.create(ride);
+      const rideCreated = await this.rideModel.create(ride);
+      await this.rideChatService.createChat(rideCreated.id, driver.id);
+      return rideCreated;
     } catch (error) {
       throw new InternalServerErrorException('Erro ao criar uma carona');
     }
   }
 
   async findAll(filter: any = {}): Promise<Ride[]> {
-    return await this.rideModel.find(filter);    
+    return await this.rideModel.find(filter);
   }
 
   async findOne(id: string): Promise<Ride> {
@@ -95,6 +103,18 @@ export class RideService {
     if (!result) {
       throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
+    const membersEmails = await Promise.all(
+      result.members.map(async (member) => {
+        const user = await this.userService.findOne(member.user.toString());
+        return user.email;
+      }),
+    );
+    this.sendEmail(
+      membersEmails,
+      '[BIGU] Carona cancelada :(',
+      `Sua carona foi cancelada.`,
+    );
+    this.rideChatService.deleteChat(id);
     return result;
   }
 
@@ -147,6 +167,7 @@ export class RideService {
   async setRideOver(userId: string, rideId: string) {
     const ride = await this.findOne(rideId);
     if (ride.driver.id === userId) {
+      await this.rideChatService.deleteChat(ride.id);
       return await this.update(rideId, { isOver: true } as UpdateRideDto);
     } else throw new NotFoundException('Corrida não encontrada.');
   }
@@ -231,6 +252,8 @@ export class RideService {
         );
 
         rideCandidates.splice(idx, 1);
+
+        await this.rideChatService.addMemberToChat(ride.id, candidateId);
         return (
           await this.update(rideId, {
             candidates: rideCandidates,
@@ -289,7 +312,7 @@ export class RideService {
     const ride = await this.findOne(rideId);
     const rideMembers = ride.members;
     const rideMembersId = rideMembers.map((member) => member.user.toString());
-    if (ride.driver.toString() === driverId || driverId === memberId) {
+    if (ride.driver.toString() === driverId) {
       if (rideMembersId.includes(memberId)) {
         const idx = rideMembersId.indexOf(memberId);
         rideMembers.splice(idx, 1);
@@ -300,12 +323,14 @@ export class RideService {
           '[BIGUAPP] Remoção da carona!',
           'Você perdeu um bigu!',
         );
-
+        await this.rideChatService.removeMemberFromChat(ride.id, memberId);
         return (
           await this.update(rideId, {
             members: rideMembers,
           })
         ).toDTO();
+      } else if (driverId === memberId) {
+        this.remove(ride.id);
       } else throw new NotFoundException('Candidato não encontrado.');
     } else throw new NotFoundException('Corrida não encontrada.');
   }
@@ -323,21 +348,20 @@ export class RideService {
   }
 
   private async sendEmail(
-    email: string,
+    emails: string | string[],
     subject: string,
     text: string,
   ): Promise<string> {
+    const recipients = Array.isArray(emails) // Se apenas um email for fornecido, transforma-o em uma lista
+      ? emails.map((email) => ({ Email: email })) // Mapeia para o formato esperado pelo Mailjet
+      : [{ Email: emails }];
     const repl = await this.mailjetService.send({
       Messages: [
         {
           From: {
             Email: process.env.MAILJET_SENDER_EMAIL,
           },
-          To: [
-            {
-              Email: email,
-            },
-          ],
+          To: recipients,
           Subject: subject,
           TextPart: text,
         },
