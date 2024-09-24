@@ -75,7 +75,6 @@ export class RideService {
 
   async findOne(id: string): Promise<Ride> {
     const ride = await this.rideModel.findById(id);
-
     if (!ride) {
       throw new NotFoundException(`Carona com ID ${id} não foi encontrada.`);
     }
@@ -162,7 +161,9 @@ export class RideService {
 
   async setRideOver(userId: string, rideId: string) {
     const ride = await this.findOne(rideId);
-    if (ride.driver.id === userId) {
+    const driver = ride.driver.toString();
+
+    if (driver === userId) {
       return await this.update(rideId, { isOver: true } as UpdateRideDto);
     } else throw new NotFoundException('Corrida não encontrada.');
   }

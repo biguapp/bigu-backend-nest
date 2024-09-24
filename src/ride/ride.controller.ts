@@ -489,7 +489,7 @@ export class RideController {
     status: 200,
     description: 'A carona foi marcada como concluída.',
   })
-  async setRideOver(@Req() req, @Param() rideId) {
+  async setRideOver(@Req() req, @Param('rideId') rideId: string) {
     const userId = req.user.sub;
     return this.rideService.setRideOver(userId, rideId);
   }
