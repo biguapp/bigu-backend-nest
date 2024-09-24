@@ -3,131 +3,166 @@ import { AddressController } from './address.controller';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
-import { Address } from './interfaces/address.interface';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { AuthService } from '@src/auth/auth.service';
-
-// Mock do AddressService
-const mockAddressService = {
-  create: jest.fn().mockResolvedValue({
-    /* mock do endereço criado */
-  } as Address),
-  findAll: jest.fn().mockResolvedValue([
-    {
-      /* mock de endereços */
-    },
-  ] as Address[]),
-  findOne: jest.fn().mockResolvedValue({
-    /* mock de um endereço */
-  } as Address),
-  update: jest.fn().mockResolvedValue({
-    /* mock do endereço atualizado */
-  } as Address),
-  remove: jest.fn().mockResolvedValue(undefined),
-  removeAll: jest.fn().mockResolvedValue(undefined),
-};
+import { NotFoundException } from '@nestjs/common';
 
 describe('AddressController', () => {
   let controller: AddressController;
   let service: AddressService;
 
-  const mockJwtAuthGuard = {
-    canActivate: jest.fn(() => true), // Permite a ativação do guard nas rotas protegidas
+  const mockAddress = {
+    _id: '1',
+    nome: 'Casa',
+    rua: 'Avenida Paulista',
+    numero: '1234',
+    complemento: 'Apt 56',
+    bairro: 'Bela Vista',
+    cidade: 'São Paulo',
+    estado: 'SP',
+    cep: '01311-000',
+    toDTO: jest.fn().mockReturnValue({
+      nome: 'Casa',
+      rua: 'Avenida Paulista',
+      numero: '1234',
+      complemento: 'Apt 56',
+      bairro: 'Bela Vista',
+      cidade: 'São Paulo',
+      estado: 'SP',
+      addressId: '1',
+    }),
   };
 
-  const mockAuthService = {
+  const mockAddressService = {
+    create: jest.fn().mockResolvedValue(mockAddress),
+    findAll: jest.fn().mockResolvedValue([mockAddress]),
+    findOne: jest.fn().mockResolvedValue(mockAddress),
+    update: jest.fn().mockResolvedValue(mockAddress),
+    remove: jest.fn().mockResolvedValue(mockAddress),
+    getUserAddresses: jest.fn().mockResolvedValue([mockAddress]),
+  };
 
-  }
+  const mockResponse = {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+  } as any as Response;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AddressController],
       providers: [
-        {
-          provide: AddressService,
-          useValue: mockAddressService,
-        },
-        {
-          provide: JwtAuthGuard,
-          useValue: mockJwtAuthGuard,
-        },
-        {provide: AuthService,
-          useValue:mockAuthService
-        }
+        { provide: AddressService, useValue: mockAddressService },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) }) // Simula o JwtAuthGuard como válido
+      .compile();
 
     controller = module.get<AddressController>(AddressController);
     service = module.get<AddressService>(AddressService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  // Teste para o método create
-  it('should create a new address', async () => {
-    const createAddressDto: CreateAddressDto = {
-      nome: 'Teste',
-      rua: 'Rua Teste',
-      numero: '123',
-      bairro: 'Bairro Teste',
-      cidade: 'Cidade Teste',
-      estado: 'Estado Teste',
-      cep: '12345-678',
-    };
+  describe('create', () => {
+    it('should create an address', async () => {
+      const createAddressDto: CreateAddressDto = {
+        nome: 'Casa',
+        rua: 'Avenida Paulista',
+        numero: '1234',
+        complemento: 'Apt 56',
+        bairro: 'Bela Vista',
+        cidade: 'São Paulo',
+        estado: 'SP',
+        cep: '01311-000',
+      };
 
-    const result = await controller.create('req', createAddressDto, 'res: '); // mockar um user depois
-    expect(result).toEqual({
-      /* mock do endereço criado */
+      const mockRequest = { user: { sub: 'user123' } };
+      await controller.create(mockRequest, createAddressDto, mockResponse);
+
+      expect(service.create).toHaveBeenCalledWith(createAddressDto, 'user123');
+      expect(mockResponse.status).toHaveBeenCalledWith(201);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'O endereço foi criado com sucesso.',
+        userAddress: mockAddress.toDTO(),
+      });
     });
-    expect(service.create).toHaveBeenCalledWith(createAddressDto);
   });
 
-  // Teste para o método findAll
-  it('should return an array of addresses', async () => {
-    const result = await controller.findAll('res: ');
-    expect(result).toEqual([
-      {
-        /* mock de endereços */
-      },
-    ]);
-    expect(service.findAll).toHaveBeenCalled();
-  });
-
-  // Teste para o método findOne
-  it('should return a single address by ID', async () => {
-    const id = 'some-id';
-    const result = await controller.findOne(id, 'res: ');
-    expect(result).toEqual({
-      /* mock de um endereço */
+  describe('findAll', () => {
+    it('should return all addresses', async () => {
+      await controller.findAll(mockResponse);
+      expect(service.findAll).toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "Todos os endereços foram retornados.",
+        addresses: [mockAddress.toDTO()],
+      });
     });
-    expect(service.findOne).toHaveBeenCalledWith(id);
   });
 
-  // Teste para o método update
-  it('should update an address by ID', async () => {
-    const id = 'some-id';
-    const updateAddressDto: UpdateAddressDto = {
-      rua: 'Rua Atualizada',
-      numero: '456',
-      bairro: 'Bairro Atualizado',
-      cidade: 'Cidade Atualizada',
-      estado: 'Estado Atualizado',
-      cep: '98765-432',
-    };
-
-    const result = await controller.update(id, updateAddressDto, 'res: ');
-    expect(result).toEqual({
-      /* mock do endereço atualizado */
+  describe('findOne', () => {
+    it('should return an address by ID', async () => {
+      await controller.findOne('1', mockResponse);
+      expect(service.findOne).toHaveBeenCalledWith('1');
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "O endereço foi retornado com sucesso.",
+        address: mockAddress.toDTO(),
+      });
     });
-    expect(service.update).toHaveBeenCalledWith(id, updateAddressDto);
+
+    it('should return 404 if address not found', async () => {
+      jest.spyOn(service, 'findOne').mockRejectedValueOnce(new NotFoundException());
+      await controller.findOne('2', mockResponse);
+      expect(service.findOne).toHaveBeenCalledWith('2');
+      expect(mockResponse.status).toHaveBeenCalledWith(404);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'Endereço não encontrado.',
+      });
+    });
   });
 
-  // Teste para o método remove
-  it('should remove an address by ID', async () => {
-    const id = 'some-id';
-    await controller.remove('res: ', id);
-    expect(service.remove).toHaveBeenCalledWith(id);
+  describe('update', () => {
+    it('should update an address', async () => {
+      const updateAddressDto: UpdateAddressDto = { nome: 'Casa Atualizada' };
+      await controller.update('1', updateAddressDto, mockResponse);
+      expect(service.update).toHaveBeenCalledWith('1', updateAddressDto);
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "O endereço foi atualizado com sucesso.",
+        addressUpdated: mockAddress.toDTO(),
+      });
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete an address', async () => {
+      await controller.remove(mockResponse, '1');
+      expect(service.remove).toHaveBeenCalledWith('1');
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "O endereço foi removido com sucesso.",
+        addressRemoved: mockAddress.toDTO(),
+      });
+    });
+  });
+
+  describe('getUserAddresses', () => {
+    it('should return all addresses of the authenticated user', async () => {
+      const mockRequest = { user: { sub: 'user123' } };
+      await controller.getUserAddresses(mockResponse, mockRequest);
+      expect(service.getUserAddresses).toHaveBeenCalledWith('user123');
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'Os endereços do usuário foram retornados com sucesso.',
+        userAddress: [mockAddress.toDTO()],
+      });
+    });
   });
 });

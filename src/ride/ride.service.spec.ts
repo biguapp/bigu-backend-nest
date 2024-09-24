@@ -8,7 +8,7 @@ import { AddressService } from '../address/address.service';
 import { Member } from './schemas/member.schema';
 import { Candidate } from './schemas/candidate.schema';
 import { MailjetService } from 'nest-mailjet';
-import { RideChatService } from '@src/ride-chat/ride-chat.service';
+import { RideChatService } from '../ride-chat/ride-chat.service';
 
 describe('RideService', () => {
   let service: RideService;

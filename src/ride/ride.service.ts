@@ -14,7 +14,7 @@ import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { MailjetService } from 'nest-mailjet';
-import { RideChatService } from '@src/ride-chat/ride-chat.service';
+import { RideChatService } from '../ride-chat/ride-chat.service';
 
 @Injectable()
 export class RideService {

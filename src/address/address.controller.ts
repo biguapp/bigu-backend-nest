@@ -1,4 +1,4 @@
-import { Controller,Post,Get,Param,Body,Put,Delete,UseGuards,Req,Res,HttpStatus } from '@nestjs/common';
+import { Controller,Post,Get,Param,Body,Put,Delete,UseGuards,Req,Res,HttpStatus, NotFoundException } from '@nestjs/common';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -83,7 +83,15 @@ export class AddressController {
         address
       });
     } catch (error) {
-      console.log(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Endereço não encontrado.',
+        });
+      }
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao procurar endereço.',
+        error: error.message,
+      });
     } 
   }
 
