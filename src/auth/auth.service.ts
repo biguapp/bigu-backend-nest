@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -46,15 +46,9 @@ export class AuthService {
   }> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      const accessToken = this.jwtService.sign(
-        { name: user.name, sub: user.id, role: Role.User },
-        { expiresIn: '15m' }, // Access Token válido por 15 minutos
-      );
+      const accessToken = this.generateAccessToken(user.id, Role.User);
 
-      const refreshToken = this.jwtService.sign(
-        { name: user.name, sub: user.id, role: Role.User },
-        { expiresIn: '7d' }, // Refresh Token válido por 7 dias
-      );
+      const refreshToken = this.generateRefreshToken(user.id);
       const userResponse = user.toDTO();
 
       return { accessToken, refreshToken, userResponse };
@@ -183,4 +177,54 @@ export class AuthService {
       return null;
     }
   }
+
+  async requestPasswordReset(email: string): Promise<string> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    const resetCode = this.generateVerificationCode();
+    
+    // Armazena o código no usuário
+    await this.userService.update(user.id, { verificationCode: resetCode });
+
+    // Envia o código por email
+    await this.mailjetService.send({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAILJET_SENDER_EMAIL,
+          },
+          To: [
+            {
+              Email: email,
+            },
+          ],
+          Subject: '[BIGU] Código de recuperação de senha',
+          TextPart: `Seu código de recuperação é: ${resetCode}`,
+        },
+      ],
+    });
+
+    return 'Código de recuperação enviado para o email';
+  }
+
+  async resetPassword(code: string, newPassword: string): Promise<string> {
+    const user = await this.userService.findByVerificationCode(code);
+    if (!user) {
+      throw new UnauthorizedException('Código de verificação inválido.');
+    }
+
+    // Atualiza a senha
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.userService.update(user.id, {
+      password: hashedPassword,
+      verificationCode: null, // Remove o código após o uso
+    });
+
+    return 'Senha alterada com sucesso!';
+  }
+
+  
 }

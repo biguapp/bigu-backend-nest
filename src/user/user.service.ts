@@ -131,4 +131,8 @@ export class UserService {
     }
     return result;
   }
+
+  async findByVerificationCode(code: string): Promise<User> {
+    return this.userModel.findOne({ verificationCode: code }).exec();
+  }
 }
