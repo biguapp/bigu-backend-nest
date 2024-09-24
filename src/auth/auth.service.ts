@@ -53,7 +53,7 @@ export class AuthService {
 
       return { accessToken, refreshToken, userResponse };
     }
-    throw new UnauthorizedException('Credenciais inválidas');
+    throw new UnauthorizedException('Credenciais inválidas.');
   }
 
   async refreshAccessToken(
