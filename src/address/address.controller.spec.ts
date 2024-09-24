@@ -5,6 +5,7 @@ import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './interfaces/address.interface';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthService } from '@src/auth/auth.service';
 
 // Mock do AddressService
 const mockAddressService = {
@@ -34,6 +35,10 @@ describe('AddressController', () => {
     canActivate: jest.fn(() => true), // Permite a ativação do guard nas rotas protegidas
   };
 
+  const mockAuthService = {
+
+  }
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AddressController],
@@ -46,6 +51,9 @@ describe('AddressController', () => {
           provide: JwtAuthGuard,
           useValue: mockJwtAuthGuard,
         },
+        {provide: AuthService,
+          useValue:mockAuthService
+        }
       ],
     }).compile();
 
