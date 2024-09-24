@@ -74,7 +74,7 @@ export class UserService {
   async findByEmail(email: string): Promise<User> {
     const user = await this.userModel.findOne({ email });
     if (!user) {
-      throw new NotFoundException('Credenciais inválidas.');
+      throw new NotFoundException('Usuário não encontrado.');
     }
     return user;
   }
