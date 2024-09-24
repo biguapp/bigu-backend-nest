@@ -483,7 +483,7 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('/over')
+  @Put('/over/:rideId')
   @ApiOperation({ summary: 'Marcar carona como concluída.' })
   @ApiResponse({
     status: 200,
