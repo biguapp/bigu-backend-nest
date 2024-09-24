@@ -135,4 +135,13 @@ export class UserService {
   async findByVerificationCode(code: string): Promise<User> {
     return this.userModel.findOne({ verificationCode: code }).exec();
   }
+
+  async updateProfilePic(userId: string, imageBuffer: Buffer): Promise<User> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return await this.update(userId, { profileImage: imageBuffer });
+  }
 }

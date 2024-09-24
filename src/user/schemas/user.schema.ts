@@ -6,6 +6,9 @@ import { UserResponseDto } from '../dto/response-user.dto';
 @Schema()
 export class User extends Document {
 
+  @Prop( { type: Buffer })
+  profileImage?: Buffer;
+
   @Prop({ required: true })
   name: string;
 
@@ -44,6 +47,7 @@ export const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.methods.toDTO = function (): UserResponseDto {
   return {
+    profileImage: this.profileImage ? this.profileImage.toString('base64') : null,
     userId: this.id,
     name: this.name,
     email: this.email,

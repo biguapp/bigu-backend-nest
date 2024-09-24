@@ -3,6 +3,7 @@ import { Role } from '../../enums/enum';
 import { UserResponseDto } from '../dto/response-user.dto';
 
 export interface User extends Document {
+  readonly profileImage?: Buffer;
   readonly name: string;
   readonly sex: string;
   readonly email: string;
