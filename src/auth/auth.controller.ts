@@ -28,7 +28,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({ status: 200, description: 'Access token refreshed' })
   @HttpCode(200)
-  async refreshAccessToken(@Body('refreshToken') refreshToken: string, @Res() response) {
+  async refreshAccessToken(@Body('refreshToken') refreshToken: string) {
     return await this.authService.refreshAccessToken(refreshToken);
   }
 
