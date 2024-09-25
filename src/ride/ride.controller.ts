@@ -339,7 +339,11 @@ export class RideController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Todas as corridas que o usuário é motorista foram retornadas.',
+    description: 'Todas as corridas em que o usuário é motorista foram retornadas.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar as corridas em que o usuário é motorista.',
   })
   async getDriverActiveRides(
     @Req() req,
@@ -358,7 +362,10 @@ export class RideController {
         userDriverActivesHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar as corridas em que o usuário é motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -370,6 +377,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'Todas as corridas que o usuário é membro foram retornadas.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar as corridas em que o usuário é membro.',
   })
   async getMemberActiveRides(
     @Req() req,
@@ -388,7 +399,10 @@ export class RideController {
         userMemberActivesHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar as corridas em que o usuário é membro.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -400,6 +414,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'O histórico do usuário como motorista foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como motorista.',
   })
   async getDriverHistory(
     @Req() req,
@@ -418,7 +436,10 @@ export class RideController {
         userDriverHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -430,6 +451,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'O histórico do usuário como membro foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como membro.',
   })
   async getMemberHistory(
     @Req() req,
@@ -448,7 +473,10 @@ export class RideController {
         userMemberHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como membro.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -461,6 +489,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'O histórico completo do usuário foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
   })
   async getUserHistory(
     @Req() req,
@@ -478,7 +510,10 @@ export class RideController {
         userHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
