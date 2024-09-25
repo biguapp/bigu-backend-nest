@@ -195,6 +195,14 @@ export class RideController {
     status: 200,
     description: 'A carona foi deletada com sucesso.',
   })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao deletar carona.',
+  })
   async remove(
     @Param('id') id: string,
     @Res() response,
@@ -208,7 +216,16 @@ export class RideController {
         rideDeleted,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
     }
   }
 
