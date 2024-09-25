@@ -13,6 +13,7 @@ import {
   Post,
   UseInterceptors,
   BadRequestException,
+  InternalServerErrorException,
   UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -79,7 +80,14 @@ export class UserController {
     description: 'Usuário retornado com sucesso.',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuário não encontrado.' 
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao retornar todos os usuários.',
+  })
   async findOneByEmail(
     @Res() response,
     @Param('email') email: string,
@@ -91,9 +99,11 @@ export class UserController {
         user,
       });
     } catch (error) {
+      console.error(error);
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
           message: 'Usuário não encontrado.',
+          error: error.message,
         });
       }
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -116,7 +126,14 @@ export class UserController {
     description: 'Usuário retornado com sucesso.',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuário não encontrado.' 
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao tentar encontrar o usuário.',
+  })
   async findOneByMatricula(
     @Res() response,
     @Param('matricula') matricula: string,
@@ -130,6 +147,18 @@ export class UserController {
       });
     } catch (error) {
       console.error(error);
+
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Usuário não encontrado.',
+          error: error.message,
+        });
+      }
+
+      throw new InternalServerErrorException({
+        message: 'Erro ao retornar usuário.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -147,7 +176,14 @@ export class UserController {
     description: 'Usuário retornado com sucesso.',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuário não encontrado.' 
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao tentar encontrar o usuário.',
+  })
   async findOne(
     @Res() response,
     @Param('id') id: string,
@@ -161,6 +197,17 @@ export class UserController {
       });
     } catch (error) {
       console.error(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Usuário não encontrado.',
+          error: error.message,
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao procurar usuário.',
+        error: error.message,
+      });
     }
   }
 
@@ -178,7 +225,14 @@ export class UserController {
     description: 'Usuário removido com sucesso.',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuário não encontrado.' 
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao tentar remover o usuário.',
+  })
   async remove(@Res() response, @Req() req): Promise<UserResponseDto> {
     try {
       const userId = req.user.sub;
@@ -190,6 +244,18 @@ export class UserController {
       });
     } catch (error) {
       console.error(error);
+
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Usuário não encontrado.',
+          error: error.message,
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao deletar usuário.',
+        error: error.message,
+      });
     }
   }
 
@@ -207,7 +273,14 @@ export class UserController {
     description: 'Usuário atualizado com sucesso.',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuário não encontrado.' 
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao tentar atualizar o usuário.',
+  })
   async update(
     @Req() req,
     @Body() updateUserDto: UpdateUserDto,
@@ -225,6 +298,18 @@ export class UserController {
       });
     } catch (error) {
       console.error(error);
+
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Usuário não encontrado.',
+          error: error.message,
+        });
+      }
+      
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao atualizar usuário.',
+        error: error.message,
+      });
     }
   }
 
@@ -236,7 +321,10 @@ export class UserController {
     description: 'Usuário autenticado retornado com sucesso.',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao tentar retornar o usuário.',
+  })
   async findSelf(@Res() response, @Req() req): Promise<UserResponseDto> {
     try {
       const userId = req.user.sub;
@@ -248,6 +336,11 @@ export class UserController {
       });
     } catch (error) {
       console.error(error);
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro interno ao tentar retornar o usuário.',
+        error: error.message,
+      });
     }
   }
 
