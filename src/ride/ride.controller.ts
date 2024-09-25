@@ -13,6 +13,7 @@ import {
   HttpStatus,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -20,6 +21,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RideResponseDto } from './dto/response-ride.dto';
+import { response } from 'express';
 
 @ApiTags('rides')
 @Controller('rides')
@@ -150,6 +152,14 @@ export class RideController {
     status: 200,
     description: 'A carona foi atualizada com sucesso.',
   })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao encerrar a carona.',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateRideDto: UpdateRideDto,
@@ -164,7 +174,17 @@ export class RideController {
         rideUpdated,
       });
     } catch (error) {
-      console.log(error);
+      console.error('Erro ao encerrar a carona: ', error);
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'A carona não foi encontrada.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -524,9 +544,38 @@ export class RideController {
     status: 200,
     description: 'A carona foi marcada como concluída.',
   })
-  async setRideOver(@Req() req, @Param('rideId') rideId: string) {
-    const userId = req.user.sub;
-    return this.rideService.setRideOver(userId, rideId);
+  @ApiResponse({
+    status: 404,
+    description: 'A carona não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao encerrar a carona.',
+  })
+  async setRideOver(@Req() req, @Res() response, @Param('rideId') rideId: string) {
+    try {
+      const userId = req.user.sub;
+      const updatedRide = await this.rideService.setRideOver(userId, rideId);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'A carona foi encerrada.',
+        updatedRide,
+      });
+    } catch (error) {
+      console.error('Erro ao encerrar a carona: ', error);
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'A carona não foi encontrada.',
+          error: error.message,
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro interno ao encerrar a carona.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -536,9 +585,44 @@ export class RideController {
     status: 200,
     description: 'Participação solicitada com sucesso.',
   })
-  async requestRide(@Req() req, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
-    const userId = req.user.sub;
-    return this.rideService.requestRide(userId, rideId, addressId);
+  @ApiResponse({
+    status: 400,
+    description: 'O usuário não pode se candidatar a esta carona.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona e/ou o endereço não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao encerrar a carona.',
+  })
+  async requestRide(@Req() req, @Res() response, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
+    try {
+      const userId = req.user.sub;
+      const updatedRide = await this.rideService.requestRide(userId, rideId, addressId);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário agora é um candidato à carona.',
+        updatedRide,
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      if (error instanceof BadRequestException) {
+        return response.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message || 'O usuário não pode se candidatar à carona.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
+    }
   }
 
   @UseGuards(JwtAuthGuard)
