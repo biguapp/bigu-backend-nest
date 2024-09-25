@@ -4,6 +4,8 @@ import { Role } from '../enums/enum';
 import { ROLES_KEY } from './roles.decorator';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
+import { jwtConstants } from '@src/auth/constants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -11,6 +13,7 @@ export class RolesGuard implements CanActivate {
     private reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -36,7 +39,7 @@ export class RolesGuard implements CanActivate {
     let loginPayload;
     try {
       loginPayload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
+        secret: this.configService.get<string>('JWT_SECRET'),
       });
     } catch (error) {
       return false;
