@@ -11,6 +11,8 @@ import { AuthController } from './auth.controller';
 import { LocalStrategy } from './local.strategy';
 import { BlacklistedTokenSchema } from './schemas/token.schema';
 import { MailjetModule } from 'nest-mailjet';
+import { jwtConstants } from './constants';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -21,9 +23,13 @@ import { MailjetModule } from 'nest-mailjet';
       }),
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '15m' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '60m' },
+      }),
     }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
