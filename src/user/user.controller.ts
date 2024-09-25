@@ -246,15 +246,7 @@ export class UserController {
   @Post('upload-profile-picture')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/profile-pictures', // Define o diretório de destino
-        filename: (req, file, cb) => {
-          const ext = path.extname(file.originalname);
-          const filename = `${Date.now()}${ext}`;
-          cb(null, filename);
-        },
-      }),
-      limits: { fileSize: 1 * 1024 * 1024 }, // Limite de tamanho: 2MB
+      limits: { fileSize: 1 * 1024 * 1024 }, // Limite de tamanho: 1MB
       fileFilter: (req, file, cb) => {
         const allowedMimeTypes = ['image/jpeg', 'image/png'];
         if (!allowedMimeTypes.includes(file.mimetype)) {
@@ -277,7 +269,7 @@ export class UserController {
       throw new BadRequestException('Nenhum arquivo enviado.');
     }
     // Compressão usando sharp
-    const compressedImageBuffer = await sharp(file.path)
+    const compressedImageBuffer = await sharp(file.buffer)
       .resize(300, 300)
       .jpeg({ quality: 80 })
       .toBuffer(); // Gera o buffer da imagem comprimida
