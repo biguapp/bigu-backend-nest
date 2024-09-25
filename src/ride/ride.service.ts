@@ -100,10 +100,14 @@ export class RideService {
       throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
     const membersEmails = await Promise.all(
-      result.members.map(async (member) => {
-        const user = await this.userService.findOne(member.user.toString());
-        return user.email;
-      }),
+      result.members.map((member) =>
+        this.userService
+          .findOne(member.user.toString())
+          .then((user) => user.email)
+          .catch(err => {
+            throw new NotFoundException("Erro na captura: ", err);
+          }),
+      ),
     );
     this.sendEmail(
       membersEmails,

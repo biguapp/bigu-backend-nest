@@ -62,21 +62,22 @@ export class AuthController {
     return await this.authService.confirmRegistration(userId, code);
   }
 
-  @Post('request-password-reset')
+  @Post('request-password-reset/')
   @ApiOperation({ summary: 'Solicitar recuperação de senha' })
   @ApiResponse({ status: 200, description: 'Código de verificação enviado.' })
   async requestPasswordReset(@Body() requestResetPasswordDto: RequestResetPasswordDto) {
     return this.authService.requestPasswordReset(requestResetPasswordDto.email);
   }
 
-  @Put('reset-password/:code')
+  @Put('reset-password/:email/:code')
   @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
   @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
   async resetPassword(
+    @Param('email') email: string,
     @Param('code') code: string,
     @Body() resetPasswordDto: ResetPasswordDto,
   ) {
-    return this.authService.resetPassword(code, resetPasswordDto.password);
+    return this.authService.resetPassword(email, code, resetPasswordDto.password);
   }
 
 

@@ -6,7 +6,6 @@ import { JwtStrategy } from './jwt.strategy';
 import { AuthService } from './auth.service';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { jwtConstants } from './constants';
 import { UserService } from '../user/user.service';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './local.strategy';
@@ -23,7 +22,7 @@ import { MailjetModule } from 'nest-mailjet';
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: jwtConstants.secret,
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '15m' },
     }),
     MongooseModule.forFeature([

@@ -73,7 +73,7 @@ export class UserService {
 
   async findByEmail(email: string): Promise<User> {
     const user = await this.userModel.findOne({ email });
-    if (user.email !== email || !user) {
+    if (!user || user.email !== email ) {
       throw new NotFoundException('Usuário não encontrado.');
     }
     return user;
@@ -130,10 +130,6 @@ export class UserService {
       throw new NotFoundException('Usuario não encontrado');
     }
     return result;
-  }
-
-  async findByVerificationCode(code: string): Promise<User> {
-    return this.userModel.findOne({ verificationCode: code }).exec();
   }
 
   async updateProfilePic(userId: string, imageBuffer: Buffer): Promise<User> {

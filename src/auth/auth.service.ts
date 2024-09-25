@@ -210,9 +210,9 @@ export class AuthService {
     return 'Código de recuperação enviado para o email';
   }
 
-  async resetPassword(code: string, newPassword: string): Promise<string> {
-    const user = await this.userService.findByVerificationCode(code);
-    if (!user) {
+  async resetPassword(email: string, code: string, newPassword: string): Promise<string> {
+    const user = await this.userService.findByEmail(email);
+    if (!user || user.verificationCode !== code) {
       throw new UnauthorizedException('Código de verificação inválido.');
     }
 

@@ -3,10 +3,9 @@ import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { BlacklistedToken } from './schemas/token.schema';
 import { MailjetService } from 'nest-mailjet';
 import * as bcrypt from 'bcrypt';
-import { UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 
 describe('AuthService', () => {
@@ -175,7 +174,7 @@ describe('AuthService', () => {
       mockUserService.findByVerificationCode.mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword');
 
-      const result = await service.resetPassword('123456', 'newPassword123');
+      const result = await service.resetPassword(mockUser.email, '123456', 'newPassword123');
 
       expect(mockUserService.update).toHaveBeenCalledWith(mockUser.id, {
         password: 'hashedPassword',
@@ -188,7 +187,7 @@ describe('AuthService', () => {
       mockUserService.findByVerificationCode.mockResolvedValue(null);
 
       await expect(
-        service.resetPassword('wrong_code', 'newPassword123'),
+        service.resetPassword(mockUser.email, 'wrong_code', 'newPassword123'),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
