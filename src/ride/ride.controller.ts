@@ -122,9 +122,10 @@ export class RideController {
           message: 'Carona não encontrada.',
         });
       }
+      
       return response.status(200).json({
         message: 'A carona foi retornada com sucesso.',
-        ride: ride.toDTO(),
+        ride: await ride.toDTO(),
       });
     } catch (error) {
       console.error('Erro ao encontrar carona pelo id: ', error);
