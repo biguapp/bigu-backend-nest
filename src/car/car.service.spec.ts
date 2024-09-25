@@ -19,12 +19,20 @@ describe('CarService', () => {
       deleteMany: jest.fn(),
     };
 
+    const mockRideModel = {
+      findOne: jest.fn()
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CarService,
         {
           provide: getModelToken('Car'), // Fornece o CarModel
           useValue: mockCarModel, // Mock do CarModel
+        },
+        {
+          provide: getModelToken('Ride'), // Fornece o CarModel
+          useValue: mockRideModel, // Mock do CarModel
         },
       ],
     }).compile();

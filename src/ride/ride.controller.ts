@@ -13,6 +13,7 @@ import {
   HttpStatus,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -20,6 +21,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RideResponseDto } from './dto/response-ride.dto';
+import { response } from 'express';
 
 @ApiTags('rides')
 @Controller('rides')
@@ -112,14 +114,17 @@ export class RideController {
   async findOne(
     @Param('id') id: string,
     @Res() response,
-  ): Promise<RideResponseDto> {
+  ): Promise<void> {
     try {
-      const rideModel = await this.rideService.findOne(id);
-      const ride = await rideModel.toDTO();
-
-      return response.status(HttpStatus.OK).json({
+      const ride = await this.rideService.findOne(id);
+      if (!ride) {
+        return response.status(404).json({
+          message: 'Carona não encontrada.',
+        });
+      }
+      return response.status(200).json({
         message: 'A carona foi retornada com sucesso.',
-        ride,
+        ride: ride.toDTO(),
       });
     } catch (error) {
       console.error('Erro ao encontrar carona pelo id: ', error);
@@ -147,6 +152,14 @@ export class RideController {
     status: 200,
     description: 'A carona foi atualizada com sucesso.',
   })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao encerrar a carona.',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateRideDto: UpdateRideDto,
@@ -161,7 +174,17 @@ export class RideController {
         rideUpdated,
       });
     } catch (error) {
-      console.log(error);
+      console.error('Erro ao encerrar a carona: ', error);
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'A carona não foi encontrada.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -171,6 +194,14 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'A carona foi deletada com sucesso.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao deletar carona.',
   })
   async remove(
     @Param('id') id: string,
@@ -185,7 +216,16 @@ export class RideController {
         rideDeleted,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
     }
   }
 
@@ -336,7 +376,11 @@ export class RideController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Todas as corridas que o usuário é motorista foram retornadas.',
+    description: 'Todas as corridas em que o usuário é motorista foram retornadas.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar as corridas em que o usuário é motorista.',
   })
   async getDriverActiveRides(
     @Req() req,
@@ -355,7 +399,10 @@ export class RideController {
         userDriverActivesHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar as corridas em que o usuário é motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -367,6 +414,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'Todas as corridas que o usuário é membro foram retornadas.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar as corridas em que o usuário é membro.',
   })
   async getMemberActiveRides(
     @Req() req,
@@ -385,7 +436,10 @@ export class RideController {
         userMemberActivesHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar as corridas em que o usuário é membro.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -397,6 +451,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'O histórico do usuário como motorista foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como motorista.',
   })
   async getDriverHistory(
     @Req() req,
@@ -415,7 +473,10 @@ export class RideController {
         userDriverHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -427,6 +488,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'O histórico do usuário como membro foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como membro.',
   })
   async getMemberHistory(
     @Req() req,
@@ -445,7 +510,10 @@ export class RideController {
         userMemberHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como membro.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
@@ -458,6 +526,10 @@ export class RideController {
   @ApiResponse({
     status: 200,
     description: 'O histórico completo do usuário foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
   })
   async getUserHistory(
     @Req() req,
@@ -475,20 +547,52 @@ export class RideController {
         userHistory,
       });
     } catch (error) {
-      console.log(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
     }
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('/over')
+  @Put('/over/:rideId')
   @ApiOperation({ summary: 'Marcar carona como concluída.' })
   @ApiResponse({
     status: 200,
     description: 'A carona foi marcada como concluída.',
   })
-  async setRideOver(@Req() req, @Param() rideId) {
-    const userId = req.user.sub;
-    return this.rideService.setRideOver(userId, rideId);
+  @ApiResponse({
+    status: 404,
+    description: 'A carona não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao encerrar a carona.',
+  })
+  async setRideOver(@Req() req, @Res() response, @Param('rideId') rideId: string) {
+    try {
+      const userId = req.user.sub;
+      const updatedRide = await this.rideService.setRideOver(userId, rideId);
+      
+      return response.status(HttpStatus.OK).json({
+        message: 'A carona foi encerrada.',
+        updatedRide,
+      });
+    } catch (error) {
+      console.error('Erro ao encerrar a carona: ', error);
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'A carona não foi encontrada.',
+          error: error.message,
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro interno ao encerrar a carona.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -498,9 +602,44 @@ export class RideController {
     status: 200,
     description: 'Participação solicitada com sucesso.',
   })
-  async requestRide(@Req() req, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
-    const userId = req.user.sub;
-    return this.rideService.requestRide(userId, rideId, addressId);
+  @ApiResponse({
+    status: 400,
+    description: 'O usuário não pode se candidatar a esta carona.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona e/ou o endereço não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao solicitar participação na carona.',
+  })
+  async requestRide(@Req() req, @Res() response, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
+    try {
+      const userId = req.user.sub;
+      const updatedRide = await this.rideService.requestRide(userId, rideId, addressId);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário agora é um candidato à carona.',
+        updatedRide,
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      if (error instanceof BadRequestException) {
+        return response.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message || 'O usuário não pode se candidatar à carona.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -510,9 +649,36 @@ export class RideController {
     status: 200,
     description: 'Candidato recusado ou aceitado com sucesso.',
   })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona e/ou o candidato não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao responder à solicitação do candidato.',
+  })
   async declineOrAcceptCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId, @Body() body: { status: string}) {
-    const userId = req.user.sub;
-    return await this.rideService.declineOrAcceptCandidate(userId, rideId, candidateId, body.status);
+    try {
+      const userId = req.user.sub;
+      const updatedRide = await this.rideService.declineOrAcceptCandidate(userId, rideId, candidateId, body.status);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'A solicitação foi respondida com sucesso.',
+        updatedRide,
+      });
+    } catch (error) {
+      console.error('Erro ao responder à solicitação do candidato: ', error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
+    }
+    
   }
 
   @UseGuards(JwtAuthGuard)
@@ -522,9 +688,37 @@ export class RideController {
     status: 200,
     description: 'Membro removido da carona com sucesso.',
   })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona e/ou o membro não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao remover candidato.',
+  })
   async removeMember(@Req() req, @Param('rideId') rideId, @Param('memberId') memberId) {
-    const userId = req.user.sub;
-    return await this.rideService.removeMember(userId, rideId, memberId);
+    try {
+      const userId = req.user.sub;
+      const updatedRide = await this.rideService.removeMember(userId, rideId, memberId);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário não é mais um participante da carona.',
+        updatedRide,
+      });
+    } catch (error) {
+      console.error('Erro ao remover membro: ', error);
+
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
+    }
+    
   }
 
   @UseGuards(JwtAuthGuard)
@@ -534,9 +728,25 @@ export class RideController {
     status: 200,
     description: 'Todos os candidatos retornados com sucesso.',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao recuperar candidatos.',
+  })
   async getCandidates(@Req() req) {
-    const userId = req.user.sub;
-    return await this.rideService.getCandidates(userId);
+    try {
+      const userId = req.user.sub;
+      const candidates = await this.rideService.getCandidates(userId);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'Os candidatos das caronas do motorista foram retornados com sucesso.',
+        candidates,
+      });
+    } catch (error) {
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
+    }
+    
   }
 
   @UseGuards(JwtAuthGuard)
@@ -546,8 +756,36 @@ export class RideController {
     status: 200,
     description: 'Membro deixou de fazer parte de uma carona.',
   })
+  @ApiResponse({
+    status: 404,
+    description: 'A carona não foi encontrada.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao deixar carona.',
+  })
   async leaveRide(@Req() req, @Param('rideId') rideId) {
-    const userId = req.user.sub;
-    return await this.rideService.removeMember(userId, rideId, userId);
+    try {
+      const userId = req.user.sub;
+      const updatedRide = await this.rideService.removeMember(userId, rideId, userId);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'O usuário deixou a carona.',
+        updatedRide,
+      });
+    } catch (error) {
+      console.error('Erro ao deixar carona: ', error);
+
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message || 'Erro interno do servidor.',
+      });
+    }
+    
   }
 }

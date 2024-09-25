@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UserResponseDto {
+  @ApiProperty({ description: 'Foto de perfil do usuário' })
+  @IsOptional()
+  readonly profileImage?: Buffer;
+
   @ApiProperty({
     description: 'Nome completo do usuário',
     example: 'João Silva',

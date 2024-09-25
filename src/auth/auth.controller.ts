@@ -1,10 +1,12 @@
-import { Controller, Post, Body, HttpCode, UseGuards, Req, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards, Req, Param, Put, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from '../user/dto/login-user.dto';
-import { UserResponseDto } from '@src/user/dto/response-user.dto';
+import { UserResponseDto } from '../user/dto/response-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RequestResetPasswordDto } from './dto/request-reset-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -17,11 +19,17 @@ export class AuthController {
   @HttpCode(200)
   async loginUser(@Body() loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
-    const { token, userResponse } = await this.authService.loginUser(
-      email,
-      password,
-    );
-    return { token: token, user: userResponse };
+    const { accessToken, refreshToken, userResponse } =
+      await this.authService.loginUser(email, password);
+    return { accessToken, refreshToken, user: userResponse };
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Access token refreshed' })
+  @HttpCode(200)
+  async refreshAccessToken(@Body('refreshToken') refreshToken: string) {
+    return await this.authService.refreshAccessToken(refreshToken);
   }
 
   @Post('logout')
@@ -39,18 +47,37 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User registered' })
   @HttpCode(201)
   async registerUser(@Body() createUserDto: CreateUserDto) {
-    const { token, userResponse } =
+    const { accessToken, refreshToken, userResponse } =
       await this.authService.registerUser(createUserDto);
-    return { user: userResponse, token: token };
+    return { user: userResponse, accessToken, refreshToken };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('confirm/user/:code')
-  @ApiOperation({ summary: 'Confirm account.'})
-  @ApiResponse({ status: 200, description: 'Account verified.'})
+  @ApiOperation({ summary: 'Confirm account.' })
+  @ApiResponse({ status: 200, description: 'Account verified.' })
   @HttpCode(200)
-  async confirmAccount(@Req() req, @Param('code') code){
+  async confirmAccount(@Req() req, @Param('code') code: string) {
     const userId = req.user.sub;
     return await this.authService.confirmRegistration(userId, code);
   }
+
+  @Post('request-password-reset')
+  @ApiOperation({ summary: 'Solicitar recuperação de senha' })
+  @ApiResponse({ status: 200, description: 'Código de verificação enviado.' })
+  async requestPasswordReset(@Body() requestResetPasswordDto: RequestResetPasswordDto) {
+    return this.authService.requestPasswordReset(requestResetPasswordDto.email);
+  }
+
+  @Put('reset-password/:code')
+  @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
+  @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
+  async resetPassword(
+    @Param('code') code: string,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(code, resetPasswordDto.password);
+  }
+
+
 }

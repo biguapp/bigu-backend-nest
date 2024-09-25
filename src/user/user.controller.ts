@@ -9,12 +9,23 @@ import {
   HttpStatus,
   Put,
   Body,
+  NotFoundException,
+  Post,
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserResponseDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as sharp from 'sharp';
+import * as path from 'path';
+import { Express } from 'express';
+import * as fs from 'fs';
 
 @ApiTags('users')
 @Controller('users')
@@ -32,6 +43,9 @@ export class UserController {
   async findAll(@Res() response): Promise<UserResponseDto[]> {
     try {
       const usersModel = await this.userService.findAll();
+      if (!usersModel) {
+        throw new NotFoundException('Erro findAll');
+      }
       const users = usersModel.map((user) => user.toDTO());
 
       return response.status(HttpStatus.OK).json({
@@ -63,13 +77,20 @@ export class UserController {
   ): Promise<UserResponseDto> {
     try {
       const user = (await this.userService.findByEmail(email)).toDTO();
-
       return response.status(HttpStatus.OK).json({
         message: 'O usuário foi retornado com sucesso.',
         user,
       });
     } catch (error) {
-      console.log(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Usuário não encontrado.',
+        });
+      }
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao procurar usuário.',
+        error: error.message,
+      });
     }
   }
 
@@ -219,5 +240,55 @@ export class UserController {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload-profile-picture')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/profile-pictures', // Define o diretório de destino
+        filename: (req, file, cb) => {
+          const ext = path.extname(file.originalname);
+          const filename = `${Date.now()}${ext}`;
+          cb(null, filename);
+        },
+      }),
+      limits: { fileSize: 1 * 1024 * 1024 }, // Limite de tamanho: 2MB
+      fileFilter: (req, file, cb) => {
+        const allowedMimeTypes = ['image/jpeg', 'image/png'];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return cb(
+            new BadRequestException(
+              'Somente imagens JPEG ou PNG são permitidas!',
+            ),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadProfilePicture(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Nenhum arquivo enviado.');
+    }
+    // Compressão usando sharp
+    const compressedImageBuffer = await sharp(file.path)
+      .resize(300, 300)
+      .jpeg({ quality: 80 })
+      .toBuffer(); // Gera o buffer da imagem comprimida
+
+    // Atualiza a imagem binária no documento do usuário no MongoDB
+    const userId = req.user.sub;
+    await this.userService.updateProfilePic(userId, compressedImageBuffer);
+
+    return {
+      message: 'Imagem enviada e atribuída com sucesso.',
+      path: 'Imagem salva diretamente no banco de dados.',
+    };
   }
 }
