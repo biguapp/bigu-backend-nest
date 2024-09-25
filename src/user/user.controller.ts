@@ -39,21 +39,30 @@ export class UserController {
     description: 'Usuários retornados com sucesso.',
     type: [UserResponseDto],
   })
-  @ApiResponse({ status: 500, description: 'Erro no servidor.' })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao retornar todos os usuários.',
+  })
   async findAll(@Res() response): Promise<UserResponseDto[]> {
     try {
       const usersModel = await this.userService.findAll();
-      if (!usersModel) {
-        throw new NotFoundException('Erro findAll');
+      let users: UserResponseDto[] = [];
+
+      if (usersModel) {
+        users = usersModel.map((user) => user.toDTO());
       }
-      const users = usersModel.map((user) => user.toDTO());
 
       return response.status(HttpStatus.OK).json({
         message: 'Os usuários foram retornados com sucesso.',
         users,
       });
+
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro interno ao retornar todos os usuários.',
+        error: error.message,
+      });
     }
   }
 
@@ -120,7 +129,7 @@ export class UserController {
         user,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -151,7 +160,7 @@ export class UserController {
         user,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -180,7 +189,7 @@ export class UserController {
         userRemoved,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -215,7 +224,7 @@ export class UserController {
         userUpdated,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -238,7 +247,7 @@ export class UserController {
         user,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
