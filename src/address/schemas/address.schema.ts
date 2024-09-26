@@ -39,6 +39,7 @@ AddressSchema.methods.toDTO = function (): AddressResponseDto {
   return {
     rua: this.rua,
     nome: this.nome,
+    cep: this.cep,
     cidade: this.cidade,
     numero: this.numero,
     bairro: this.bairro,
