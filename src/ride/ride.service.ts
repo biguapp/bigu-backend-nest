@@ -83,9 +83,23 @@ export class RideService {
   }
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
+    const date = new Date(updateRideDto.scheduledTime);
+    if (date < new Date()) {
+      throw new BadRequestException('A data agendada não pode ser no passado.');
+    }
+    
+    const ride = {
+      ...updateRideDto,
+      driver: new Types.ObjectId(updateRideDto.driver),
+      startAddress: new Types.ObjectId(updateRideDto.startAddress),
+      destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
+      car: new Types.ObjectId(updateRideDto.car),
+      scheduledTime: date,
+    };
+    
     const updatedRide = await this.rideModel.findByIdAndUpdate(
       id,
-      updateRideDto,
+      ride,
       { new: true },
     );
     if (!updatedRide) {
