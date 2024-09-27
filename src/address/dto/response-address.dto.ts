@@ -35,4 +35,8 @@ export class AddressResponseDto {
   @ApiProperty({ description: 'Id do endereço', example: '1' })
   @IsString()
   readonly addressId: string;
+
+  @ApiProperty({ description: 'CEP do endereço', example: '58417-191' })
+  @IsString()
+  readonly cep: string;
 }
