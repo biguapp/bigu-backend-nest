@@ -73,6 +73,18 @@ export class RideService {
     return await this.rideModel.find(filter);
   }
 
+  async findAllPaging(
+    filter: any = {},
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<any> {
+    const skip = (page - 1) * limit;
+    const rides = this.rideModel.find(filter).skip(skip).limit(limit).exec();
+    const totalPages = await this.rideModel.countDocuments(filter).exec();
+
+    return { totalPages, page, pageSize: limit, rides };
+  }
+
   async findOne(id: string): Promise<Ride> {
     const ride = await this.rideModel.findById(id);
     if (!ride) {
