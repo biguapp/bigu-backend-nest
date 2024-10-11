@@ -14,6 +14,7 @@ import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { MailjetService } from 'nest-mailjet';
+import { toZonedTime } from 'date-fns-tz';
 
 @Injectable()
 export class RideService {
@@ -44,8 +45,12 @@ export class RideService {
       );
     }
 
-    const date = new Date(createRideDto.scheduledTime);
-    if (date < new Date()) {
+    const scheduledDate  = new Date(createRideDto.scheduledTime);
+
+    const timeZone = 'America/Sao_Paulo';
+    const zonedDate = toZonedTime(scheduledDate, timeZone);
+
+    if (zonedDate < new Date()) {
       throw new BadRequestException('A data agendada não pode ser no passado.');
     }
 
@@ -58,7 +63,7 @@ export class RideService {
       members: [],
       candidates: [],
       isOver: false,
-      scheduledTime: date,
+      scheduledTime: zonedDate,
     };
 
     try {
@@ -99,7 +104,7 @@ export class RideService {
     if (date < new Date()) {
       throw new BadRequestException('A data agendada não pode ser no passado.');
     }
-    
+
     const ride = {
       ...updateRideDto,
       driver: new Types.ObjectId(updateRideDto.driver),
@@ -108,12 +113,10 @@ export class RideService {
       car: new Types.ObjectId(updateRideDto.car),
       scheduledTime: date,
     };
-    
-    const updatedRide = await this.rideModel.findByIdAndUpdate(
-      id,
-      ride,
-      { new: true },
-    );
+
+    const updatedRide = await this.rideModel.findByIdAndUpdate(id, ride, {
+      new: true,
+    });
     if (!updatedRide) {
       throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
@@ -130,8 +133,8 @@ export class RideService {
         this.userService
           .findOne(member.user.toString())
           .then((user) => user.email)
-          .catch(err => {
-            throw new NotFoundException("Erro na captura: ", err);
+          .catch((err) => {
+            throw new NotFoundException('Erro na captura: ', err);
           }),
       ),
     );
