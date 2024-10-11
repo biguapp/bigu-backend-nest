@@ -87,11 +87,25 @@ export class RideService {
   }
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
-    const updatedRide = await this.rideModel.findByIdAndUpdate(
-      id,
-      updateRideDto,
-      { new: true },
-    );
+    const date = new Date(updateRideDto.scheduledTime);
+    const timeZone = 'America/Sao_Paulo';
+    const zonedDate = toZonedTime(date, timeZone);
+    if (zonedDate < new Date()) {
+      throw new BadRequestException('A data agendada não pode ser no passado.');
+    }
+
+    const ride = {
+      ...updateRideDto,
+      driver: new Types.ObjectId(updateRideDto.driver),
+      startAddress: new Types.ObjectId(updateRideDto.startAddress),
+      destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
+      car: new Types.ObjectId(updateRideDto.car),
+      scheduledTime: zonedDate,
+    };
+
+    const updatedRide = await this.rideModel.findByIdAndUpdate(id, ride, {
+      new: true,
+    });
     if (!updatedRide) {
       throw new NotFoundException(`Carona com ID ${id} não encontrado`);
     }
