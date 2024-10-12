@@ -21,7 +21,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RideResponseDto } from './dto/response-ride.dto';
-import { response } from 'express';
+import { Response } from 'express';
 
 @ApiTags('rides')
 @Controller('rides')
@@ -615,7 +615,7 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao solicitar participação na carona.',
   })
-  async requestRide(@Req() req, @Res() response, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
+  async requestRide(@Req() req, @Res() response: Response, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
     try {
       const userId = req.user.sub;
       const updatedRide = await this.rideService.requestRide(userId, rideId, addressId);
@@ -658,11 +658,10 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao responder à solicitação do candidato.',
   })
-  async declineOrAcceptCandidate(@Req() req, @Param('rideId') rideId, @Param('candidateId') candidateId, @Body() body: { status: string}) {
+  async declineOrAcceptCandidate(@Req() req, @Res() response: Response, @Param('rideId') rideId, @Param('candidateId') candidateId, @Body() body: { status: string}) {
     try {
       const userId = req.user.sub;
       const updatedRide = await this.rideService.declineOrAcceptCandidate(userId, rideId, candidateId, body.status);
-
       return response.status(HttpStatus.OK).json({
         message: 'A solicitação foi respondida com sucesso.',
         updatedRide,
@@ -697,7 +696,7 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao remover candidato.',
   })
-  async removeMember(@Req() req, @Param('rideId') rideId, @Param('memberId') memberId) {
+  async removeMember(@Req() req, @Res() response: Response, @Param('rideId') rideId, @Param('memberId') memberId) {
     try {
       const userId = req.user.sub;
       const updatedRide = await this.rideService.removeMember(userId, rideId, memberId);
@@ -733,7 +732,7 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao recuperar candidatos.',
   })
-  async getCandidates(@Req() req) {
+  async getCandidates(@Req() req, @Res() response: Response) {
     try {
       const userId = req.user.sub;
       const candidates = await this.rideService.getCandidates(userId);
@@ -765,7 +764,7 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao deixar carona.',
   })
-  async leaveRide(@Req() req, @Param('rideId') rideId) {
+  async leaveRide(@Req() req, @Res() response: Response, @Param('rideId') rideId) {
     try {
       const userId = req.user.sub;
       const updatedRide = await this.rideService.removeMember(userId, rideId, userId);

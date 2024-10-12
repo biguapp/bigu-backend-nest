@@ -185,11 +185,11 @@ export class RideService {
   }
 
   async setRideOver(userId: string, rideId: string) {
-    const ride = await this.findOne(rideId);
+    const ride: any = await this.findOne(rideId);
     const driver = ride.driver.toString();
 
     if (driver === userId) {
-      return await this.update(rideId, { isOver: true } as UpdateRideDto);
+      return await this.update(rideId, {...ride, isOver: true } as UpdateRideDto);
     } else throw new NotFoundException('Corrida não encontrada.');
   }
 
@@ -248,7 +248,7 @@ export class RideService {
   }
 
   async acceptCandidate(driverId: string, rideId: string, candidateId: string) {
-    const ride = await this.findOne(rideId);
+    const ride: any = await this.findOne(rideId);
     const candidateObjId = new Types.ObjectId(candidateId);
     const rideCandidates = ride.candidates;
     const rideCandidatesId = rideCandidates.map((candidate) =>
@@ -275,13 +275,12 @@ export class RideService {
         );
 
         rideCandidates.splice(idx, 1);
-
-        return (
-          await this.update(rideId, {
-            candidates: rideCandidates,
-            members: newMembers,
-          })
-        ).toDTO();
+        const newRide = await this.update(rideId, {...ride,
+          candidates: rideCandidates,
+          members: newMembers,
+        });
+        return newRide.toDTO();
+          
       } else throw new NotFoundException('Candidato não encontrado.');
     } else throw new NotFoundException('Corrida não encontrada.');
   }
@@ -291,7 +290,7 @@ export class RideService {
     rideId: string,
     candidateId: string,
   ) {
-    const ride = await this.findOne(rideId);
+    const ride: any = await this.findOne(rideId);
     const rideCandidates = ride.candidates;
     const rideCandidatesId = rideCandidates.map((candidate) =>
       candidate.user.toString(),
@@ -309,7 +308,7 @@ export class RideService {
         );
 
         return (
-          await this.update(rideId, {
+          await this.update(rideId, {...ride,
             candidates: rideCandidates,
           })
         ).toDTO();
@@ -331,7 +330,7 @@ export class RideService {
   }
 
   async removeMember(driverId: string, rideId: string, memberId: string) {
-    const ride = await this.findOne(rideId);
+    const ride: any = await this.findOne(rideId);
     const rideMembers = ride.members;
     const rideMembersId = rideMembers.map((member) => member.user.toString());
     if (ride.driver.toString() === driverId) {
@@ -346,7 +345,7 @@ export class RideService {
           'Você perdeu um bigu!',
         );
         return (
-          await this.update(rideId, {
+          await this.update(rideId, {...ride,
             members: rideMembers,
           })
         ).toDTO();
