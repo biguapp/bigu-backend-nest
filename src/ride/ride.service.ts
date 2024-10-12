@@ -87,11 +87,14 @@ export class RideService {
   }
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
-    const date = new Date(updateRideDto.scheduledTime);
-    const timeZone = 'America/Sao_Paulo';
-    const zonedDate = toZonedTime(date, timeZone);
-    if (zonedDate < new Date()) {
-      throw new BadRequestException('A data agendada não pode ser no passado.');
+    let zonedDate;
+    if(updateRideDto.scheduledTime){
+      const date = new Date(updateRideDto.scheduledTime);
+      const timeZone = 'America/Sao_Paulo';
+      zonedDate = toZonedTime(date, timeZone);
+      if (zonedDate < new Date()) {
+        throw new BadRequestException('A data agendada não pode ser no passado.');
+      }
     }
 
     const ride = {
@@ -100,7 +103,7 @@ export class RideService {
       startAddress: new Types.ObjectId(updateRideDto.startAddress),
       destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
       car: new Types.ObjectId(updateRideDto.car),
-      scheduledTime: zonedDate,
+      ...(zonedDate && { scheduledTime: zonedDate })
     };
 
     const updatedRide = await this.rideModel.findByIdAndUpdate(id, ride, {
@@ -239,7 +242,9 @@ export class RideService {
       'Nova solicitação de bigu!',
     );
 
-    return await this.update(rideId, { candidates: rideCandidates });
+    const updateRideDto: any = {...ride, candidates: rideCandidates}
+
+    return await this.update(rideId, updateRideDto);
   }
 
   async acceptCandidate(driverId: string, rideId: string, candidateId: string) {
