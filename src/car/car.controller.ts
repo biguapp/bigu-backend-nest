@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Post, Body, Param, Delete, Req, UseGuards, Res, HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, Param, Delete, Req, UseGuards, Res, HttpStatus, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
@@ -9,7 +9,7 @@ import { CarResponseDto } from './dto/response-car.dto';
 @ApiTags('cars')
 @Controller('cars')
 export class CarController {
-  constructor(private readonly carService: CarService) {}
+  constructor(private readonly carService: CarService) { }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -31,7 +31,10 @@ export class CarController {
       });
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException('Não foi possível criar o carro: ' + error)
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'O sistema apresentou um erro ao tentar adicionar o carro.\nTente novamente mais tarde.',
+        error: error.message,
+      });
     }
   }
 
@@ -53,7 +56,11 @@ export class CarController {
         cars,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'O sistema apresentou um erro ao tentar retornar todos os carros.',
+        error: error.message,
+      });
     }
   }
 
@@ -80,7 +87,17 @@ export class CarController {
         car,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Carro não encontrado.',
+          error: error.message,
+        });
+      }
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'O sistema apresentou um erro ao tentar encontrar o carro.\nTente novamente mais tarde',
+        error: error.message,
+      });
     }
   }
 
@@ -99,6 +116,10 @@ export class CarController {
     type: CarResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Carro não encontrado.' })
+  @ApiResponse({
+    status: 500,
+    description: 'O sistema apresentou um erro ao tentar encontrar o carro.',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateCarDto: UpdateCarDto,
@@ -112,7 +133,11 @@ export class CarController {
         carUpdated,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'O sistema apresentou um erro ao tentar encontrar o carro.',
+        error: error.message,
+      });
     }
   }
 
@@ -131,6 +156,10 @@ export class CarController {
     type: CarResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Carro não encontrado.' })
+  @ApiResponse({
+    status: 500,
+    description: 'O sistema apresentou um erro ao tentar deletar o carro.',
+  })
   async remove(@Param('id') id: string, @Res() response): Promise<CarResponseDto> {
     try {
       const carRemoved = (await this.carService.remove(id)).toDTO();
@@ -141,7 +170,17 @@ export class CarController {
         status: HttpStatus.OK
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: 'Carro não encontrado.',
+          error: error.message,
+        });
+      }
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'O sistema apresentou um erro ao tentar deletar o carro.\nTente novamente mais tarde',
+        error: error.message,
+      });
     }
   }
 
@@ -160,7 +199,11 @@ export class CarController {
         message: 'Todos os carros foram removidos com sucesso.',
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'O sistema apresentou um erro ao tentar deletar todos os carros.\nTente novamente mais tarde',
+        error: error.message,
+      });
     }
   }
 
@@ -172,7 +215,7 @@ export class CarController {
     description: 'Carros do usuário retornados com sucesso.',
     type: [CarResponseDto],
   })
-  @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
+  @ApiResponse({ status: 500, description: 'Erro interno ao tentar retornar carros do usuário.' })
   async getUserCars(@Req() req, @Res() response) {
     try {
       const userId = req.user.sub;
@@ -184,7 +227,11 @@ export class CarController {
         userCars,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'O sistema apresentou um erro ao tentar retornar os carros do usuário.\nTente novamente mais tarde',
+        error: error.message,
+      });
     }
   }
 }
