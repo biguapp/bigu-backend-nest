@@ -15,7 +15,7 @@ export class Rating extends Document {
   rateeId: Types.ObjectId;  // avaliado
 
   @Prop({ required: true, min: 0, max: 5 })
-  rating: number;  // nota em estrelas
+  score: number;  // nota em estrelas
 
   @Prop()
   comment?: string;  // comentário opcional
@@ -31,7 +31,7 @@ RatingSchema.methods.toDTO = function (): RatingResponseDto {
     rideId: this.rideId,
     raterId: this.raterId,
     rateeId: this.rateeId,
-    rating: this.rating,
+    score: this.score,
     comment: this.comment,
     createdAt: this.createdAt,
     ratingId: this._id,

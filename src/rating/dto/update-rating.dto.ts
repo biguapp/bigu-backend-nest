@@ -11,7 +11,7 @@ export class UpdateRatingDto {
     @IsNumber()
     @Min(0)
     @Max(5)
-    rating?: number;
+    score?: number;
 
     @ApiProperty({
         description: 'Novo comentário opcional sobre a avaliação',

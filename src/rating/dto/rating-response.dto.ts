@@ -30,7 +30,7 @@ export class RatingResponseDto {
         description: 'Avaliação em estrelas (0-5)',
         example: 4,
     })
-    rating: number;
+    score: number;
 
     @ApiProperty({
         description: 'Comentário opcional sobre a avaliação',

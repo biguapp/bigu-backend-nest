@@ -27,7 +27,7 @@ export class CreateRatingDto {
     @IsNumber()
     @Min(0)
     @Max(5)
-    rating: number;
+    score: number;
 
     @ApiProperty({
         description: 'Comentário opcional sobre a avaliação',
