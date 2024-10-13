@@ -46,6 +46,14 @@ export class Ride extends Document {
 
   @Prop({ required: true })
   isOver: boolean;
+
+  // feitas pelo motorista
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Rating' }] })
+  driverRatings?: Types.ObjectId[];
+
+  // feitas pelos membros
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Rating' }] })
+  memberRatings?: Types.ObjectId[];
 }
 
 export const RideSchema = SchemaFactory.createForClass(Ride);
@@ -97,5 +105,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
     description: this.description,
     toWomen: this.toWomen,
     isOver: this.isOver,
+    driverRatings: this.driverRatings,
+    memberRatings: this.memberRatings,
   };
 };

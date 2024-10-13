@@ -21,6 +21,8 @@ export interface Ride extends Document {
   readonly description?: string;
   readonly toWomen: boolean;
   readonly isOver: boolean;
+  readonly driverRatings: string[];  // feitas pelo motorista
+  readonly memberRatings: string[];  // feitas pelos membros
 
   toDTO(): RideResponseDto
 }
