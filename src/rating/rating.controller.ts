@@ -19,52 +19,22 @@ export class RatingController {
         type: RatingResponseDto
     })
     @ApiResponse({ status: 500, description: 'Erro no servidor.' })
-    async rateDriver(
+    async create(
         @Req() req,
         @Body() createRatingDto: CreateRatingDto,
         @Res() response
     ): Promise<RatingResponseDto> {
         try {
-            const memberId = req.user.sub;
-            const rating = await this.ratingService.addDriverRating(createRatingDto, memberId);
+            const raterId = req.user.sub;
+            const rating = await this.ratingService.create(createRatingDto, raterId);
 
             return response.status(HttpStatus.CREATED).json({
-                message: 'Avaliação do motorista criada com sucesso.',
-                rating
+                message: 'A avaliação foi registrada com sucesso.',
+                rating,
             });
         } catch (error) {
             return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Erro ao criar avaliação do motorista.',
-                error: error.message,
-            });
-        }
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Post('/member')
-    @ApiOperation({ summary: 'Avaliar um membro (passageiro)' })
-    @ApiResponse({
-        status: 201,
-        description: 'Avaliação do membro criada com sucesso.',
-        type: RatingResponseDto
-    })
-    @ApiResponse({ status: 500, description: 'Erro no servidor.' })
-    async rateMember(
-        @Req() req,
-        @Body() createRatingDto: CreateRatingDto,
-        @Res() response
-    ): Promise<RatingResponseDto> {
-        try {
-            const driverId = req.user.sub;
-            const rating = await this.ratingService.addMemberRating(createRatingDto, driverId);
-
-            return response.status(HttpStatus.CREATED).json({
-                message: 'Avaliação do membro criada com sucesso.',
-                rating
-            });
-        } catch (error) {
-            return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: 'Erro ao criar avaliação do membro.',
                 error: error.message,
             });
         }

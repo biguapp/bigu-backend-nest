@@ -5,18 +5,23 @@ import { Rating } from './interfaces/rating.interface';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { UpdateRatingDto } from './dto/update-rating.dto';
 import { Ride } from '@src/ride/interfaces/ride.interface';
+import { UserService } from '@src/user/user.service';
+import { RideService } from '@src/ride/ride.service';
 
 @Injectable()
 export class RatingService {
   constructor(
     @InjectModel('Rating') private readonly ratingModel: Model<Rating>,
     @InjectModel('Ride') private readonly rideModel: Model<Ride>,
+    private readonly userService: UserService,
+    private readonly rideService: RideService,
   ) {}
 
-  // Criação de avaliação para motoristas ou membros
-  async addDriverRating(createRatingDto: CreateRatingDto, raterId: string): Promise<Rating> {
+  async create(createRatingDto: CreateRatingDto, raterId: string): Promise<Rating> {
     const newRating = { ...createRatingDto, raterId };
     const rating = new this.ratingModel(newRating);
+    const { rideId, rateeId, score } = createRatingDto;
+    await this.rideService.addRatingToRide(rideId, rating._id.toString(), {raterId, rateeId, score} );
     return await rating.save();
   }
 
