@@ -15,7 +15,6 @@ import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { MailjetService } from 'nest-mailjet';
 import { toZonedTime } from 'date-fns-tz';
-import { RatingService } from '@src/rating/rating.service';
 
 @Injectable()
 export class RideService {
@@ -24,7 +23,6 @@ export class RideService {
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
-    private readonly ratingService: RatingService,
     private readonly mailjetService: MailjetService,
   ) {}
 
@@ -194,7 +192,12 @@ export class RideService {
     const driver = ride.driver.toString();
 
     if (driver === userId) {
-      return await this.update(rideId, {...ride, isOver: true } as UpdateRideDto);
+      const rideUpdated = {
+        ...ride._doc, 
+        isOver: true
+      };
+
+      return await this.update(rideId, rideUpdated);
     } else throw new BadRequestException('Somente o motorista pode encerrar a carona.');
   }
 

@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './user/user.module';
 import { AddressModule } from './address/address.module';
 import { CarModule } from './car/car.module';
+import { RatingModule } from './rating/rating.module';
 import { RideModule } from './ride/ride.module';
 import { ConfigModule } from '@nestjs/config';
 import { MailjetModule } from 'nest-mailjet';
@@ -21,6 +22,7 @@ import { MailjetModule } from 'nest-mailjet';
     JwtModule,
     AddressModule,
     CarModule,
+    RatingModule,
     RideModule,
     ConfigModule.forRoot({
       isGlobal: true,

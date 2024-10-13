@@ -15,6 +15,6 @@ import { RideModule } from '@src/ride/ride.module';
   ],
   controllers: [UserController],
   providers: [UserService],
-  exports: [UserService],
+  exports: [UserService, MongooseModule],
 })
 export class UserModule {}

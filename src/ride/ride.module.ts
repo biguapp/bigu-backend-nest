@@ -28,6 +28,6 @@ import { MailjetModule } from 'nest-mailjet';
   ],
   controllers: [RideController],
   providers: [RideService],
-  exports: [RideService],
+  exports: [RideService, MongooseModule, MailjetModule],
 })
 export class RideModule {}
