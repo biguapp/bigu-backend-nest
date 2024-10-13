@@ -124,6 +124,29 @@ export class UserService {
     return updatedUser;
   }
 
+  async updateScore(userId: string, newRating: number): Promise<void> {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const totalRating = user.avgScore * user.ratingCount;
+    const newRatingCount = user.ratingCount + 1;
+    const newAvgScore = (totalRating + newRating) / newRatingCount;
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(userId, {
+      $set: {
+        avgScore: newAvgScore,
+        ratingCount: newRatingCount,
+      }
+    })
+
+    if (!updatedUser) {
+      throw new InternalServerErrorException('Erro ao atualizar a pontuação do usuário.');
+    }
+  }
+
   async remove(id: string): Promise<User> {
     const result = await this.userModel.findByIdAndDelete(id);
     if (!result) {
