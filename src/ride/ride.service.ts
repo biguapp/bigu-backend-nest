@@ -15,6 +15,7 @@ import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { MailjetService } from 'nest-mailjet';
 import { toZonedTime } from 'date-fns-tz';
+import { RatingService } from '@src/rating/rating.service';
 
 @Injectable()
 export class RideService {
@@ -23,6 +24,7 @@ export class RideService {
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
+    private readonly ratingService: RatingService,
     private readonly mailjetService: MailjetService,
   ) {}
 
@@ -186,11 +188,47 @@ export class RideService {
 
   async setRideOver(userId: string, rideId: string) {
     const ride: any = await this.findOne(rideId);
+    if (!ride) {
+      throw new NotFoundException('Carona não encontrada.');
+    }
     const driver = ride.driver.toString();
 
     if (driver === userId) {
       return await this.update(rideId, {...ride, isOver: true } as UpdateRideDto);
-    } else throw new NotFoundException('Corrida não encontrada.');
+    } else throw new BadRequestException('Somente o motorista pode encerrar a carona.');
+  }
+
+  async addRatingToRide(
+    rideId: string, 
+    ratingId: string,
+    { raterId, rateeId, score }: { raterId: string, rateeId: string, score: number },
+  ): Promise<void> {
+    const ride = await this.rideModel.findById(rideId).exec();
+    if (!ride) {
+      throw new NotFoundException('Carona não encontrada.');
+    }
+    if (!ride.isOver) {
+      throw new BadRequestException('Avaliações só podem ser feitas após o término da carona.');
+    }
+
+    /*const alreadyRated = 
+      ride.driverRatings.some((id) => id.toString() === raterId) ||
+      ride.memberRatings.some((id) => id.toString() === raterId);
+
+    // o usuário pode atualizar a que já tinha, não criar uma nova
+    if (alreadyRated) {
+      throw new BadRequestException('O usuário já fez uma avaliação.')
+    }*/
+
+    if (ride.driver.toString() === raterId) {
+      ride.driverRatings.push(ratingId);
+    } else {
+      ride.memberRatings.push(ratingId);
+    }
+
+    await this.userService.updateScore(rateeId, score);
+    
+    await ride.save();
   }
 
   async requestRide(userId: string, rideId: string, addressId: string) {
