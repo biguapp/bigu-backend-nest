@@ -42,9 +42,21 @@ export class UserResponseDto {
   @IsNotEmpty()
   readonly userId: string;
 
+  @ApiProperty({
+    description: 'Pontuação media das avaliações recebidas pelo usuário (0-5)',
+    example: 4.3,
+  })
   @IsNumber()
   @IsNotEmpty()
   readonly avgScore: number;
+
+  @ApiProperty({
+    description: 'Quantidade de avaliações recebidas pelo usuário',
+    example: 10,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  readonly ratingCount: number;
 
   feedbacks: string[];
 

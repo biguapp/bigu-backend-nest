@@ -159,7 +159,7 @@ export class RideController {
   })
   @ApiResponse({
     status: 500,
-    description: 'Erro interno ao encerrar a carona.',
+    description: 'Erro interno ao atualizar a carona.',
   })
   async update(
     @Param('id') id: string,
@@ -175,7 +175,7 @@ export class RideController {
         rideUpdated,
       });
     } catch (error) {
-      console.error('Erro ao encerrar a carona: ', error);
+      console.error('Erro ao atualizar a carona: ', error);
       
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({

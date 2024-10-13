@@ -186,11 +186,52 @@ export class RideService {
 
   async setRideOver(userId: string, rideId: string) {
     const ride: any = await this.findOne(rideId);
+    if (!ride) {
+      throw new NotFoundException('Carona não encontrada.');
+    }
     const driver = ride.driver.toString();
 
     if (driver === userId) {
-      return await this.update(rideId, {...ride, isOver: true } as UpdateRideDto);
-    } else throw new NotFoundException('Corrida não encontrada.');
+      const rideUpdated = {
+        ...ride._doc, 
+        isOver: true
+      };
+
+      return await this.update(rideId, rideUpdated);
+    } else throw new BadRequestException('Somente o motorista pode encerrar a carona.');
+  }
+
+  async addRatingToRide(
+    rideId: string, 
+    ratingId: string,
+    { raterId, rateeId, score }: { raterId: string, rateeId: string, score: number },
+  ): Promise<void> {
+    const ride = await this.rideModel.findById(rideId).exec();
+    if (!ride) {
+      throw new NotFoundException('Carona não encontrada.');
+    }
+    if (!ride.isOver) {
+      throw new BadRequestException('Avaliações só podem ser feitas após o término da carona.');
+    }
+
+    /*const alreadyRated = 
+      ride.driverRatings.some((id) => id.toString() === raterId) ||
+      ride.memberRatings.some((id) => id.toString() === raterId);
+
+    // o usuário pode atualizar a que já tinha, não criar uma nova
+    if (alreadyRated) {
+      throw new BadRequestException('O usuário já fez uma avaliação.')
+    }*/
+
+    if (ride.driver.toString() === raterId) {
+      ride.driverRatings.push(ratingId);
+    } else {
+      ride.memberRatings.push(ratingId);
+    }
+
+    await this.userService.updateScore(rateeId, score);
+    
+    await ride.save();
   }
 
   async requestRide(userId: string, rideId: string, addressId: string) {

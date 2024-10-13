@@ -33,8 +33,11 @@ export class User extends Document {
   @Prop([String])
   feedbacks?: string[];
 
-  @Prop({ default: 0 })
+  @Prop({ default: 5 })
   avgScore: number;
+
+  @Prop({ default: 0 })
+  ratingCount: number;
 
   @Prop({ required: true })
   verificationCode: string;
@@ -56,6 +59,7 @@ UserSchema.methods.toDTO = function (): UserResponseDto {
     matricula: this.matricula,
     feedbacks: this.feedbacks,
     avgScore: this.avgScore,
+    ratingCount: this.ratingCount,
     isVerified: this.isVerified
   };
 };
