@@ -21,6 +21,12 @@ export class RatingResponseDto {
     raterId: string;
 
     @ApiProperty({
+        description: 'Nome de quem está avaliando (motorista ou membro)',
+        example: 'Fulano de Tal',
+    })
+    raterName: string;
+
+    @ApiProperty({
         description: 'ID de quem está sendo avaliado (motorista ou membro)',
         example: '60d5ec49f10a2c001b564ece',
     })
