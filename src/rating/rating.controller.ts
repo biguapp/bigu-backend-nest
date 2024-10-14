@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Param, Body, Res, Req, UseGuards, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param, Body, Res, Req, UseGuards, HttpStatus, NotFoundException, BadRequestException } from '@nestjs/common';
 import { RatingService } from './rating.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -11,12 +11,20 @@ export class RatingController {
     constructor(private readonly ratingService: RatingService) { }
 
     @UseGuards(JwtAuthGuard)
-    @Post('/driver')
+    @Post()
     @ApiOperation({ summary: 'Avaliar um motorista' })
     @ApiResponse({
         status: 201,
-        description: 'Avaliação do motorista criada com sucesso.',
+        description: 'Avaliação do usuário criada com sucesso.',
         type: RatingResponseDto
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'O usuário não pode realizar esta avaliação.',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'A carona ou o usuário não foi encontrada.',
     })
     @ApiResponse({ status: 500, description: 'Erro no servidor.' })
     async create(
@@ -33,6 +41,18 @@ export class RatingController {
                 rating,
             });
         } catch (error) {
+            if (error instanceof BadRequestException) {
+                return response.status(HttpStatus.BAD_REQUEST).json({
+                    message: error.message,
+                });
+            }
+
+            if (error instanceof NotFoundException) {
+                return response.status(HttpStatus.NOT_FOUND).json({
+                    message: error.message,
+                });
+            }
+
             return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Erro ao criar avaliação do motorista.',
                 error: error.message,
@@ -40,73 +60,38 @@ export class RatingController {
         }
     }
 
-    @Get('/driver/:driverId')
-    @ApiOperation({ summary: 'Obter todas as avaliações de um motorista' })
+    @Get('/user/:userId')
+    @ApiOperation({ summary: 'Obter todas as avaliações de um usuário' })
     @ApiParam({
-        name: 'driverId',
+        name: 'userId',
         required: true,
-        description: 'ID do motorista',
+        description: 'ID do usuário',
         type: String,
     })
     @ApiResponse({
         status: 200,
-        description: 'Avaliações do motorista retornadas com sucesso.',
+        description: 'Avaliações do usuário retornadas com sucesso.',
         type: [RatingResponseDto]
     })
-    @ApiResponse({ status: 404, description: 'Motorista não encontrado.' })
-    async getDriverRatings(@Param('driverId') driverId: string, @Res() response): Promise<RatingResponseDto[]> {
+    @ApiResponse({ status: 204, description: 'Não há avaliações para esse usuário.' })
+    @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
+    async getUserRatings(@Param('userId') userId: string, @Res() response): Promise<RatingResponseDto[]> {
         try {
-            const ratings = await this.ratingService.getDriverRatings(driverId);
+            const ratings = await this.ratingService.getUserRatings(userId);
 
             if (!ratings.length) {
-                return response.status(HttpStatus.NOT_FOUND).json({
-                    message: 'Nenhuma avaliação encontrada para este motorista.',
+                return response.status(HttpStatus.NO_CONTENT).json({
+                    message: 'Nenhuma avaliação encontrada para este usuário.',
                 });
             }
 
             return response.status(HttpStatus.OK).json({
-                message: 'Avaliações do motorista retornadas com sucesso.',
+                message: 'Avaliações do usuário retornadas com sucesso.',
                 ratings
             });
         } catch (error) {
             return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: 'Erro ao buscar avaliações do motorista.',
-                error: error.message,
-            });
-        }
-    }
-
-    @Get('/member/:memberId')
-    @ApiOperation({ summary: 'Obter todas as avaliações de um membro (passageiro)' })
-    @ApiParam({
-        name: 'memberId',
-        required: true,
-        description: 'ID do membro (passageiro)',
-        type: String,
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'Avaliações do membro retornadas com sucesso.',
-        type: [RatingResponseDto]
-    })
-    @ApiResponse({ status: 404, description: 'Membro não encontrado.' })
-    async getMemberRatings(@Param('memberId') memberId: string, @Res() response): Promise<RatingResponseDto[]> {
-        try {
-            const ratings = await this.ratingService.getMemberRatings(memberId);
-
-            if (!ratings.length) {
-                return response.status(HttpStatus.NOT_FOUND).json({
-                    message: 'Nenhuma avaliação encontrada para este membro.',
-                });
-            }
-
-            return response.status(HttpStatus.OK).json({
-                message: 'Avaliações do membro retornadas com sucesso.',
-                ratings
-            });
-        } catch (error) {
-            return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: 'Erro ao buscar avaliações do membro.',
+                message: 'Erro ao buscar avaliações do usuário.',
                 error: error.message,
             });
         }
