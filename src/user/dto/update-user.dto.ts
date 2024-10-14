@@ -88,6 +88,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({
     description: 'Quantidade de avaliações recebidas pelo usuário',
     example: 10,
+    required: false,
   })
   @IsOptional()
   readonly ratingCount: number;

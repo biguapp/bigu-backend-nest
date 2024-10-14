@@ -9,6 +9,7 @@ import { Role } from '../enums/enum';
 import { UserResponseDto } from '../user/dto/response-user.dto';
 import { BlacklistedToken } from './schemas/token.schema';
 import { MailjetService } from 'nest-mailjet';
+import { UpdateUserDto } from '@src/user/dto/update-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -164,7 +165,7 @@ export class AuthService {
     if (user.verificationCode !== code) {
       throw new UnauthorizedException('Código de verificação inválido.');
     } else {
-      (await this.userService.update(userId, { isVerified: true })).save();
+      (await this.userService.update(userId, { ...user, isVerified: true } as UpdateUserDto)).save();
       return 'Conta confirmada!';
     }
   }
@@ -187,7 +188,7 @@ export class AuthService {
     const resetCode = this.generateVerificationCode();
     
     // Armazena o código no usuário
-    await this.userService.update(user.id, { verificationCode: resetCode });
+    await this.userService.update(user.id, { ...user, verificationCode: resetCode } as UpdateUserDto);
 
     // Envia o código por email
     await this.mailjetService.send({
@@ -218,10 +219,10 @@ export class AuthService {
 
     // Atualiza a senha
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.userService.update(user.id, {
+    await this.userService.update(user.id, { ...user,
       password: hashedPassword,
       verificationCode: null, // Remove o código após o uso
-    });
+    } as UpdateUserDto);
 
     return 'Senha alterada com sucesso!';
   }
