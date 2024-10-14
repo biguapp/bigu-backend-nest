@@ -10,6 +10,7 @@ import {
   Put,
   Res,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
@@ -112,6 +113,9 @@ export class AuthController {
   @Post('register/user')
   @ApiOperation({ summary: 'Register a user' })
   @ApiResponse({ status: 201, description: 'User registered' })
+  @ApiResponse({ status: 401, description: 'Código de verificação inválido.' })
+  @ApiResponse({ status: 404, description: 'O usuário não foi encontrado.' })
+  @ApiResponse({ status: 500, description: 'Erro interno ao tentar enviar redefinir senha.' })
   @ApiResponse({
     status: 500,
     description: 'Erro interno ao renovar o token do usuário.',
@@ -131,6 +135,18 @@ export class AuthController {
       });
     } catch (error) {
       console.error(error);
+      if (error instanceof UnauthorizedException) {
+        return response.status(HttpStatus.UNAUTHORIZED).json({
+          message: error.message || 'Operação não autorizada.',
+        });
+      }
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         message:
           'O sistema apresentou um erro ao efetuar o cadastro.\nTente novamente mais tarde.',
@@ -143,7 +159,6 @@ export class AuthController {
   @Put('confirm/user/:code')
   @ApiOperation({ summary: 'Confirm account.' })
   @ApiResponse({ status: 200, description: 'Account verified.' })
-  @HttpCode(200)
   async confirmAccount(@Req() req, @Param('code') code: string) {
     const userId = req.user.sub;
     return await this.authService.confirmRegistration(userId, code);
@@ -151,42 +166,69 @@ export class AuthController {
 
   @Post('request-password-reset/')
   @ApiOperation({ summary: 'Solicitar recuperação de senha' })
-  @ApiResponse({ status: 200, description: 'Código de verificação enviado.' })
-  async requestPasswordReset(
-    @Body() requestResetPasswordDto: RequestResetPasswordDto,
-  ) {
-    return this.authService.requestPasswordReset(requestResetPasswordDto.email);
+  @ApiResponse({ status: 200, description: 'Código de recuperação enviado.' })
+  @ApiResponse({ status: 404, description: 'O usuário não foi encontrado.' })
+  @ApiResponse({ status: 500, description: 'Erro interno ao tentar enviar código de recuperação de senha.' })
+  async requestPasswordReset(@Body() requestResetPasswordDto: RequestResetPasswordDto, @Res() response: Response) {
+    try {
+      const responseMsg = this.authService.requestPasswordReset(requestResetPasswordDto.email);
+      return response.status(HttpStatus.OK).json({
+        message: responseMsg,
+      })
+    } catch (error) {
+      console.error(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro do sistema ao tentar enviar código de recuperação de senha.\nTente novamente mais tarde.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
   }
 
   @Put('reset-password/:email')
   @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
   @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
+  @ApiResponse({ status: 401, description: 'Código de verificação inválido.' })
+  @ApiResponse({ status: 404, description: 'O usuário não foi encontrado.' })
+  @ApiResponse({ status: 500, description: 'Erro interno ao tentar enviar redefinir senha.' })
   async resetPassword(
     @Param('email') email: string,
     @Body() resetPasswordDto: ResetPasswordDto,
-  ) {
-    return this.authService.resetPassword(email, resetPasswordDto.password);
-  }
-
-  @Put('validate-code/:email/:code')
-  @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
-  @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
-  async validateCode(
-    @Param('email') email: string,
-    @Param('code') code: string,
-    @Res() response: Response,
+    @Res() response,
   ) {
     try {
-      const { validation, message } = await this.authService.validateCode(
+      const responseMsg = this.authService.resetPassword(
         email,
         code,
+        resetPasswordDto.password,
       );
-      if (validation) {
-        return response.status(HttpStatus.ACCEPTED).json({ message });
-      } else return response.status(HttpStatus.BAD_REQUEST).json({ message });
+
+      return response.status(HttpStatus.OK).json({
+        message: responseMsg,
+      })
     } catch (error) {
-      return response.status(HttpStatus.NOT_FOUND).json({
-        message: error.message || 'Operação não autorizada.',
+      console.error(error);
+
+      if (error instanceof UnauthorizedException) {
+        return response.status(HttpStatus.UNAUTHORIZED).json({
+          message: error.message || 'Operação não autorizada.',
+        });
+      }
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro do sistema ao tentar redefinir senha.\nTente novamente mais tarde.',
+        error: error.message || 'Erro interno do servidor',
       });
     }
   }

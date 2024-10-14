@@ -245,13 +245,13 @@ export class RideController {
   async getActiveRides(@Res() response): Promise<RideResponseDto[]> {
     try {
       const activeRidesModel = await this.rideService.findAll({ isOver: false });
-      const activeRides = await Promise.all(
+      const rides = await Promise.all(
         activeRidesModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as corridas ativas foram retornadas.',
-        activeRides,
+        rides,
       });
 
     } catch (error) {
@@ -279,13 +279,13 @@ export class RideController {
   async getAvailableRides(@Res() response): Promise<RideResponseDto[]> {
     try {
       const availableRidesModel = await this.rideService.findAll({ isOver: false, $expr: { $gt: ['$numSeats', { $size: '$members' }] } });
-      const availableRides = await Promise.all(
+      const rides = await Promise.all(
         availableRidesModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas disponíveis foram retornadas.',
-        availableRides,
+        rides,
       });
 
     } catch (error) {
@@ -314,13 +314,13 @@ export class RideController {
   async getActiveRidesToWomen(@Res() response): Promise<RideResponseDto[]> {
     try {
       const activeRidesToWomenModel = await this.rideService.findAll({ isOver: false, toWomen: true });
-      const activeRidesToWomen = await Promise.all(
+      const rides = await Promise.all(
         activeRidesToWomenModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas para mulheres ativas foram retornadas.',
-        activeRidesToWomen,
+        rides,
       });
     } catch (error) {
       console.log('Erro ao encontrar caronas ativas para mulheres', error);
@@ -351,13 +351,13 @@ export class RideController {
          toWomen: true, 
          $expr: { $gt: ['$numSeats', { $size: '$members' }] }
         });
-      const ridesAvailableToWomen = await Promise.all(
+      const rides = await Promise.all(
         ridesAvailableToWomenModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas para mulheres disponíveis foram retornadas.',
-        ridesAvailableToWomen,
+        rides,
       });
     } catch (error) {
       console.error('Erro ao encontrar caronas disponíveis para mulheres', error);
