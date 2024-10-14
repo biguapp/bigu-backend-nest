@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -202,8 +203,8 @@ export class AuthService {
     const resetCode = this.generateVerificationCode();
 
     // Armazena o código no usuário
+    console.log(user);
     await this.userService.update(user.id, {
-      ...user,
       verificationCode: resetCode,
     } as UpdateUserDto);
 
@@ -237,7 +238,6 @@ export class AuthService {
     // Atualiza a senha
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await this.userService.update(user.id, {
-      ...user,
       password: hashedPassword,
       verificationCode: null, // Remove o código após o uso
     } as UpdateUserDto);
@@ -246,13 +246,17 @@ export class AuthService {
   }
 
   async validateCode(email: string, code: string): Promise<any> {
-    const user = await this.userService.findByEmail(email);
-    if (!user || user.verificationCode !== code) {
-      throw new NotFoundException('Usuário não encontrado');
-    } else if (user.verificationCode === code) {
-      return { validation: true, message: 'Código verificado.' };
-    } else {
-      return { validation: false, message: 'Código incorreto.' };
+    try {
+      const user = await this.userService.findByEmail(email);
+      if (user.verificationCode !== code) {
+        throw new BadRequestException('Código incorreto.');
+      } else if (user.verificationCode === code) {
+        return { validation: true, message: 'Código verificado.' };
+      } else {
+        return { validation: false, message: 'Código incorreto.' };
+      }
+    } catch (error) {
+      throw new NotFoundException(error.message);
     }
   }
 }

@@ -265,6 +265,7 @@ export class AuthController {
         return response.status(HttpStatus.ACCEPTED).json({ message });
       } else return response.status(HttpStatus.BAD_REQUEST).json({ message });
     } catch (error) {
+      console.error(error);
       return response.status(HttpStatus.NOT_FOUND).json({
         message: error.message || 'Não encontrado.',
       });
