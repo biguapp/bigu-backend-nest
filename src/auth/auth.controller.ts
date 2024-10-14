@@ -113,6 +113,9 @@ export class AuthController {
   @Post('register/user')
   @ApiOperation({ summary: 'Register a user' })
   @ApiResponse({ status: 201, description: 'User registered' })
+  @ApiResponse({ status: 401, description: 'Código de verificação inválido.' })
+  @ApiResponse({ status: 404, description: 'O usuário não foi encontrado.' })
+  @ApiResponse({ status: 500, description: 'Erro interno ao tentar enviar redefinir senha.' })
   @ApiResponse({
     status: 500,
     description: 'Erro interno ao renovar o token do usuário.',
@@ -132,6 +135,18 @@ export class AuthController {
       });
     } catch (error) {
       console.error(error);
+      if (error instanceof UnauthorizedException) {
+        return response.status(HttpStatus.UNAUTHORIZED).json({
+          message: error.message || 'Operação não autorizada.',
+        });
+      }
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         message:
           'O sistema apresentou um erro ao efetuar o cadastro.\nTente novamente mais tarde.',
@@ -144,7 +159,6 @@ export class AuthController {
   @Put('confirm/user/:code')
   @ApiOperation({ summary: 'Confirm account.' })
   @ApiResponse({ status: 200, description: 'Account verified.' })
-  @HttpCode(200)
   async confirmAccount(@Req() req, @Param('code') code: string) {
     const userId = req.user.sub;
     return await this.authService.confirmRegistration(userId, code);
