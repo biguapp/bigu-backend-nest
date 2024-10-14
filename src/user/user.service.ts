@@ -147,6 +147,34 @@ export class UserService {
     }
   }
 
+  async updateRideCount(userId: string, isDriver: boolean): Promise<void> {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    let totalOfferedRides = user.offeredRidesCount;
+    let totalTakenRides = user.takenRidesCount;
+
+    if (isDriver) {
+      totalOfferedRides = user.offeredRidesCount + 1;
+    } else {
+      totalTakenRides = user.takenRidesCount + 1;
+    }
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(userId, {
+      $set: {
+        offeredRidesCount: totalOfferedRides,
+        takenRidesCount: totalTakenRides,
+      }
+    })
+
+    if (!updatedUser) {
+      throw new InternalServerErrorException('Erro ao atualizar a pontuação do usuário.');
+    }
+  }
+
   async remove(id: string): Promise<User> {
     const result = await this.userModel.findByIdAndDelete(id);
     if (!result) {

@@ -24,7 +24,7 @@ export class RideService {
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
     private readonly mailjetService: MailjetService,
-  ) {}
+  ) { }
 
   // Criação de uma nova carona
   // 66e093bfe2323b4802da45c3 - ENTRADA PRINCIPAL
@@ -88,7 +88,7 @@ export class RideService {
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
     let zonedDate;
-    if(updateRideDto.scheduledTime){
+    if (updateRideDto.scheduledTime) {
       const date = new Date(updateRideDto.scheduledTime);
       const timeZone = 'America/Sao_Paulo';
       zonedDate = toZonedTime(date, timeZone);
@@ -191,18 +191,31 @@ export class RideService {
     }
     const driver = ride.driver.toString();
 
-    if (driver === userId) {
-      const rideUpdated = {
-        ...ride._doc, 
-        isOver: true
-      };
+    if (driver !== userId) {
+      throw new BadRequestException('Somente o motorista pode encerrar a carona.');
+    }
 
-      return await this.update(rideId, rideUpdated);
-    } else throw new BadRequestException('Somente o motorista pode encerrar a carona.');
+    if (ride.isOver) {
+      throw new BadRequestException('A carona já foi encerrada.');
+    }
+
+    const updatedRide = {
+      ...ride._doc,
+      isOver: true,
+    }
+
+    const returnedRide = await this.update(rideId, updatedRide);
+    await this.userService.updateRideCount(driver, true);
+
+    for (const member of ride.members) {
+      await this.userService.updateRideCount(member._id.toString(), false);
+    }
+
+    return returnedRide;
   }
 
   async addRatingToRide(
-    rideId: string, 
+    rideId: string,
     ratingId: string,
     { raterId, rateeId, score }: { raterId: string, rateeId: string, score: number },
   ): Promise<void> {
@@ -230,7 +243,7 @@ export class RideService {
     }
 
     await this.userService.updateScore(rateeId, score);
-    
+
     await ride.save();
   }
 
@@ -283,7 +296,7 @@ export class RideService {
       'Nova solicitação de bigu!',
     );
 
-    const updateRideDto: any = {...ride, candidates: rideCandidates}
+    const updateRideDto: any = { ...ride, candidates: rideCandidates }
 
     return await this.update(rideId, updateRideDto);
   }
@@ -316,12 +329,13 @@ export class RideService {
         );
 
         rideCandidates.splice(idx, 1);
-        const newRide = await this.update(rideId, {...ride,
+        const newRide = await this.update(rideId, {
+          ...ride,
           candidates: rideCandidates,
           members: newMembers,
         });
         return newRide.toDTO();
-          
+
       } else throw new NotFoundException('Candidato não encontrado.');
     } else throw new NotFoundException('Corrida não encontrada.');
   }
@@ -349,7 +363,8 @@ export class RideService {
         );
 
         return (
-          await this.update(rideId, {...ride,
+          await this.update(rideId, {
+            ...ride,
             candidates: rideCandidates,
           })
         ).toDTO();
@@ -386,7 +401,8 @@ export class RideService {
           'Você perdeu um bigu!',
         );
         return (
-          await this.update(rideId, {...ride,
+          await this.update(rideId, {
+            ...ride,
             members: rideMembers,
           })
         ).toDTO();
