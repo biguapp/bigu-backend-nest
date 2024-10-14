@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -46,12 +51,12 @@ export class AuthService {
     userResponse: UserResponseDto;
   }> {
     let user;
-    try{
+    try {
       user = await this.userService.findByEmail(email);
     } catch (error) {
       throw new UnauthorizedException('Email não cadastrado.');
     }
-    
+
     if (user && (await bcrypt.compare(password, user.password))) {
       const accessToken = this.generateAccessToken(user.id, Role.User);
 
@@ -63,9 +68,7 @@ export class AuthService {
     throw new UnauthorizedException('Credenciais inválidas.');
   }
 
-  async refreshAccessToken(
-    refreshToken: string,
-  ): Promise<String> {
+  async refreshAccessToken(refreshToken: string): Promise<String> {
     try {
       const payload = this.jwtService.verify(refreshToken);
 
@@ -171,7 +174,12 @@ export class AuthService {
     if (user.verificationCode !== code) {
       throw new UnauthorizedException('Código de verificação inválido.');
     } else {
-      (await this.userService.update(userId, { ...user, isVerified: true } as UpdateUserDto)).save();
+      (
+        await this.userService.update(userId, {
+          ...user,
+          isVerified: true,
+        } as UpdateUserDto)
+      ).save();
       return 'Conta confirmada!';
     }
   }
@@ -192,9 +200,12 @@ export class AuthService {
     }
 
     const resetCode = this.generateVerificationCode();
-    
+
     // Armazena o código no usuário
-    await this.userService.update(user.id, { ...user, verificationCode: resetCode } as UpdateUserDto);
+    await this.userService.update(user.id, {
+      ...user,
+      verificationCode: resetCode,
+    } as UpdateUserDto);
 
     // Envia o código por email
     await this.mailjetService.send({
@@ -225,7 +236,8 @@ export class AuthService {
 
     // Atualiza a senha
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.userService.update(user.id, { ...user,
+    await this.userService.update(user.id, {
+      ...user,
       password: hashedPassword,
       verificationCode: null, // Remove o código após o uso
     } as UpdateUserDto);
@@ -233,18 +245,14 @@ export class AuthService {
     return 'Senha alterada com sucesso!';
   }
 
-  async validateCode(email: string, code: string): Promise<any>{
+  async validateCode(email: string, code: string): Promise<any> {
     const user = await this.userService.findByEmail(email);
     if (!user || user.verificationCode !== code) {
       throw new NotFoundException('Usuário não encontrado');
-    } else if ( user.verificationCode === code){
-      return {validation: true, message: 'Código verificado.'};
+    } else if (user.verificationCode === code) {
+      return { validation: true, message: 'Código verificado.' };
     } else {
-      return {validation: false, message: 'Código incorreto.'};
+      return { validation: false, message: 'Código incorreto.' };
     }
-    
-    
   }
-
-  
 }
