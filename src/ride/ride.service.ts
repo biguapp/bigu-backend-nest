@@ -208,7 +208,7 @@ export class RideService {
     await this.userService.updateRideCount(driver, true);
 
     for (const member of ride.members) {
-      await this.userService.updateRideCount(member._id.toString(), false);
+      await this.userService.updateRideCount(member.user.toString(), false);
     }
 
     return returnedRide;

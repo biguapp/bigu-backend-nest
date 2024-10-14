@@ -584,8 +584,7 @@ export class RideController {
       
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
-          message: 'A carona não foi encontrada.',
-          error: error.message,
+          message: error.message,
         });
       }
 
