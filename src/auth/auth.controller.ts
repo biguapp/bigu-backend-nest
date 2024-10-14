@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req, Param, Put, Res, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req, Param, Put, Res, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -119,9 +119,28 @@ export class AuthController {
 
   @Post('request-password-reset/')
   @ApiOperation({ summary: 'Solicitar recuperação de senha' })
-  @ApiResponse({ status: 200, description: 'Código de verificação enviado.' })
-  async requestPasswordReset(@Body() requestResetPasswordDto: RequestResetPasswordDto) {
-    return this.authService.requestPasswordReset(requestResetPasswordDto.email);
+  @ApiResponse({ status: 200, description: 'Código de recuperação enviado.' })
+  @ApiResponse({ status: 404, description: 'O usuário não foi encontrado.' })
+  @ApiResponse({ status: 500, description: 'Erro interno ao tentar enviar código de recuperação de senha.' })
+  async requestPasswordReset(@Body() requestResetPasswordDto: RequestResetPasswordDto, @Res() response: Response) {
+    try {
+      const responseMsg = this.authService.requestPasswordReset(requestResetPasswordDto.email);
+      return response.status(HttpStatus.OK).json({
+        message: responseMsg,
+      })
+    } catch (error) {
+      console.error(error);
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro do sistema ao tentar enviar código de recuperação de senha.\nTente novamente mais tarde.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
   }
 
   @Put('reset-password/:email/:code')
