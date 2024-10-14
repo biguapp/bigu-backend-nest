@@ -160,7 +160,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
-
-    return await this.update(userId, { profileImage: imageBuffer });
+    
+    return await this.update(userId, {...user, profileImage: imageBuffer } as UpdateUserDto);
   }
 }
