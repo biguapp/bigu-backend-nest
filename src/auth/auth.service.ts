@@ -45,7 +45,13 @@ export class AuthService {
     refreshToken: string;
     userResponse: UserResponseDto;
   }> {
-    const user = await this.userService.findByEmail(email);
+    let user;
+    try{
+      user = await this.userService.findByEmail(email);
+    } catch (error) {
+      throw new UnauthorizedException('Email não cadastrado.');
+    }
+    
     if (user && (await bcrypt.compare(password, user.password))) {
       const accessToken = this.generateAccessToken(user.id, Role.User);
 
@@ -59,7 +65,7 @@ export class AuthService {
 
   async refreshAccessToken(
     refreshToken: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<String> {
     try {
       const payload = this.jwtService.verify(refreshToken);
 
@@ -75,7 +81,7 @@ export class AuthService {
         { expiresIn: '15m' }, // Access Token válido por 15 minutos
       );
 
-      return { accessToken: newAccessToken };
+      return newAccessToken;
     } catch (error) {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
