@@ -31,17 +31,13 @@ export class RatingService {
     return await rating.save();
   }
 
-  // Obter todas as avaliações de um motorista
-  async getDriverRatings(driverId: string): Promise<Rating[]> {
-    return await this.ratingModel.find({ rateeId: driverId }).exec();
+  async getUserRatings(userId: string): Promise<Rating[]> {
+    if (!this.userService.findOne(userId)) {
+      throw new NotFoundException(`Usuário com ID ${userId} não encontrado.`)
+    }
+    return await this.ratingModel.find({ rateeId: userId }).exec();
   }
 
-  // Obter todas as avaliações de um membro
-  async getMemberRatings(memberId: string): Promise<Rating[]> {
-    return await this.ratingModel.find({ rateeId: memberId }).exec();
-  }
-
-  // Atualizar avaliação de um motorista
   async updateDriverRating(ratingId: string, updateRatingDto: UpdateRatingDto): Promise<Rating> {
     const rating = await this.ratingModel.findByIdAndUpdate(ratingId, updateRatingDto, { new: true }).exec();
     if (!rating) {
@@ -50,7 +46,6 @@ export class RatingService {
     return rating;
   }
 
-  // Atualizar avaliação de um membro
   async updateMemberRating(ratingId: string, updateRatingDto: UpdateRatingDto): Promise<Rating> {
     const rating = await this.ratingModel.findByIdAndUpdate(ratingId, updateRatingDto, { new: true }).exec();
     if (!rating) {
@@ -59,7 +54,6 @@ export class RatingService {
     return rating;
   }
 
-  // Remover avaliação de um motorista
   async removeDriverRating(ratingId: string): Promise<Rating> {
     const rating = await this.ratingModel.findByIdAndDelete(ratingId).exec();
     if (!rating) {
@@ -68,7 +62,6 @@ export class RatingService {
     return rating;
   }
 
-  // Remover avaliação de um membro
   async removeMemberRating(ratingId: string): Promise<Rating> {
     const rating = await this.ratingModel.findByIdAndDelete(ratingId).exec();
     if (!rating) {
@@ -77,7 +70,6 @@ export class RatingService {
     return rating;
   }
 
-  // Obter uma avaliação por ID
   async findOne(id: string): Promise<Rating> {
     const rating = await this.ratingModel.findById(id).exec();
     if (!rating) {
@@ -86,12 +78,10 @@ export class RatingService {
     return rating;
   }
 
-  // Listar todas as avaliações
   async findAll(): Promise<Rating[]> {
     return await this.ratingModel.find().exec();
   }
 
-  // Remover todas as avaliações (função opcional para testes)
   async removeAll(): Promise<void> {
     await this.ratingModel.deleteMany().exec();
   }
