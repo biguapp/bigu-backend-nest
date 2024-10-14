@@ -45,7 +45,13 @@ export class AuthService {
     refreshToken: string;
     userResponse: UserResponseDto;
   }> {
-    const user = await this.userService.findByEmail(email);
+    let user;
+    try{
+      user = await this.userService.findByEmail(email);
+    } catch (error) {
+      throw new UnauthorizedException('Email não cadastrado.');
+    }
+    
     if (user && (await bcrypt.compare(password, user.password))) {
       const accessToken = this.generateAccessToken(user.id, Role.User);
 
