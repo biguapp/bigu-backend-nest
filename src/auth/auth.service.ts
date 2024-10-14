@@ -65,7 +65,7 @@ export class AuthService {
 
   async refreshAccessToken(
     refreshToken: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<String> {
     try {
       const payload = this.jwtService.verify(refreshToken);
 
@@ -81,7 +81,7 @@ export class AuthService {
         { expiresIn: '15m' }, // Access Token válido por 15 minutos
       );
 
-      return { accessToken: newAccessToken };
+      return newAccessToken;
     } catch (error) {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
