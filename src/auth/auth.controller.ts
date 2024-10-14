@@ -10,6 +10,7 @@ import {
   Put,
   Res,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
@@ -178,15 +179,44 @@ export class AuthController {
   @Put('reset-password/:email/:code')
   @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
   @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
+  @ApiResponse({ status: 401, description: 'Código de verificação inválido.' })
+  @ApiResponse({ status: 404, description: 'O usuário não foi encontrado.' })
+  @ApiResponse({ status: 500, description: 'Erro interno ao tentar enviar redefinir senha.' })
   async resetPassword(
     @Param('email') email: string,
     @Param('code') code: string,
     @Body() resetPasswordDto: ResetPasswordDto,
+    @Res() response,
   ) {
-    return this.authService.resetPassword(
-      email,
-      code,
-      resetPasswordDto.password,
-    );
+    try {
+      const responseMsg = this.authService.resetPassword(
+        email,
+        code,
+        resetPasswordDto.password,
+      );
+
+      return response.status(HttpStatus.OK).json({
+        message: responseMsg,
+      })
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof UnauthorizedException) {
+        return response.status(HttpStatus.UNAUTHORIZED).json({
+          message: error.message || 'Operação não autorizada.',
+        });
+      }
+      
+      if (error instanceof NotFoundException) {
+        return response.status(HttpStatus.NOT_FOUND).json({
+          message: error.message || 'Não encontrado.',
+        });
+      }
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro do sistema ao tentar redefinir senha.\nTente novamente mais tarde.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
   }
 }
