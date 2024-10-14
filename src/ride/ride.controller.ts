@@ -556,6 +556,42 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('/user/history/:id')
+  @ApiOperation({
+    summary:
+      'Retorna todas as caronas que o usuário estava como membro ou motorista.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'O histórico completo do usuário foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+  })
+  async getOtherUserHistory(
+    @Param('id') id: string,
+    @Res() response,
+  ): Promise<RideResponseDto[]> {
+    try {
+      const userHistoryModel = await this.rideService.getUserHistory(id);
+      const userHistory = await Promise.all(
+        userHistoryModel.map((ride) => ride.toDTO()),
+      );
+
+      return response.status(HttpStatus.OK).json({
+        message: 'O histórico do usuário foi retornado com sucesso.',
+        userHistory,
+      });
+    } catch (error) {
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put('/over/:rideId')
   @ApiOperation({ summary: 'Marcar carona como concluída.' })
   @ApiResponse({

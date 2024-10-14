@@ -12,6 +12,9 @@ export class Rating extends Document {
   raterId: Types.ObjectId;  // avaliador
 
   @Prop({ required: true })
+  raterName: String;  
+
+  @Prop({ required: true })
   rateeId: Types.ObjectId;  // avaliado
 
   @Prop({ required: true, min: 0, max: 5 })
@@ -30,6 +33,7 @@ RatingSchema.methods.toDTO = function (): RatingResponseDto {
   return {
     rideId: this.rideId,
     raterId: this.raterId,
+    raterName: this.raterName,
     rateeId: this.rateeId,
     score: this.score,
     comment: this.comment,

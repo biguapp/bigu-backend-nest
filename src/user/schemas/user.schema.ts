@@ -66,6 +66,8 @@ UserSchema.methods.toDTO = function (): UserResponseDto {
     feedbacks: this.feedbacks,
     avgScore: this.avgScore,
     ratingCount: this.ratingCount,
+    offeredRidesCount: this.offeredRidesCount,
+    takenRidesCount: this.takenRidesCount,
     isVerified: this.isVerified
   };
 };
