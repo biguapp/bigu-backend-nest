@@ -47,8 +47,8 @@ export class UserService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    const users = await this.userModel.find();
+  async findAll(filter: any = {}): Promise<User[]> {
+    const users = await this.userModel.find(filter);
 
     return users;
   }
