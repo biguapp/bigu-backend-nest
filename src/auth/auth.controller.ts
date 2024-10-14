@@ -92,7 +92,7 @@ export class AuthController {
       const { accessToken, refreshToken, userResponse } =
         await this.authService.registerUser(createUserDto);
       
-    return response.status(HttpStatus.OK).json({
+    return response.status(HttpStatus.CREATED).json({
       accessToken: accessToken,
       refreshToken: refreshToken,
       userResponse: userResponse,
