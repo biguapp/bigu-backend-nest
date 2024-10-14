@@ -13,7 +13,9 @@ export interface User extends Document {
   readonly role?: Role;
   readonly feedbacks?: string[];
   readonly avgScore?: number;
-  readonly ratingCount?: number; 
+  readonly ratingCount?: number;
+  readonly offeredRidesCount?: number;
+  readonly takenRidesCount?: number;
   readonly verificationCode: string;
   readonly isVerified: boolean;
   toDTO(): UserResponseDto;

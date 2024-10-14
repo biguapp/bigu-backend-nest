@@ -39,6 +39,12 @@ export class User extends Document {
   @Prop({ default: 0 })
   ratingCount: number;
 
+  @Prop({ default: 0 })
+  readonly offeredRidesCount?: number;
+
+  @Prop({ default: 0 })
+  readonly takenRidesCount?: number;
+
   @Prop({ required: true })
   verificationCode: string;
 

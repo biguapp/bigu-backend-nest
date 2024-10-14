@@ -58,6 +58,22 @@ export class UserResponseDto {
   @IsNotEmpty()
   readonly ratingCount: number;
 
+  @ApiProperty({
+    description: 'Quantidade de caronas oferecidas pelo usuário',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  readonly offeredRidesCount?: number;
+
+  @ApiProperty({
+    description: 'Quantidade de caronas recebidas pelo usuário',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  readonly takenRidesCount?: number;
+  
   feedbacks: string[];
 
   readonly isVerified: boolean;

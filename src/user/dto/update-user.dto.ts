@@ -85,6 +85,29 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   readonly avgScore?: number;
 
+  @ApiProperty({
+    description: 'Quantidade de avaliações recebidas pelo usuário',
+    example: 10,
+  })
+  @IsOptional()
+  readonly ratingCount: number;
+
+  @ApiProperty({
+    description: 'Quantidade de caronas oferecidas pelo usuário',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  readonly offeredRidesCount?: number;
+
+  @ApiProperty({
+    description: 'Quantidade de caronas recebidas pelo usuário',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  readonly takenRidesCount?: number;
+
   readonly verificationCode?: string;
 
   readonly isVerified?: boolean;
