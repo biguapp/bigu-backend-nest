@@ -217,9 +217,9 @@ export class AuthService {
     return 'Código de recuperação enviado para o email';
   }
 
-  async resetPassword(email: string, code: string, newPassword: string): Promise<string> {
+  async resetPassword(email: string, newPassword: string): Promise<string> {
     const user = await this.userService.findByEmail(email);
-    if (!user || user.verificationCode !== code) {
+    if (!user) {
       throw new UnauthorizedException('Código de verificação inválido.');
     }
 
@@ -231,6 +231,19 @@ export class AuthService {
     } as UpdateUserDto);
 
     return 'Senha alterada com sucesso!';
+  }
+
+  async validateCode(email: string, code: string): Promise<any>{
+    const user = await this.userService.findByEmail(email);
+    if (!user || user.verificationCode !== code) {
+      throw new NotFoundException('Usuário não encontrado');
+    } else if ( user.verificationCode === code){
+      return {validation: true, message: 'Código verificado.'};
+    } else {
+      return {validation: false, message: 'Código incorreto.'};
+    }
+    
+    
   }
 
   

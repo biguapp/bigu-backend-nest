@@ -81,7 +81,7 @@ export class AuthController {
       const newAccessToken =
         await this.authService.refreshAccessToken(refreshToken);
       return response.status(HttpStatus.OK).json({
-        newAccessToken
+        newAccessToken,
       });
     } catch (error) {
       console.error(error);
@@ -158,18 +158,36 @@ export class AuthController {
     return this.authService.requestPasswordReset(requestResetPasswordDto.email);
   }
 
-  @Put('reset-password/:email/:code')
+  @Put('reset-password/:email')
   @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
   @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
   async resetPassword(
     @Param('email') email: string,
-    @Param('code') code: string,
     @Body() resetPasswordDto: ResetPasswordDto,
   ) {
-    return this.authService.resetPassword(
-      email,
-      code,
-      resetPasswordDto.password,
-    );
+    return this.authService.resetPassword(email, resetPasswordDto.password);
+  }
+
+  @Put('validate-code/:email/:code')
+  @ApiOperation({ summary: 'Redefinir senha com código de verificação.' })
+  @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
+  async validateCode(
+    @Param('email') email: string,
+    @Param('code') code: string,
+    @Res() response: Response,
+  ) {
+    try {
+      const { validation, message } = await this.authService.validateCode(
+        email,
+        code,
+      );
+      if (validation) {
+        return response.status(HttpStatus.ACCEPTED).json({ message });
+      } else return response.status(HttpStatus.BAD_REQUEST).json({ message });
+    } catch (error) {
+      return response.status(HttpStatus.NOT_FOUND).json({
+        message: error.message || 'Operação não autorizada.',
+      });
+    }
   }
 }
