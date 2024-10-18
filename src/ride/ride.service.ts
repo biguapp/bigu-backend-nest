@@ -92,7 +92,7 @@ export class RideService {
       const date = new Date(updateRideDto.scheduledTime);
       const timeZone = 'America/Sao_Paulo';
       zonedDate = toZonedTime(date, timeZone);
-      if (zonedDate < new Date()) {
+      if (zonedDate < new Date() && !updateRideDto.isOver) {
         throw new BadRequestException('A data agendada não pode ser no passado.');
       }
     }
