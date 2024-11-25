@@ -1,20 +1,19 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { toZonedTime } from 'date-fns-tz';
 import { Model, Types } from 'mongoose';
+import { MailjetService } from 'nest-mailjet';
+import { UserService } from '../user/user.service';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
-import { Ride } from './interfaces/ride.interface';
-import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
-import { MailjetService } from 'nest-mailjet';
-import { toZonedTime } from 'date-fns-tz';
+import { Ride } from './interfaces/ride.interface';
 
 @Injectable()
 export class RideService {
@@ -51,6 +50,23 @@ export class RideService {
     const zonedDate = toZonedTime(scheduledDate, timeZone);
     if (zonedDate < new Date()) {
       throw new BadRequestException('A data agendada não pode ser no passado.');
+    }
+
+    /*
+      Filtra as caronas que estão agendadas de 30 minutos antes até 30 minutos depois da carona que o motorista está tentando criar.
+      Se houver alguma carona nesse intervalo, o motorista não pode criar a carona.
+    */
+    const driverRides = await this.getDriverActiveRides(createRideDto.driver);
+    const driverRidesScheduled = driverRides.filter(
+      (ride) =>
+        ride.scheduledTime > new Date(zonedDate.getTime() - 30 * 60000) ||
+        ride.scheduledTime < new Date(zonedDate.getTime() + 30 * 60000),
+    );
+
+    if (driverRidesScheduled.length > 0) {
+      throw new BadRequestException(
+        'Você já tem uma carona marcada para esse horário ou para um horário próximo.',
+      );
     }
 
     const ride = {
