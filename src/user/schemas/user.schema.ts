@@ -5,9 +5,11 @@ import { UserResponseDto } from '../dto/response-user.dto';
 
 @Schema()
 export class User extends Document {
-
-  @Prop( { type: Buffer })
+  @Prop({ type: Buffer })
   profileImage?: Buffer;
+
+  @Prop({ type: Buffer })
+  idPhoto?: Buffer;
 
   @Prop({ required: true })
   name: string;
@@ -50,6 +52,12 @@ export class User extends Document {
 
   @Prop( { required: true, default: false})
   isVerified: boolean;
+
+  @Prop({required: false, type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' })
+  documentStatus: 'pending' | 'approved' | 'rejected';
+
+  @Prop({ required: false })
+  verificationReason?: string; 
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -68,6 +76,9 @@ UserSchema.methods.toDTO = function (): UserResponseDto {
     ratingCount: this.ratingCount,
     offeredRidesCount: this.offeredRidesCount,
     takenRidesCount: this.takenRidesCount,
-    isVerified: this.isVerified
+    isVerified: this.isVerified,
+    documentStatus: this.documentStatus, 
+    verificationReason: this.verificationReason,  
   };
+
 };

@@ -67,6 +67,23 @@ export class UserResponseDto {
   readonly offeredRidesCount?: number;
 
   @ApiProperty({
+    description: 'Status do documento do usuário (pending, approved, rejected)',
+    example: 'pending',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly documentStatus: 'pending' | 'approved' | 'rejected';
+
+  @ApiProperty({
+    description: 'Motivo para a reprovação do documento, caso tenha',
+    example: 'Document is unclear.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  readonly verificationReason?: string;
+  
+  @ApiProperty({
     description: 'Quantidade de caronas recebidas pelo usuário',
     example: 0,
     required: false,

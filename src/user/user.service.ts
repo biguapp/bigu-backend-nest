@@ -1,7 +1,5 @@
 import {
   Injectable,
-  HttpException,
-  HttpStatus,
   NotFoundException,
   BadRequestException,
   InternalServerErrorException,
@@ -13,11 +11,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '../enums/enum';
+import { MailjetService } from 'nest-mailjet';
+
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
-
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly mailjetService: MailjetService, 
+  ) {}
   async create(
     createUserDto: CreateUserDto,
     verificationCode: string,
@@ -188,7 +190,56 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
-    
     return await this.update(userId, { ...user, profileImage: imageBuffer } as UpdateUserDto);
   }
+
+  async updateIdPhoto(userId: string, idPhotoBuffer: Buffer): Promise<void> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+  
+    user.idPhoto = idPhotoBuffer;
+    await user.save();
+  }
+
+  async notifyAdminForIdVerification(userId: string): Promise<void> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+  
+    await this.mailjetService.send({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAILJET_SENDER_EMAIL,
+          },
+          To: [
+            {
+              Email: process.env.MAILJET_SENDER_EMAIL,
+            },
+          ],
+          Subject: 'New ID Photo Uploaded for Verification',
+          TextPart: `
+          User ${user.name} (ID: ${user._id}) has uploaded an ID photo for manual review.
+          Please review the uploaded photo to verify the user's identity.
+        `,
+        },
+      ],
+    });
+  }
+
+  async verifyUserDocument(userId: string, isApproved: boolean, reason?: string): Promise<User> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+  
+    user.documentStatus = isApproved ? 'approved' : 'rejected';
+    user.verificationReason = isApproved ? undefined : reason;
+    await user.save();
+    return user;
+  }
+
 }
