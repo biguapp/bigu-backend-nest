@@ -429,18 +429,6 @@ async uploadIdPhoto(
 @UseGuards(JwtAuthGuard)
 @Get('id-photo')
 @ApiOperation({ summary: 'Retorna a foto de ID do usuário autenticado' })
-@ApiResponse({
-  status: 200,
-  description: 'Foto de ID retornada com sucesso.',
-})
-@ApiResponse({
-  status: 404,
-  description: 'Foto de ID não encontrada.',
-})
-@ApiResponse({
-  status: 500,
-  description: 'Erro interno ao tentar retornar a foto de ID.',
-})
 async getIdPhoto(@Res() response, @Req() req): Promise<void> {
   try {
     const userId = req.user.sub;
@@ -482,29 +470,29 @@ async getIdPhoto(@Res() response, @Req() req): Promise<void> {
   description: 'ID do usuário cujo documento está sendo avaliado',
   type: String,
 })
-@ApiResponse({
-  status: 200,
-  description: 'Documento avaliado com sucesso.',
-  type: UserResponseDto,
-})
-@ApiResponse({
-  status: 400,
-  description: 'Entrada inválida ou falha ao avaliar o documento.',
-})
-@ApiResponse({
-  status: 404,
-  description: 'Usuário não encontrado.',
-})
-@ApiResponse({
-  status: 500,
-  description: 'Erro interno do servidor.',
-})
 async evaluateUserDocument(
   @Req() req,
   @Param('id') id: string,
   @Body() evaluateDocumentDto: { isApproved: boolean; reason?: string },
   @Res() response
 ): Promise<UserResponseDto> {
+  const userId = req.user?.sub;
+  const userFromDb = await this.userService.findOne(userId);
+  
+  if (!userFromDb) {
+    return response.status(HttpStatus.FORBIDDEN).json({
+      message: 'Usuário não encontrado no banco de dados.',
+    });
+  }
+
+  req.user = userFromDb;
+
+  if (req.user?.role !== 'admin') {
+    return response.status(HttpStatus.FORBIDDEN).json({
+      message: 'Acesso negado. Somente administradores podem avaliar documentos.',
+    });
+  }
+
   try {
     const userToEvaluate = await this.userService.findOne(id);
     if (!userToEvaluate) {
