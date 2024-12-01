@@ -14,6 +14,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { RideService } from './ride.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -52,7 +53,6 @@ export class RideController {
         message: 'A carona foi criada com sucesso.',
         newRide: newRide,
       });
-
     } catch (error) {
       console.error('Erro ao criar carona: ', error);
 
@@ -84,10 +84,9 @@ export class RideController {
         message: 'Todas as caronas foram retornadas com sucesso.',
         rides,
       });
-
     } catch (error) {
       console.error('Erro ao encontrar caronas: ', error);
-      
+
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Erro ao retornar caronas.',
         error: error.message || 'Erro interno do servidor',
@@ -111,10 +110,7 @@ export class RideController {
     status: 500,
     description: 'Houve um erro ao procurar pela carona.',
   })
-  async findOne(
-    @Param('id') id: string,
-    @Res() response,
-  ): Promise<void> {
+  async findOne(@Param('id') id: string, @Res() response): Promise<void> {
     try {
       const ride = await this.rideService.findOne(id);
       if (!ride) {
@@ -122,21 +118,21 @@ export class RideController {
           message: 'Carona não encontrada.',
         });
       }
-      
+
       return response.status(200).json({
         message: 'A carona foi retornada com sucesso.',
         ride: await ride.toDTO(),
       });
     } catch (error) {
       console.error('Erro ao encontrar carona pelo id: ', error);
-      
+
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
           message: 'A carona não foi encontrada.',
           error: error.message,
         });
       }
-  
+
       // Se for qualquer outro erro (erro interno, etc.)
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Erro ao retornar a carona.',
@@ -177,6 +173,7 @@ export class RideController {
     } catch (error) {
       console.error('Erro ao atualizar a carona: ', error);
       
+
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
           message: error.message || 'A carona não foi encontrada.',
@@ -246,6 +243,7 @@ export class RideController {
     try {
       const activeRidesModel = await this.rideService.findAll({ isOver: false });
       const rides = await Promise.all(
+
         activeRidesModel.map((ride) => ride.toDTO()),
       );
 
@@ -253,10 +251,9 @@ export class RideController {
         message: 'Todas as corridas ativas foram retornadas.',
         rides,
       });
-
     } catch (error) {
       console.error('Erro ao encontrar caronas ativas: ', error);
-      
+
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Erro ao retornar caronas ativas.',
         error: error.message || 'Erro interno do servidor',
@@ -267,7 +264,9 @@ export class RideController {
   //refatorado
   @UseGuards(JwtAuthGuard)
   @Get('/available')
-  @ApiOperation({ summary: 'Retorna todas as caronas disponíveis.' })
+  @ApiOperation({
+    summary: 'Retorna todas as caronas disponíveis com paginação.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Todas as caronas disponíveis foram retornadas.',
@@ -276,21 +275,36 @@ export class RideController {
     status: 500,
     description: 'Erro ao retornar caronas disponíveis.',
   })
-  async getAvailableRides(@Res() response): Promise<RideResponseDto[]> {
+  async getAvailableRides(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Res() response,
+  ): Promise<RideResponseDto[]> {
     try {
-      const availableRidesModel = await this.rideService.findAll({ isOver: false, $expr: { $gt: ['$numSeats', { $size: '$members' }] } });
-      const rides = await Promise.all(
-        availableRidesModel.map((ride) => ride.toDTO()),
-      );
+      const { rides, totalPages, pageSize } =
+        await this.rideService.findAllPaging(
+          {
+            isOver: false,
+            $expr: { $gt: ['$numSeats', { $size: '$members' }] },
+          },
+          page,
+          limit,
+        );
 
+      const availableRides = await Promise.all(
+        rides.map((ride) => ride.toDTO()),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas disponíveis foram retornadas.',
-        rides,
-      });
 
+        availableRides,
+        totalPages, // Número total de caronas disponíveis
+        page, // Página atual
+        pageSize, // Tamanho da página (número de caronas por página)
+      });
     } catch (error) {
       console.error('Erro ao encontrar caronas disponíveis: ', error);
-      
+
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Erro ao retornar caronas disponíveis.',
         error: error.message || 'Erro interno do servidor',
@@ -298,11 +312,12 @@ export class RideController {
     }
   }
 
-
   //refatorado
   @UseGuards(JwtAuthGuard)
   @Get('/active/toWomen')
-  @ApiOperation({ summary: 'Retorna todas as caronas só para mulheres ativas.' })
+  @ApiOperation({
+    summary: 'Retorna todas as caronas só para mulheres ativas.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Todas as caronas para mulheres ativas foram retornadas.',
@@ -335,7 +350,10 @@ export class RideController {
   //refatorado
   @UseGuards(JwtAuthGuard)
   @Get('/available/toWomen')
-  @ApiOperation({ summary: 'Retorna todas as caronas só para mulheres disponíveis.' })
+  @ApiOperation({
+    summary:
+      'Retorna todas as caronas só para mulheres disponíveis com paginação.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Todas as caronas para mulheres disponíveis foram retornadas.',
@@ -344,23 +362,41 @@ export class RideController {
     status: 500,
     description: 'Erro ao retornar caronas disponíveis para mulheres.',
   })
-  async getRidesAvailableToWomen(@Res() response): Promise<RideResponseDto[]> {
+  async getRidesAvailableToWomen(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Res() response,
+  ): Promise<RideResponseDto[]> {
     try {
-      const ridesAvailableToWomenModel = await this.rideService.findAll({
-         isOver: false, 
-         toWomen: true, 
-         $expr: { $gt: ['$numSeats', { $size: '$members' }] }
-        });
-      const rides = await Promise.all(
-        ridesAvailableToWomenModel.map((ride) => ride.toDTO()),
+
+      const { rides, totalPages, pageSize } = await this.rideService.findAllPaging(
+        {
+          isOver: false,
+          toWomen: true,
+          $expr: { $gt: ['$numSeats', { $size: '$members' }] },
+        },
+        page,
+        limit,
+      );
+
+      const ridesAvailableToWomen = await Promise.all(
+        rides.map((ride) => ride.toDTO()),
+
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas para mulheres disponíveis foram retornadas.',
-        rides,
+
+        ridesAvailableToWomen,
+        totalPages, // Total de caronas disponíveis para mulheres
+        page, // Página atual
+        pageSize, // Número de caronas por página
       });
     } catch (error) {
-      console.error('Erro ao encontrar caronas disponíveis para mulheres', error);
+      console.error(
+        'Erro ao encontrar caronas disponíveis para mulheres',
+        error,
+      );
 
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Erro ao retornar caronas disponíveis para mulheres.',
@@ -369,7 +405,6 @@ export class RideController {
     }
   }
 
-
   @UseGuards(JwtAuthGuard)
   @Get('/driver/active')
   @ApiOperation({
@@ -377,7 +412,8 @@ export class RideController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Todas as corridas em que o usuário é motorista foram retornadas.',
+    description:
+      'Todas as corridas em que o usuário é motorista foram retornadas.',
   })
   @ApiResponse({
     status: 500,
@@ -530,7 +566,8 @@ export class RideController {
   })
   @ApiResponse({
     status: 500,
-    description: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+    description:
+      'Erro ao retornar o histórico do usuário como membro ou motorista.',
   })
   async getUserHistory(
     @Req() req,
@@ -549,7 +586,8 @@ export class RideController {
       });
     } catch (error) {
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+        message:
+          'Erro ao retornar o histórico do usuário como membro ou motorista.',
         error: error.message || 'Erro interno do servidor',
       });
     }
@@ -606,18 +644,22 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao encerrar a carona.',
   })
-  async setRideOver(@Req() req, @Res() response, @Param('rideId') rideId: string) {
+  async setRideOver(
+    @Req() req,
+    @Res() response,
+    @Param('rideId') rideId: string,
+  ) {
     try {
       const userId = req.user.sub;
       const updatedRide = await this.rideService.setRideOver(userId, rideId);
-      
+
       return response.status(HttpStatus.OK).json({
         message: 'A carona foi encerrada.',
         updatedRide,
       });
     } catch (error) {
       console.error('Erro ao encerrar a carona: ', error);
-      
+
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
           message: error.message,
@@ -650,10 +692,19 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao solicitar participação na carona.',
   })
-  async requestRide(@Req() req, @Res() response: Response, @Param('rideId') rideId: string, @Param('addressId') addressId: string) {
+  async requestRide(
+    @Req() req,
+    @Res() response,
+    @Param('rideId') rideId: string,
+    @Param('addressId') addressId: string,
+  ) {
     try {
       const userId = req.user.sub;
-      const updatedRide = await this.rideService.requestRide(userId, rideId, addressId);
+      const updatedRide = await this.rideService.requestRide(
+        userId,
+        rideId,
+        addressId,
+      );
 
       return response.status(HttpStatus.OK).json({
         message: 'O usuário agora é um candidato à carona.',
@@ -668,7 +719,8 @@ export class RideController {
 
       if (error instanceof BadRequestException) {
         return response.status(HttpStatus.BAD_REQUEST).json({
-          message: error.message || 'O usuário não pode se candidatar à carona.',
+          message:
+            error.message || 'O usuário não pode se candidatar à carona.',
         });
       }
 
@@ -693,10 +745,21 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao responder à solicitação do candidato.',
   })
-  async declineOrAcceptCandidate(@Req() req, @Res() response: Response, @Param('rideId') rideId, @Param('candidateId') candidateId, @Body() body: { status: string}) {
+  async declineOrAcceptCandidate(
+    @Req() req,
+    @Param('rideId') rideId,
+    @Param('candidateId') candidateId,
+    @Body() body: { status: string },
+  ) {
     try {
       const userId = req.user.sub;
-      const updatedRide = await this.rideService.declineOrAcceptCandidate(userId, rideId, candidateId, body.status);
+      const updatedRide = await this.rideService.declineOrAcceptCandidate(
+        userId,
+        rideId,
+        candidateId,
+        body.status,
+      );
+
       return response.status(HttpStatus.OK).json({
         message: 'A solicitação foi respondida com sucesso.',
         updatedRide,
@@ -713,7 +776,6 @@ export class RideController {
         message: error.message || 'Erro interno do servidor.',
       });
     }
-    
   }
 
   @UseGuards(JwtAuthGuard)
@@ -731,10 +793,18 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao remover candidato.',
   })
-  async removeMember(@Req() req, @Res() response: Response, @Param('rideId') rideId, @Param('memberId') memberId) {
+  async removeMember(
+    @Req() req,
+    @Param('rideId') rideId,
+    @Param('memberId') memberId,
+  ) {
     try {
       const userId = req.user.sub;
-      const updatedRide = await this.rideService.removeMember(userId, rideId, memberId);
+      const updatedRide = await this.rideService.removeMember(
+        userId,
+        rideId,
+        memberId,
+      );
 
       return response.status(HttpStatus.OK).json({
         message: 'O usuário não é mais um participante da carona.',
@@ -753,12 +823,13 @@ export class RideController {
         message: error.message || 'Erro interno do servidor.',
       });
     }
-    
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/candidates')
-  @ApiOperation({ summary: 'Obter todos os candidatos das caronas do motorista.' })
+  @ApiOperation({
+    summary: 'Obter todos os candidatos das caronas do motorista.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Todos os candidatos retornados com sucesso.',
@@ -773,7 +844,8 @@ export class RideController {
       const candidates = await this.rideService.getCandidates(userId);
 
       return response.status(HttpStatus.OK).json({
-        message: 'Os candidatos das caronas do motorista foram retornados com sucesso.',
+        message:
+          'Os candidatos das caronas do motorista foram retornados com sucesso.',
         candidates,
       });
     } catch (error) {
@@ -781,7 +853,6 @@ export class RideController {
         message: error.message || 'Erro interno do servidor.',
       });
     }
-    
   }
 
   @UseGuards(JwtAuthGuard)
@@ -802,7 +873,11 @@ export class RideController {
   async leaveRide(@Req() req, @Res() response: Response, @Param('rideId') rideId) {
     try {
       const userId = req.user.sub;
-      const updatedRide = await this.rideService.removeMember(userId, rideId, userId);
+      const updatedRide = await this.rideService.removeMember(
+        userId,
+        rideId,
+        userId,
+      );
 
       return response.status(HttpStatus.OK).json({
         message: 'O usuário deixou a carona.',
@@ -821,6 +896,5 @@ export class RideController {
         message: error.message || 'Erro interno do servidor.',
       });
     }
-    
   }
 }
