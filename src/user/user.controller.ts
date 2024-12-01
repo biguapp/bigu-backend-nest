@@ -22,11 +22,10 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserResponseDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+
 import * as sharp from 'sharp';
-import * as path from 'path';
 import { Express } from 'express';
-import * as fs from 'fs';
+
 
 @ApiTags('users')
 @Controller('users')
@@ -363,6 +362,7 @@ export class UserController {
       },
     }),
   )
+
   async uploadProfilePicture(
     @UploadedFile() file: Express.Multer.File,
     @Req() req,
@@ -370,13 +370,11 @@ export class UserController {
     if (!file) {
       throw new BadRequestException('Nenhum arquivo enviado.');
     }
-    // Compressão usando sharp
     const compressedImageBuffer = await sharp(file.buffer)
       .resize(300, 300)
       .jpeg({ quality: 80 })
-      .toBuffer(); // Gera o buffer da imagem comprimida
+      .toBuffer(); 
 
-    // Atualiza a imagem binária no documento do usuário no MongoDB
     const userId = req.user.sub;
     await this.userService.updateProfilePic(userId, compressedImageBuffer);
 
@@ -385,4 +383,142 @@ export class UserController {
       path: 'Imagem salva diretamente no banco de dados.',
     };
   }
+
+@UseGuards(JwtAuthGuard)
+@Post('upload-id-photo')
+@UseInterceptors(
+  FileInterceptor('file', {
+    limits: { fileSize: 2 * 1024 * 1024 }, 
+    fileFilter: (req, file, cb) => {
+      const allowedMimeTypes = ['image/jpeg', 'image/png'];
+      if (!allowedMimeTypes.includes(file.mimetype)) {
+        return cb(
+          new BadRequestException(
+            'Only JPEG or PNG images are allowed!',
+          ),
+          false,
+        );
+      }
+      cb(null, true);
+    },
+  }),
+)
+async uploadIdPhoto(
+  @UploadedFile() file: Express.Multer.File,
+  @Req() req,
+): Promise<{ message: string; status: string }> {
+  if (!file) {
+    throw new BadRequestException('No file uploaded.');
+  }
+
+  const compressedImageBuffer = await sharp(file.buffer)
+    .resize(800, 600) 
+    .jpeg({ quality: 80 }) 
+    .toBuffer();
+
+  const userId = req.user.sub;
+  await this.userService.updateIdPhoto(userId, compressedImageBuffer);
+  await this.userService.notifyAdminForIdVerification(userId);
+
+  return {
+    message: 'ID photo uploaded successfully and sent for admin review.',
+    status: 'success',
+  };
+
+}
+@UseGuards(JwtAuthGuard)
+@Get('id-photo')
+@ApiOperation({ summary: 'Retorna a foto de ID do usuário autenticado' })
+async getIdPhoto(@Res() response, @Req() req): Promise<void> {
+  try {
+    const userId = req.user.sub;
+    const user = await this.userService.findOne(userId);
+
+    if (!user || !user.idPhoto) {
+      throw new NotFoundException('Foto de ID não encontrada.');
+    }
+
+    response.set({
+      'Content-Type': 'image/jpeg', 
+      'Content-Disposition': 'attachment; filename="id-photo.jpg"',
+    });
+
+    return response.send(user.idPhoto);
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof NotFoundException) {
+      return response.status(HttpStatus.NOT_FOUND).json({
+        message: 'Foto de ID não encontrada.',
+        error: error.message,
+      });
+    }
+
+    return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Erro ao tentar retornar a foto de ID.',
+      error: error.message,
+    });
+  }
+}
+
+@UseGuards(JwtAuthGuard)
+@Put('evaluate-document/:id')
+@ApiOperation({ summary: 'Avaliar o documento de um usuário' })
+@ApiParam({
+  name: 'id',
+  required: true,
+  description: 'ID do usuário cujo documento está sendo avaliado',
+  type: String,
+})
+async evaluateUserDocument(
+  @Req() req,
+  @Param('id') id: string,
+  @Body() evaluateDocumentDto: { isApproved: boolean; reason?: string },
+  @Res() response
+): Promise<UserResponseDto> {
+  const userId = req.user?.sub;
+  const userFromDb = await this.userService.findOne(userId);
+  
+  if (!userFromDb) {
+    return response.status(HttpStatus.FORBIDDEN).json({
+      message: 'Usuário não encontrado no banco de dados.',
+    });
+  }
+
+  req.user = userFromDb;
+
+  if (req.user?.role !== 'admin') {
+    return response.status(HttpStatus.FORBIDDEN).json({
+      message: 'Acesso negado. Somente administradores podem avaliar documentos.',
+    });
+  }
+
+  try {
+    const userToEvaluate = await this.userService.findOne(id);
+    if (!userToEvaluate) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const updatedUser = await this.userService.verifyUserDocument(id, evaluateDocumentDto.isApproved, evaluateDocumentDto.reason);
+
+    return response.status(HttpStatus.OK).json({
+      message: 'Avaliação do documento concluída com sucesso.',
+      user: updatedUser.toDTO(),
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof NotFoundException) {
+      return response.status(HttpStatus.NOT_FOUND).json({
+        message: 'Usuário não encontrado.',
+        error: error.message,
+      });
+    }
+
+    return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Falha ao avaliar documento.',
+      error: error.message,
+    });
+  }
+}
 }

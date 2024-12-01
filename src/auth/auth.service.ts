@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +15,7 @@ import { Role } from '../enums/enum';
 import { UserResponseDto } from '../user/dto/response-user.dto';
 import { BlacklistedToken } from './schemas/token.schema';
 import { MailjetService } from 'nest-mailjet';
+import { UpdateUserDto } from '@src/user/dto/update-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +51,13 @@ export class AuthService {
     refreshToken: string;
     userResponse: UserResponseDto;
   }> {
-    const user = await this.userService.findByEmail(email);
+    let user;
+    try {
+      user = await this.userService.findByEmail(email);
+    } catch (error) {
+      throw new UnauthorizedException('Email não cadastrado.');
+    }
+
     if (user && (await bcrypt.compare(password, user.password))) {
       const accessToken = this.generateAccessToken(user.id, Role.User);
 
@@ -56,9 +69,7 @@ export class AuthService {
     throw new UnauthorizedException('Credenciais inválidas.');
   }
 
-  async refreshAccessToken(
-    refreshToken: string,
-  ): Promise<{ accessToken: string }> {
+  async refreshAccessToken(refreshToken: string): Promise<String> {
     try {
       const payload = this.jwtService.verify(refreshToken);
 
@@ -74,7 +85,7 @@ export class AuthService {
         { expiresIn: '15m' }, // Access Token válido por 15 minutos
       );
 
-      return { accessToken: newAccessToken };
+      return newAccessToken;
     } catch (error) {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
@@ -164,7 +175,12 @@ export class AuthService {
     if (user.verificationCode !== code) {
       throw new UnauthorizedException('Código de verificação inválido.');
     } else {
-      (await this.userService.update(userId, { isVerified: true })).save();
+      (
+        await this.userService.update(userId, {
+          ...user,
+          isVerified: true,
+        } as UpdateUserDto)
+      ).save();
       return 'Conta confirmada!';
     }
   }
@@ -185,9 +201,12 @@ export class AuthService {
     }
 
     const resetCode = this.generateVerificationCode();
-    
+
     // Armazena o código no usuário
-    await this.userService.update(user.id, { verificationCode: resetCode });
+    console.log(user);
+    await this.userService.update(user.id, {
+      verificationCode: resetCode,
+    } as UpdateUserDto);
 
     // Envia o código por email
     await this.mailjetService.send({
@@ -210,9 +229,9 @@ export class AuthService {
     return 'Código de recuperação enviado para o email';
   }
 
-  async resetPassword(email: string, code: string, newPassword: string): Promise<string> {
+  async resetPassword(email: string, newPassword: string): Promise<string> {
     const user = await this.userService.findByEmail(email);
-    if (!user || user.verificationCode !== code) {
+    if (!user) {
       throw new UnauthorizedException('Código de verificação inválido.');
     }
 
@@ -221,10 +240,23 @@ export class AuthService {
     await this.userService.update(user.id, {
       password: hashedPassword,
       verificationCode: null, // Remove o código após o uso
-    });
+    } as UpdateUserDto);
 
     return 'Senha alterada com sucesso!';
   }
 
-  
+  async validateCode(email: string, code: string): Promise<any> {
+    try {
+      const user = await this.userService.findByEmail(email);
+      if (user.verificationCode !== code) {
+        throw new BadRequestException('Código incorreto.');
+      } else if (user.verificationCode === code) {
+        return { validation: true, message: 'Código verificado.' };
+      } else {
+        return { validation: false, message: 'Código incorreto.' };
+      }
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
+  }
 }

@@ -70,11 +70,19 @@ export class RideResponseDto {
   @IsArray()
   readonly members: UserResponseDto[];
 
-  @ApiProperty({ description: 'Lista de candidatos aa carona', type: [UserResponseDto]})
+  @ApiProperty({ description: 'Lista de candidatos da carona', type: [UserResponseDto]})
   @IsArray()
   readonly candidates: UserResponseDto[];
 
   @ApiProperty({ description: 'A corrida finalizou?'})
   @IsBoolean()
   readonly isOver: boolean;
+
+  @ApiProperty({ description: 'IDs de avaliações feitas pelo motorista'})
+  @IsArray()
+  readonly driverRatings: string[];
+
+  @ApiProperty({ description: 'IDs de avaliações feitas pelos membros'})
+  @IsArray()
+  readonly memberRatings: string[];
 }

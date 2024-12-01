@@ -22,7 +22,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RideResponseDto } from './dto/response-ride.dto';
-import { response } from 'express';
+import { Response } from 'express';
 
 @ApiTags('rides')
 @Controller('rides')
@@ -155,7 +155,7 @@ export class RideController {
   })
   @ApiResponse({
     status: 500,
-    description: 'Erro interno ao encerrar a carona.',
+    description: 'Erro interno ao atualizar a carona.',
   })
   async update(
     @Param('id') id: string,
@@ -171,7 +171,8 @@ export class RideController {
         rideUpdated,
       });
     } catch (error) {
-      console.error('Erro ao encerrar a carona: ', error);
+      console.error('Erro ao atualizar a carona: ', error);
+      
 
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
@@ -240,16 +241,15 @@ export class RideController {
   })
   async getActiveRides(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const activeRidesModel = await this.rideService.findAll({
-        isOver: false,
-      });
-      const activeRides = await Promise.all(
+      const activeRidesModel = await this.rideService.findAll({ isOver: false });
+      const rides = await Promise.all(
+
         activeRidesModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as corridas ativas foram retornadas.',
-        activeRides,
+        rides,
       });
     } catch (error) {
       console.error('Erro ao encontrar caronas ativas: ', error);
@@ -294,9 +294,9 @@ export class RideController {
       const availableRides = await Promise.all(
         rides.map((ride) => ride.toDTO()),
       );
-
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas disponíveis foram retornadas.',
+
         availableRides,
         totalPages, // Número total de caronas disponíveis
         page, // Página atual
@@ -328,17 +328,14 @@ export class RideController {
   })
   async getActiveRidesToWomen(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const activeRidesToWomenModel = await this.rideService.findAll({
-        isOver: false,
-        toWomen: true,
-      });
-      const activeRidesToWomen = await Promise.all(
+      const activeRidesToWomenModel = await this.rideService.findAll({ isOver: false, toWomen: true });
+      const rides = await Promise.all(
         activeRidesToWomenModel.map((ride) => ride.toDTO()),
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas para mulheres ativas foram retornadas.',
-        activeRidesToWomen,
+        rides,
       });
     } catch (error) {
       console.log('Erro ao encontrar caronas ativas para mulheres', error);
@@ -371,6 +368,7 @@ export class RideController {
     @Res() response,
   ): Promise<RideResponseDto[]> {
     try {
+
       const { rides, totalPages, pageSize } = await this.rideService.findAllPaging(
         {
           isOver: false,
@@ -383,10 +381,12 @@ export class RideController {
 
       const ridesAvailableToWomen = await Promise.all(
         rides.map((ride) => ride.toDTO()),
+
       );
 
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas para mulheres disponíveis foram retornadas.',
+
         ridesAvailableToWomen,
         totalPages, // Total de caronas disponíveis para mulheres
         page, // Página atual
@@ -594,6 +594,42 @@ export class RideController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('/user/history/:id')
+  @ApiOperation({
+    summary:
+      'Retorna todas as caronas que o usuário estava como membro ou motorista.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'O histórico completo do usuário foi retornado.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+  })
+  async getOtherUserHistory(
+    @Param('id') id: string,
+    @Res() response,
+  ): Promise<RideResponseDto[]> {
+    try {
+      const userHistoryModel = await this.rideService.getUserHistory(id);
+      const userHistory = await Promise.all(
+        userHistoryModel.map((ride) => ride.toDTO()),
+      );
+
+      return response.status(HttpStatus.OK).json({
+        message: 'O histórico do usuário foi retornado com sucesso.',
+        userHistory,
+      });
+    } catch (error) {
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+        error: error.message || 'Erro interno do servidor',
+      });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put('/over/:rideId')
   @ApiOperation({ summary: 'Marcar carona como concluída.' })
   @ApiResponse({
@@ -626,8 +662,7 @@ export class RideController {
 
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
-          message: 'A carona não foi encontrada.',
-          error: error.message,
+          message: error.message,
         });
       }
 
@@ -803,7 +838,7 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao recuperar candidatos.',
   })
-  async getCandidates(@Req() req) {
+  async getCandidates(@Req() req, @Res() response: Response) {
     try {
       const userId = req.user.sub;
       const candidates = await this.rideService.getCandidates(userId);
@@ -835,7 +870,7 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao deixar carona.',
   })
-  async leaveRide(@Req() req, @Param('rideId') rideId) {
+  async leaveRide(@Req() req, @Res() response: Response, @Param('rideId') rideId) {
     try {
       const userId = req.user.sub;
       const updatedRide = await this.rideService.removeMember(

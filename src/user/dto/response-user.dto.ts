@@ -42,10 +42,55 @@ export class UserResponseDto {
   @IsNotEmpty()
   readonly userId: string;
 
+  @ApiProperty({
+    description: 'Pontuação media das avaliações recebidas pelo usuário (0-5)',
+    example: 4.3,
+  })
   @IsNumber()
   @IsNotEmpty()
   readonly avgScore: number;
 
+  @ApiProperty({
+    description: 'Quantidade de avaliações recebidas pelo usuário',
+    example: 10,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  readonly ratingCount: number;
+
+  @ApiProperty({
+    description: 'Quantidade de caronas oferecidas pelo usuário',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  readonly offeredRidesCount?: number;
+
+  @ApiProperty({
+    description: 'Status do documento do usuário (pending, approved, rejected)',
+    example: 'pending',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly documentStatus: 'pending' | 'approved' | 'rejected';
+
+  @ApiProperty({
+    description: 'Motivo para a reprovação do documento, caso tenha',
+    example: 'Document is unclear.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  readonly verificationReason?: string;
+  
+  @ApiProperty({
+    description: 'Quantidade de caronas recebidas pelo usuário',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  readonly takenRidesCount?: number;
+  
   feedbacks: string[];
 
   readonly isVerified: boolean;

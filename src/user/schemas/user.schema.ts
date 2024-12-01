@@ -5,9 +5,11 @@ import { UserResponseDto } from '../dto/response-user.dto';
 
 @Schema()
 export class User extends Document {
-
-  @Prop( { type: Buffer })
+  @Prop({ type: Buffer })
   profileImage?: Buffer;
+
+  @Prop({ type: Buffer })
+  idPhoto?: Buffer;
 
   @Prop({ required: true })
   name: string;
@@ -33,14 +35,29 @@ export class User extends Document {
   @Prop([String])
   feedbacks?: string[];
 
-  @Prop({ default: 0 })
+  @Prop({ default: 5 })
   avgScore: number;
+
+  @Prop({ default: 0 })
+  ratingCount: number;
+
+  @Prop({ default: 0 })
+  readonly offeredRidesCount?: number;
+
+  @Prop({ default: 0 })
+  readonly takenRidesCount?: number;
 
   @Prop({ required: true })
   verificationCode: string;
 
   @Prop( { required: true, default: false})
   isVerified: boolean;
+
+  @Prop({required: false, type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' })
+  documentStatus: 'pending' | 'approved' | 'rejected';
+
+  @Prop({ required: false })
+  verificationReason?: string; 
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -56,6 +73,12 @@ UserSchema.methods.toDTO = function (): UserResponseDto {
     matricula: this.matricula,
     feedbacks: this.feedbacks,
     avgScore: this.avgScore,
-    isVerified: this.isVerified
+    ratingCount: this.ratingCount,
+    offeredRidesCount: this.offeredRidesCount,
+    takenRidesCount: this.takenRidesCount,
+    isVerified: this.isVerified,
+    documentStatus: this.documentStatus, 
+    verificationReason: this.verificationReason,  
   };
+
 };

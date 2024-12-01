@@ -73,4 +73,14 @@ export class CreateRideDto {
   })
   @IsBoolean()
   readonly toWomen: boolean;
+
+  @ApiProperty({
+    description: 'Indica se a carona acabou',
+    example: false,
+    required: true,
+  })
+  @IsBoolean()
+  readonly isOver: boolean;
+
+
 }
