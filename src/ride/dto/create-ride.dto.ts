@@ -1,11 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsString,
-  IsOptional,
-  IsNumber,
   IsBoolean,
-  IsDate,
-  ValidateNested,
+  IsNumber,
+  IsOptional,
+  IsString
 } from 'class-validator';
 
 export class CreateRideDto {
@@ -77,8 +75,9 @@ export class CreateRideDto {
   @ApiProperty({
     description: 'Indica se a carona acabou',
     example: false,
-    required: true,
+    required: false,
   })
+  @IsOptional()
   @IsBoolean()
   readonly isOver: boolean;
 
