@@ -1,33 +1,32 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-  Put,
-  Res,
-  HttpStatus,
-  InternalServerErrorException,
-  NotFoundException,
   BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Put,
   Query,
+  Req,
+  Res,
+  UseGuards
 } from '@nestjs/common';
-import { RideService } from './ride.service';
-import { CreateRideDto } from './dto/create-ride.dto';
-import { UpdateRideDto } from './dto/update-ride.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RideResponseDto } from './dto/response-ride.dto';
 import { Response } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateRideDto } from './dto/create-ride.dto';
+import { RideResponseDto } from './dto/response-ride.dto';
+import { UpdateRideDto } from './dto/update-ride.dto';
+import { RideService } from './ride.service';
 
 @ApiTags('rides')
 @Controller('rides')
 export class RideController {
-  constructor(private readonly rideService: RideService) {}
+  constructor(private readonly rideService: RideService) { }
 
   //refatorado
   @UseGuards(JwtAuthGuard)
@@ -172,7 +171,7 @@ export class RideController {
       });
     } catch (error) {
       console.error('Erro ao atualizar a carona: ', error);
-      
+
 
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
@@ -750,6 +749,7 @@ export class RideController {
     @Param('rideId') rideId,
     @Param('candidateId') candidateId,
     @Body() body: { status: string },
+    @Res() response,
   ) {
     try {
       const userId = req.user.sub;
@@ -797,6 +797,7 @@ export class RideController {
     @Req() req,
     @Param('rideId') rideId,
     @Param('memberId') memberId,
+    @Res() response,
   ) {
     try {
       const userId = req.user.sub;
