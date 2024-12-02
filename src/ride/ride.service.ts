@@ -44,10 +44,12 @@ export class RideService {
       );
     }
 
-    const scheduledDate = new Date(createRideDto.scheduledTime);
+
+    const scheduledDate  = new Date(createRideDto.scheduledTime);
 
     const timeZone = 'America/Sao_Paulo';
     const zonedDate = toZonedTime(scheduledDate, timeZone);
+
     if (zonedDate < new Date()) {
       throw new BadRequestException('A data agendada não pode ser no passado.');
     }
@@ -93,6 +95,18 @@ export class RideService {
     return await this.rideModel.find(filter);
   }
 
+  async findAllPaging(
+    filter: any = {},
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<any> {
+    const skip = (page - 1) * limit;
+    const rides = this.rideModel.find(filter).skip(skip).limit(limit).exec();
+    const totalPages = await this.rideModel.countDocuments(filter).exec();
+
+    return { totalPages, page, pageSize: limit, rides };
+  }
+
   async findOne(id: string): Promise<Ride> {
     const ride = await this.rideModel.findById(id);
     if (!ride) {
@@ -103,6 +117,7 @@ export class RideService {
   }
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
+
     let zonedDate;
     if (updateRideDto.scheduledTime) {
       const date = new Date(updateRideDto.scheduledTime);
@@ -111,6 +126,7 @@ export class RideService {
       if (zonedDate < new Date() && !updateRideDto.isOver) {
         throw new BadRequestException('A data agendada não pode ser no passado.');
       }
+
     }
 
     const ride = {
@@ -120,6 +136,7 @@ export class RideService {
       destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
       car: new Types.ObjectId(updateRideDto.car),
       ...(zonedDate && { scheduledTime: zonedDate })
+
     };
 
     const updatedRide = await this.rideModel.findByIdAndUpdate(id, ride, {
