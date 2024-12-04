@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CarService } from './vehicle.service';
+import { VehicleService } from './vehicle.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Car } from './schemas/vehicle.schema';
+import { Vehicle } from './schemas/vehicle.schema';
 
-describe('CarService', () => {
-  let service: CarService;
-  let model: Model<Car>;
+describe('VehicleService', () => {
+  let service: VehicleService;
+  let model: Model<Vehicle>;
 
   beforeEach(async () => {
-    const mockCarModel = {
+    const mockVehicleModel = {
       // Implementação mock das funções do Model aqui (e.g. find, findById, etc.)
       find: jest.fn(),
       create: jest.fn(),
@@ -25,25 +25,25 @@ describe('CarService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        CarService,
+        VehicleService,
         {
-          provide: getModelToken('Car'), // Fornece o CarModel
-          useValue: mockCarModel, // Mock do CarModel
+          provide: getModelToken('Vehicle'), // Fornece o VehicleModel
+          useValue: mockVehicleModel, // Mock do VehicleModel
         },
         {
-          provide: getModelToken('Ride'), // Fornece o CarModel
-          useValue: mockRideModel, // Mock do CarModel
+          provide: getModelToken('Ride'), // Fornece o VehicleModel
+          useValue: mockRideModel, // Mock do VehicleModel
         },
       ],
     }).compile();
 
-    service = module.get<CarService>(CarService);
-    model = module.get<Model<Car>>(getModelToken('Car'));
+    service = module.get<VehicleService>(VehicleService);
+    model = module.get<Model<Vehicle>>(getModelToken('Vehicle'));
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  // Outros testes para os métodos do CarService podem ser adicionados aqui.
+  // Outros testes para os métodos do VehicleService podem ser adicionados aqui.
 });
