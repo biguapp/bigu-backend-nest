@@ -49,15 +49,15 @@ export class CreateRideDto {
   readonly scheduledTime: string;
 
   @ApiProperty({
-    description: 'Informações sobre o carro',
+    description: 'Informações sobre o veículo',
     type: String,
     required: true,
   })
-  readonly car: string;
+  readonly vehicle: string;
 
   @ApiProperty({
     description: 'Descrição da carona',
-    example: 'Carona para o campus universitário',
+    example: 'Vehicleona para o campus universitário',
     required: false,
   })
   @IsOptional()

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CarService } from './car.service';
+import { CarService } from './vehicle.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Car } from './schemas/car.schema';
+import { Car } from './schemas/vehicle.schema';
 
 describe('CarService', () => {
   let service: CarService;

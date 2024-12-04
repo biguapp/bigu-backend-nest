@@ -114,7 +114,7 @@ export class RideController {
       const ride = await this.rideService.findOne(id);
       if (!ride) {
         return response.status(404).json({
-          message: 'Carona não encontrada.',
+          message: 'Vehicleona não encontrada.',
         });
       }
 

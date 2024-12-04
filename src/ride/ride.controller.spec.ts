@@ -26,7 +26,7 @@ describe('RideController', () => {
     goingToCollege: true,
     price: 20.0,
     scheduledTime: '2024-09-10T15:30:00Z',
-    car: 'Car Model',
+    vehicle: 'Vehicle Model',
     description: 'Ride to campus',
     toWomen: false,
   };
@@ -68,15 +68,15 @@ describe('RideController', () => {
     goingToCollege: true,
     price: 15.0,
     scheduledTime: '2024-09-10T15:30:00Z',
-    car: {
+    vehicle: {
       brand: 'Chevrolet',
-      carModel: 'Onix',
+      vehicleModel: 'Onix',
       modelYear: '2019',
       color: 'Preto',
       plate: 'KGU7E07',
-      carId: '1',
+      vehicleId: '1',
     },
-    description: 'Carona para o campus universitário',
+    description: 'Vehicleona para o campus universitário',
     toWomen: false,
     members: [],
     candidates: [],
@@ -213,7 +213,7 @@ describe('RideController', () => {
       expect(service.findOne).toHaveBeenCalledWith(rideId);
       expect(response.status).toHaveBeenCalledWith(404);
       expect(response.json).toHaveBeenCalledWith({
-        message: 'Carona não encontrada.',
+        message: 'Vehicleona não encontrada.',
       });
     });
   });

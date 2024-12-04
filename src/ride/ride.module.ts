@@ -6,7 +6,7 @@ import { Ride, RideSchema } from './schemas/ride.schema';
 import { UserModule } from '../user/user.module';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '@src/auth/auth.module';
-import { CarModule } from '@src/car/car.module';
+import { VehicleModule } from '@src/vehicle/vehicle.module';
 import { Member, MemberSchema } from './schemas/member.schema';
 import { Candidate, CandidateSchema } from './schemas/candidate.schema';
 import { MailjetModule } from 'nest-mailjet';
@@ -25,9 +25,10 @@ import { MailjetModule } from 'nest-mailjet';
         apiSecret: process.env.MAILJET_API_SECRET,
       }),
     }),
+    VehicleModule
   ],
   controllers: [RideController],
   providers: [RideService],
-  exports: [RideService, MongooseModule, MailjetModule],
+  exports: [RideService, MongooseModule, MailjetModule, VehicleModule],
 })
 export class RideModule {}

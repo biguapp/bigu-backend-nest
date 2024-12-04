@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { toZonedTime } from 'date-fns-tz';
@@ -14,6 +14,8 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { Ride } from './interfaces/ride.interface';
+import { VehicleService } from '@src/vehicle/vehicle.service';
+import { VehicleType } from '@src/vehicle/schemas/vehicle.schema';
 
 @Injectable()
 export class RideService {
@@ -23,7 +25,8 @@ export class RideService {
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
     private readonly mailjetService: MailjetService,
-  ) { }
+    private readonly vehicleService: VehicleService,
+  ) {}
 
   // Criação de uma nova carona
   // 66e093bfe2323b4802da45c3 - ENTRADA PRINCIPAL
@@ -32,6 +35,16 @@ export class RideService {
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
     const driver = await this.userService.findOne(createRideDto.driver);
+    const vehicle = await this.vehicleService.findOne(createRideDto.vehicle);
+
+    if (
+      vehicle.type === VehicleType.MOTORCYCLE &&
+      createRideDto.numSeats !== 1
+    ) {
+      throw new BadRequestException(
+        'Numero de vagas incompatível com o tipo do veículo.',
+      );
+    }
     if (!driver) {
       throw new NotFoundException(
         'O motorista não foi encontrado na base de dados.',
@@ -44,8 +57,7 @@ export class RideService {
       );
     }
 
-
-    const scheduledDate  = new Date(createRideDto.scheduledTime);
+    const scheduledDate = new Date(createRideDto.scheduledTime);
 
     const timeZone = 'America/Sao_Paulo';
     const zonedDate = toZonedTime(scheduledDate, timeZone);
@@ -76,7 +88,7 @@ export class RideService {
       driver: new Types.ObjectId(createRideDto.driver),
       startAddress: new Types.ObjectId(createRideDto.startAddress),
       destinationAddress: new Types.ObjectId(createRideDto.destinationAddress),
-      car: new Types.ObjectId(createRideDto.car),
+      vehicle: new Types.ObjectId(createRideDto.vehicle),
       members: [],
       candidates: [],
       isOver: false,
@@ -110,23 +122,36 @@ export class RideService {
   async findOne(id: string): Promise<Ride> {
     const ride = await this.rideModel.findById(id);
     if (!ride) {
-      throw new NotFoundException(`Carona com ID ${id} não foi encontrada.`);
+      throw new NotFoundException(
+        `Carona com ID ${id} não foi encontrada.`,
+      );
     }
 
     return ride;
   }
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
-
     let zonedDate;
     if (updateRideDto.scheduledTime) {
       const date = new Date(updateRideDto.scheduledTime);
       const timeZone = 'America/Sao_Paulo';
       zonedDate = toZonedTime(date, timeZone);
       if (zonedDate < new Date() && !updateRideDto.isOver) {
-        throw new BadRequestException('A data agendada não pode ser no passado.');
+        throw new BadRequestException(
+          'A data agendada não pode ser no passado.',
+        );
       }
+    }
 
+    const vehicle = await this.vehicleService.findOne(updateRideDto.vehicle);
+
+    if (
+      vehicle.type === VehicleType.MOTORCYCLE &&
+      updateRideDto.numSeats !== 1
+    ) {
+      throw new BadRequestException(
+        'Numero de vagas incompatível com o tipo do veículo.',
+      );
     }
 
     const ride = {
@@ -134,9 +159,8 @@ export class RideService {
       driver: new Types.ObjectId(updateRideDto.driver),
       startAddress: new Types.ObjectId(updateRideDto.startAddress),
       destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
-      car: new Types.ObjectId(updateRideDto.car),
-      ...(zonedDate && { scheduledTime: zonedDate })
-
+      vehicle: new Types.ObjectId(updateRideDto.vehicle),
+      ...(zonedDate && { scheduledTime: zonedDate }),
     };
 
     const updatedRide = await this.rideModel.findByIdAndUpdate(id, ride, {
@@ -225,7 +249,9 @@ export class RideService {
     const driver = ride.driver.toString();
 
     if (driver !== userId) {
-      throw new BadRequestException('Somente o motorista pode encerrar a carona.');
+      throw new BadRequestException(
+        'Somente o motorista pode encerrar a carona.',
+      );
     }
 
     if (ride.isOver) {
@@ -235,7 +261,7 @@ export class RideService {
     const updatedRide = {
       ...ride._doc,
       isOver: true,
-    }
+    };
 
     const returnedRide = await this.update(rideId, updatedRide);
     await this.userService.updateRideCount(driver, true);
@@ -250,14 +276,20 @@ export class RideService {
   async addRatingToRide(
     rideId: string,
     ratingId: string,
-    { raterId, rateeId, score }: { raterId: string, rateeId: string, score: number },
+    {
+      raterId,
+      rateeId,
+      score,
+    }: { raterId: string; rateeId: string; score: number },
   ): Promise<void> {
     const ride = await this.rideModel.findById(rideId).exec();
     if (!ride) {
       throw new NotFoundException('Carona não encontrada.');
     }
     if (!ride.isOver) {
-      throw new BadRequestException('Avaliações só podem ser feitas após o término da carona.');
+      throw new BadRequestException(
+        'Avaliações só podem ser feitas após o término da carona.',
+      );
     }
 
     /*const alreadyRated = 
@@ -329,7 +361,7 @@ export class RideService {
       'Nova solicitação de bigu!',
     );
 
-    const updateRideDto: any = { ...ride, candidates: rideCandidates }
+    const updateRideDto: any = { ...ride, candidates: rideCandidates };
 
     return await this.update(rideId, updateRideDto);
   }
@@ -368,7 +400,6 @@ export class RideService {
           members: newMembers,
         });
         return newRide.toDTO();
-
       } else throw new NotFoundException('Candidato não encontrado.');
     } else throw new NotFoundException('Corrida não encontrada.');
   }

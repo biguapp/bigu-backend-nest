@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AddressResponseDto } from '@src/address/dto/response-address.dto';
-import { CarResponseDto } from '@src/car/dto/response-car.dto';
+import { VehicleResponseDto } from '@src/vehicle/dto/response-vehicle.dto';
 import { UserResponseDto } from '@src/user/dto/response-user.dto';
 import { IsString, IsNumber, IsBoolean, IsArray } from 'class-validator';
 
@@ -48,13 +48,13 @@ export class RideResponseDto {
 
   @ApiProperty({
     description: 'Informações sobre o carro',
-    type: CarResponseDto
+    type: VehicleResponseDto
   })
-  readonly car: CarResponseDto;
+  readonly vehicle: VehicleResponseDto;
 
   @ApiProperty({
     description: 'Descrição da carona',
-    example: 'Carona para o campus universitário'
+    example: 'Vehicleona para o campus universitário'
   })
   @IsString()
   readonly description: string;

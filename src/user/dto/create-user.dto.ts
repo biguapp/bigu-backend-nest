@@ -3,7 +3,7 @@ import { IsEmail, IsEnum, IsNotEmpty, IsString, Matches, MinLength, ValidateNest
 import { Type } from 'class-transformer';
 import { Role } from '../../enums/enum';
 import { CreateAddressDto } from '../../address/dto/create-address.dto';
-import { CreateCarDto } from '../../car/dto/create-car.dto';
+import { CreateVehicleDto } from '../../vehicle/dto/create-vehicle.dto';
 
 export class CreateUserDto {
 

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CarController } from './car.controller';
-import { CarService } from './car.service';
+import { CarController } from './vehicle.controller';
+import { CarService } from './vehicle.service';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 

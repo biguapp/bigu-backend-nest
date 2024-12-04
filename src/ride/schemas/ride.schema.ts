@@ -35,8 +35,8 @@ export class Ride extends Document {
   @Prop()
   scheduledTime: Date;
 
-  @Prop({ type: Types.ObjectId, ref: 'Car', required: true })
-  car: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Vehicle', required: true })
+  vehicle: Types.ObjectId;
 
   @Prop()
   description?: string;
@@ -88,7 +88,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
   );
   const startAddress = await this.model('Address').findById(this.startAddress).exec();
   const destinationAddress = await this.model('Address').findById(this.destinationAddress).exec();
-  const car = await this.model('Car').findById(this.car).exec();
+  const vehicle = await this.model('Vehicle').findById(this.car).exec();
 
   return {
     rideId: this.id,
@@ -101,7 +101,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
     goingToCollege: this.goingToCollege,
     price: this.price,
     scheduledTime: this.scheduledTime.toLocaleString(),
-    car: car.toDTO(),
+    vehicle: vehicle.toDTO(),
     description: this.description,
     toWomen: this.toWomen,
     isOver: this.isOver,
