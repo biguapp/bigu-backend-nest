@@ -48,7 +48,7 @@ export class AddressResponseDto {
   @IsNumber()
   readonly returnDistance: number;*/
 
-  @ApiProperty({ description: 'Distância entre o endereço e a UFCG em km', example: '2.15' })
+  @ApiProperty({ description: 'Distância entre o endereço e a UFCG em km', example: '2.150' })
   @IsNumber()
   readonly distance: number;
 }
