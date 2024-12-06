@@ -156,14 +156,26 @@ export class RideService {
 
   async getUserHistory(userId: string) {
     const objId = new Types.ObjectId(userId);
-    const userRides = await this.rideModel
+    return await this.rideModel
       .find({
-        $or: [{ driver: objId }, { members: objId }],
-        $and: [{ isOver: true }],
+        $or: [
+          { driver: objId },
+          { members: objId },
+          { candidates: { $elemMatch: { user: objId } } },
+        ],
       })
       .exec();
-    return userRides;
   }
+  // async getUserHistory(userId: string) {
+  //   const objId = new Types.ObjectId(userId);
+  //   const userRides = await this.rideModel
+  //     .find({
+  //       $or: [{ driver: objId }, { members: objId }],
+  //       $and: [{ isOver: true }],
+  //     })
+  //     .exec();
+  //   return userRides;
+  // }
 
   async getDriverActiveRides(userId: string) {
     const objId = new Types.ObjectId(userId);
