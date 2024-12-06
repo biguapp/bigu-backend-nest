@@ -32,7 +32,7 @@ export class Address extends Document {
   @Prop()
   user: string;
 
-  @Prop()
+  @Prop({ required: true })
   distance: number;
 }
 

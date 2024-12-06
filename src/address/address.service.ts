@@ -59,6 +59,11 @@ export class AddressService {
     return rows.elements[0].distance.value / 1000;
   }
 
+  async getDistance(id: string) {
+    const address = await this.findOne(id);
+    return address.distance;
+  }
+
   async findAll(): Promise<Address[]> {
     return await this.addressModel.find().exec();
   }
