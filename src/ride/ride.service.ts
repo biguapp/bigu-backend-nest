@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { toZonedTime } from 'date-fns-tz';
 import { Model, Types } from 'mongoose';
+import { AddressService } from '../address/address.service';
 import { MailjetService } from 'nest-mailjet';
 import { UserService } from '../user/user.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -14,6 +15,8 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { Ride } from './interfaces/ride.interface';
+import { CarService } from '@src/car/car.service';
+import { Car } from '@src/car/schemas/car.schema';
 
 @Injectable()
 export class RideService {
@@ -21,7 +24,9 @@ export class RideService {
     @InjectModel('Ride') private readonly rideModel: Model<Ride>,
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
+    @InjectModel('Car') private readonly carModel: Model<Car>,
     private readonly userService: UserService,
+    private readonly adressService: AddressService,
     private readonly mailjetService: MailjetService,
   ) { }
 
@@ -115,6 +120,17 @@ export class RideService {
 
     return ride;
   }
+
+  async findOneCandidate(id: string): Promise<Candidate> {
+    const candidate = await this.candidateModel.findById(id)
+
+    if (!candidate) {
+      throw new NotFoundException(`Candidato com ID ${id} não foi encontrado.`);
+    }
+
+    return candidate;
+  }
+
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
 
@@ -286,6 +302,7 @@ export class RideService {
 
     const ride = await this.rideModel.findById(rideIdObj);
     const user = await this.userService.findOne(userId);
+    const car = await this.carModel.findById(ride.car)
     const rideCandidates = ride.candidates || [];
     const userIdObj = new Types.ObjectId(userId);
 
@@ -316,10 +333,17 @@ export class RideService {
     if (ride.members.length === ride.numSeats) {
       throw new BadRequestException('Essa carona já está cheia.');
     }
-
+  
+    const distance = await this.adressService.getDistance(addressId);
+    console.log(distance)
+    const avgConsumption = car.avgConsumption;
+    console.log(avgConsumption)
+    const suggestedValue = parseFloat((6.15 * distance / avgConsumption).toFixed(2));
+    console.log(suggestedValue)
     rideCandidates.push({
       user: userIdObj,
       address: addressIdObj,
+      suggestedValue: suggestedValue,
     } as Candidate);
 
     // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
@@ -334,7 +358,7 @@ export class RideService {
     return await this.update(rideId, updateRideDto);
   }
 
-  async acceptCandidate(driverId: string, rideId: string, candidateId: string) {
+  async acceptCandidate(driverId: string, rideId: string, candidateId: string, freeRide: boolean) {
     const ride: any = await this.findOne(rideId);
     const candidateObjId = new Types.ObjectId(candidateId);
     const rideCandidates = ride.candidates;
@@ -347,9 +371,12 @@ export class RideService {
           (candidate) => candidate.user.toString() === candidateId,
         ).address;
         const idx = rideCandidatesId.indexOf(candidateId);
+        const candidate = await this.findOneCandidate(candidateId);
+        const aggreedValue = freeRide ? 0 : candidate.suggestedValue
         const member = new this.memberModel({
           user: candidateObjId,
           address: addressIdObj,
+          aggreedValue: aggreedValue,
         });
         ride.members.push(member);
         const newMembers = ride.members;
@@ -410,11 +437,12 @@ export class RideService {
     rideId: string,
     candidateId: string,
     status: string,
+    freeRide: boolean,
   ) {
     if (status === 'declined') {
       return await this.declineCandidate(driverId, rideId, candidateId);
     } else {
-      return await this.acceptCandidate(driverId, rideId, candidateId);
+      return await this.acceptCandidate(driverId, rideId, candidateId, freeRide);
     }
   }
 
