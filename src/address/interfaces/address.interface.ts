@@ -9,7 +9,8 @@ export interface Address extends Document {
   readonly cidade: string;
   readonly estado: string;
   readonly cep: string;
-  readonly user: string
+  readonly user: string;
+  readonly distance: number;
 
   toDTO(): AddressResponseDto;
 }

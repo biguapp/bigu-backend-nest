@@ -15,7 +15,7 @@ export interface Ride extends Document {
   readonly destinationAddress: Address;
   readonly numSeats: number;
   readonly goingToCollege: boolean;
-  readonly price: number;
+  //readonly price: number;
   readonly scheduledTime: Date;
   readonly car: Car;
   readonly description?: string;

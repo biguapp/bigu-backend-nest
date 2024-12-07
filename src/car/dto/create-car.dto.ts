@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, Length } from 'class-validator';
+import { IsString, IsOptional, Length, IsNumber } from 'class-validator';
 
 export class CreateCarDto {
   
@@ -15,6 +15,10 @@ export class CreateCarDto {
   @IsOptional()
   @IsString()
   readonly modelYear?: string;
+
+  @ApiProperty({ description: 'Consumo médio (km/l)', example: '16'})
+  @IsNumber()
+  readonly avgConsumption: number;
 
   @ApiProperty({ description: 'Cor do carro', example: 'Preto' })
   @IsString()

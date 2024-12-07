@@ -38,10 +38,10 @@ export class CreateRideDto {
   @IsBoolean()
   readonly goingToCollege: boolean;
 
-  @ApiProperty({ description: 'Preço da carona', example: 20.0 })
+/*  @ApiProperty({ description: 'Preço da carona', example: 20.0 })
   @IsNumber()
   readonly price: number;
-
+*/
   @ApiProperty({
     description: 'Data e hora agendadas para a carona',
     example: '2024-09-10T15:30:00Z',

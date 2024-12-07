@@ -748,7 +748,7 @@ export class RideController {
     @Req() req,
     @Param('rideId') rideId,
     @Param('candidateId') candidateId,
-    @Body() body: { status: string },
+    @Body() body: { status: string, freeRide: boolean },
     @Res() response,
   ) {
     try {
@@ -758,6 +758,7 @@ export class RideController {
         rideId,
         candidateId,
         body.status,
+        body.freeRide,
       );
 
       return response.status(HttpStatus.OK).json({

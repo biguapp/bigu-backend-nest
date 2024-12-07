@@ -14,4 +14,10 @@ export class MemberResponseDto {
   })
   @IsString()
   readonly address: string;
+
+  @ApiProperty({
+    description: 'Final price for the ride',
+  })
+  @IsString()
+  readonly agreedValue: number;
 }
