@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CarResponseDto {
 
@@ -18,6 +18,10 @@ export class CarResponseDto {
     @ApiProperty({ description: 'Cor do carro', example: 'Preto' })
     @IsString()
     readonly color: string;
+
+    @ApiProperty({ description: 'Consumo médio (km/l)', example: '16'})
+    @IsNumber()
+    readonly avgConsumption: number;
   
     @ApiProperty({ description: 'Placa do carro', example: 'KGU7E07' })
     @IsString()
