@@ -734,7 +734,7 @@ export class RideController {
   @ApiOperation({ summary: 'Recusar ou aceitar candidato para a carona.' })
   @ApiResponse({
     status: 200,
-    description: 'Candidato recusado ou aceitado com sucesso.',
+    description: 'Candidato recusado ou aceito com sucesso.',
   })
   @ApiResponse({
     status: 404,
