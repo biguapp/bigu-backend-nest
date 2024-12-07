@@ -5,6 +5,7 @@ export interface Car extends Document {
   readonly brand: string;
   readonly carModel: string;
   readonly modelYear?: string;
+  readonly avgConsumption: number;
   readonly color: string;
   readonly plate: string;
   readonly user: string
