@@ -1,15 +1,20 @@
-import { Schema, Document } from 'mongoose';
+import { Schema, Document, model } from 'mongoose';
 
-export interface ChatDocument extends Document {
-  rideId: string;
-  userId: string;
+export const ChatSchema = new Schema(
+  {
+    senderId: { type: String, required: true },
+    recipientId: { type: String, required: true },
+    message: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+  },
+  { timestamps: true } 
+);
+
+export interface ChatMessage extends Document {
+  senderId: string;
+  recipientId: string;
   message: string;
   timestamp: Date;
 }
 
-export const ChatSchema = new Schema({
-  rideId: { type: String, required: true },
-  userId: { type: String, required: true },
-  message: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now },
-});
+export const ChatMessageModel = model<ChatMessage>('ChatMessage', ChatSchema);

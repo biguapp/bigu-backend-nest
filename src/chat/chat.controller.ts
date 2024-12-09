@@ -1,55 +1,37 @@
-import { Controller, Post, Get, Body, Query} from '@nestjs/common';
+import { Controller, Post, Get, Body, Query } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { RideService } from '@src/ride/ride.service';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService,  private readonly rideService: RideService
-  ) {}
+  constructor(private readonly chatService: ChatService) {}
 
   @Post('send')
   async sendMessage(
-    @Body('rideId') rideId: string,
-    @Body('userId') userId: string,
+    @Body('senderId') senderId: string,
+    @Body('recipientId') recipientId: string,
     @Body('message') message: string,
   ) {
-    const ride = await this.rideService.findOne(rideId);
-
-    const isAuthorized =
-    ride.driver._id.toString() === userId ||
-    ride.members?.some((member) => member.user._id.toString() === userId);
-
-    console.log(
-      `Authorization check for user ${userId} in ride ${rideId}:`,
-      isAuthorized,
-    );
-
-    if (isAuthorized){
-      await this.chatService.saveMessage(rideId, userId, message);
-      return { status: 'Message sent' };
-    }
+    const savedMessage = await this.chatService.saveMessage(senderId, recipientId, message);
+    return { status: 'Message sent', message: savedMessage };
   }
 
-
-  @Get('poll')
-  async pollMessages(
-    @Query('rideId') rideId: string,
-    @Query('lastTimestamp') lastTimestamp: string,
+  @Get('messages')
+  async getMessages(
+    @Query('userId') userId: string,
+    @Query('otherUserId') otherUserId: string,
   ) {
-    console.log('Received rideId:', rideId);
-    console.log('Received lastTimestamp:', lastTimestamp);
-
-    const forcedTimestamp = new Date(lastTimestamp.trim());
-    console.log('Forced timestamp:', forcedTimestamp);
-    
-    const parsedTimestamp = Date.parse(lastTimestamp);
-    console.log('Parsed timestamp (Date.parse):', parsedTimestamp);
-
-
-    const messages = await this.chatService.getMessagesAfter(rideId, new Date(forcedTimestamp));
+    const messages = await this.chatService.getMessages(userId, otherUserId);
     return { messages };
   }
 
-  
-  
+  @Get('poll')
+  async pollMessages(
+    @Query('userId') userId: string,
+    @Query('otherUserId') otherUserId: string,
+    @Query('lastTimestamp') lastTimestamp: string,
+  ) {
+    const timestamp = new Date(lastTimestamp.trim());
+    const messages = await this.chatService.getMessagesAfter(userId, otherUserId, timestamp);
+    return { messages };
+  }
 }
