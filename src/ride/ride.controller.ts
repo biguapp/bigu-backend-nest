@@ -293,6 +293,7 @@ export class RideController {
       const availableRides = await Promise.all(
         rides.map((ride) => ride.toDTO()),
       );
+
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas disponíveis foram retornadas.',
 

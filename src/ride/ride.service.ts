@@ -1,20 +1,19 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { toZonedTime } from 'date-fns-tz';
 import { Model, Types } from 'mongoose';
+import { MailjetService } from 'nest-mailjet';
+import { UserService } from '../user/user.service';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideDto } from './dto/update-ride.dto';
-import { Ride } from './interfaces/ride.interface';
-import { UserService } from '../user/user.service';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
-import { MailjetService } from 'nest-mailjet';
-import { toZonedTime } from 'date-fns-tz';
+import { Ride } from './interfaces/ride.interface';
 
 @Injectable()
 export class RideService {
@@ -46,7 +45,7 @@ export class RideService {
     }
 
 
-    const scheduledDate  = new Date(createRideDto.scheduledTime);
+    const scheduledDate = new Date(createRideDto.scheduledTime);
 
     const timeZone = 'America/Sao_Paulo';
     const zonedDate = toZonedTime(scheduledDate, timeZone);
@@ -85,7 +84,7 @@ export class RideService {
     limit: number = 10,
   ): Promise<any> {
     const skip = (page - 1) * limit;
-    const rides = this.rideModel.find(filter).skip(skip).limit(limit).exec();
+    const rides = await this.rideModel.find(filter).skip(skip).limit(limit).exec();
     const totalPages = await this.rideModel.countDocuments(filter).exec();
 
     return { totalPages, page, pageSize: limit, rides };

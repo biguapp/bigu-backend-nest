@@ -5,16 +5,17 @@ import { ChatDocument } from './schemas/chat.schema';
 
 @Injectable()
 export class ChatService {
-  constructor(@InjectModel('Chat') private readonly chatModel: Model<ChatDocument>) {}
+  constructor(@InjectModel('Chat') private readonly chatModel: Model<ChatDocument>) { }
 
   async saveMessage(rideId: string, userId: string, message: string) {
     const chat = new this.chatModel({ rideId, userId, message, timestamp: new Date() });
     return chat.save();
   }
 
-  async getMessagesAfter(rideId: string, timestamp: Date) {
+  async getMessagesAfter(rideId: string, timestamp: string) {
     return this.chatModel
       .find({ rideId, timestamp: { $gt: timestamp } })
+      .populate('userId', 'name')
       .sort({ timestamp: 1 })
       .exec();
   }

@@ -1,4 +1,4 @@
-import { Schema, Document } from 'mongoose';
+import { Document, Schema } from 'mongoose';
 
 export interface ChatDocument extends Document {
   rideId: string;
@@ -8,8 +8,8 @@ export interface ChatDocument extends Document {
 }
 
 export const ChatSchema = new Schema({
-  rideId: { type: String, required: true },
-  userId: { type: String, required: true },
+  rideId: { type: String, required: true, ref: 'Ride' },
+  userId: { type: String, required: true, ref: 'User' },
   message: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
 });

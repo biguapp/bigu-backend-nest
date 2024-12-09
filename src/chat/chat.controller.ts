@@ -1,11 +1,11 @@
-import { Controller, Post, Get, Body, Query} from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { RideService } from '@src/ride/ride.service';
+import { ChatService } from './chat.service';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService,  private readonly rideService: RideService
-  ) {}
+  constructor(private readonly chatService: ChatService, private readonly rideService: RideService
+  ) { }
 
   @Post('send')
   async sendMessage(
@@ -16,15 +16,15 @@ export class ChatController {
     const ride = await this.rideService.findOne(rideId);
 
     const isAuthorized =
-    ride.driver._id.toString() === userId ||
-    ride.members?.some((member) => member.user._id.toString() === userId);
+      ride.driver._id.toString() === userId ||
+      ride.members?.some((member) => member.user._id.toString() === userId);
 
     console.log(
       `Authorization check for user ${userId} in ride ${rideId}:`,
       isAuthorized,
     );
 
-    if (isAuthorized){
+    if (isAuthorized) {
       await this.chatService.saveMessage(rideId, userId, message);
       return { status: 'Message sent' };
     }
@@ -36,20 +36,11 @@ export class ChatController {
     @Query('rideId') rideId: string,
     @Query('lastTimestamp') lastTimestamp: string,
   ) {
-    console.log('Received rideId:', rideId);
-    console.log('Received lastTimestamp:', lastTimestamp);
 
-    const forcedTimestamp = new Date(lastTimestamp.trim());
-    console.log('Forced timestamp:', forcedTimestamp);
-    
-    const parsedTimestamp = Date.parse(lastTimestamp);
-    console.log('Parsed timestamp (Date.parse):', parsedTimestamp);
-
-
-    const messages = await this.chatService.getMessagesAfter(rideId, new Date(forcedTimestamp));
+    const messages = await this.chatService.getMessagesAfter(rideId, lastTimestamp);
     return { messages };
   }
 
-  
-  
+
+
 }
