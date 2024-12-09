@@ -8,6 +8,9 @@ export class Candidate {
 
   @Prop({ type: Types.ObjectId, ref: 'Address' })
   address: Types.ObjectId;
+
+  @Prop({ required: true, ref: 'Suggested Value' })
+  suggestedValue: number;
 }
 
 export const CandidateSchema = SchemaFactory.createForClass(Candidate);

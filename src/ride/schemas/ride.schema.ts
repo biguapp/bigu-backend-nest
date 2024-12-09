@@ -29,9 +29,9 @@ export class Ride extends Document {
   @Prop({ required: true })
   goingToCollege: boolean;
 
-  @Prop({ required: true })
+  /*@Prop({ required: true })
   price: number;
-
+  */
   @Prop()
   scheduledTime: Date;
 
@@ -99,7 +99,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
     destinationAddress: destinationAddress.toDTO(),
     numSeats: this.numSeats,
     goingToCollege: this.goingToCollege,
-    price: this.price,
+    //price: this.price,
     scheduledTime: this.scheduledTime.toLocaleString(),
     car: car.toDTO(),
     description: this.description,

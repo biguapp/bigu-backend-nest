@@ -31,6 +31,9 @@ export class Address extends Document {
 
   @Prop()
   user: string;
+
+  @Prop({ required: true })
+  distance: number;
 }
 
 export const AddressSchema = SchemaFactory.createForClass(Address);
@@ -44,6 +47,7 @@ AddressSchema.methods.toDTO = function (): AddressResponseDto {
     numero: this.numero,
     bairro: this.bairro,
     estado: this.estado,
-    addressId: this.id
+    addressId: this.id,
+    distance: this.distance
   };
 };

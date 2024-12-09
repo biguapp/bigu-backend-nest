@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, Length } from 'class-validator';
+import { IsString, IsOptional, Length, IsNumber } from 'class-validator';
 
 export class AddressResponseDto {
   @ApiProperty({ description: 'Nome da rua', example: 'Avenida Paulista' })
@@ -39,4 +39,16 @@ export class AddressResponseDto {
   @ApiProperty({ description: 'CEP do endereço', example: '58417-191' })
   @IsString()
   readonly cep: string;
+
+  /*@ApiProperty({ description: 'Distância de ida para a UFCG em km', example: '2.15' })
+  @IsNumber()
+  readonly outwardDistance: number;
+
+  @ApiProperty({ description: 'Distância de volta da UFCG em km', example: '2.15' })
+  @IsNumber()
+  readonly returnDistance: number;*/
+
+  @ApiProperty({ description: 'Distância entre o endereço e a UFCG em km', example: '2.150' })
+  @IsNumber()
+  readonly distance: number;
 }
