@@ -416,7 +416,7 @@ export class RideService {
         );
 
         rideCandidates.splice(idx, 1);
-        this.candidateModel.deleteOne(candidate._id);
+        this.candidateModel.findByIdAndDelete(candidateId);
         const newRide = await this.update(rideId, {
           ...ride,
           candidates: rideCandidates,
