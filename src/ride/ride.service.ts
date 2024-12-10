@@ -104,11 +104,29 @@ export class RideService {
     page: number = 1,
     limit: number = 10,
   ): Promise<any> {
-    const skip = (page - 1) * limit;
-    const rides = await this.rideModel.find(filter).skip(skip).limit(limit).exec();
-    const totalPages = await this.rideModel.countDocuments(filter).exec();
+    let parameterPage, parameterLimit;
+    if (Number.isNaN(page) || page === null) {
+      parameterPage = 1;
+    } else {
+      parameterPage = page;
+    }
 
-    return { totalPages, page, pageSize: limit, rides };
+    if (Number.isNaN(limit) || limit === null) {
+      parameterLimit = 10;
+    } else {
+      parameterLimit = limit;
+    }
+    const skip = (parameterPage - 1) * parameterLimit;
+    const rides = await this.rideModel
+      .find(filter)
+      .skip(skip)
+      .limit(parameterLimit)
+      .exec();
+    const totalPages =
+      Math.floor(
+        (await this.rideModel.countDocuments(filter).exec()) / parameterLimit,
+      ) + 1;
+    return { totalPages, parameterPage, pageSize: parameterLimit, rides };
   }
 
   async findOne(id: string): Promise<Ride> {
@@ -448,8 +466,6 @@ export class RideService {
           '[BIGUAPP] Solicitação rejeitada!',
           'Procure outro bigu!',
         );
-
-        
 
         return (
           await this.update(rideId, {
