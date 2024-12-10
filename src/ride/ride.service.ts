@@ -105,7 +105,7 @@ export class RideService {
     limit: number = 10,
   ): Promise<any> {
     const skip = (page - 1) * limit;
-    const rides = this.rideModel.find(filter).skip(skip).limit(limit).exec();
+    const rides = await this.rideModel.find(filter).skip(skip).limit(limit).exec();
     const totalPages = await this.rideModel.countDocuments(filter).exec();
 
     return { totalPages, page, pageSize: limit, rides };
