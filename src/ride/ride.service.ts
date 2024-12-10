@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { toZonedTime } from 'date-fns-tz';
@@ -15,8 +15,8 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { Ride } from './interfaces/ride.interface';
-import { CarService } from '@src/car/car.service';
 import { Car } from '@src/car/schemas/car.schema';
+import { Candidate as CandidateSchema } from './schemas/candidate.schema';
 
 @Injectable()
 export class RideService {
@@ -28,7 +28,7 @@ export class RideService {
     private readonly userService: UserService,
     private readonly adressService: AddressService,
     private readonly mailjetService: MailjetService,
-  ) { }
+  ) {}
 
   // Criação de uma nova carona
   // 66e093bfe2323b4802da45c3 - ENTRADA PRINCIPAL
@@ -49,8 +49,7 @@ export class RideService {
       );
     }
 
-
-    const scheduledDate  = new Date(createRideDto.scheduledTime);
+    const scheduledDate = new Date(createRideDto.scheduledTime);
 
     const timeZone = 'America/Sao_Paulo';
     const zonedDate = toZonedTime(scheduledDate, timeZone);
@@ -122,7 +121,7 @@ export class RideService {
   }
 
   async findOneCandidate(id: string): Promise<Candidate> {
-    const candidate = await this.candidateModel.findById(id)
+    const candidate = await this.candidateModel.findById(id);
 
     if (!candidate) {
       throw new NotFoundException(`Candidato com ID ${id} não foi encontrado.`);
@@ -131,18 +130,17 @@ export class RideService {
     return candidate;
   }
 
-
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
-
     let zonedDate;
     if (updateRideDto.scheduledTime) {
       const date = new Date(updateRideDto.scheduledTime);
       const timeZone = 'America/Sao_Paulo';
       zonedDate = toZonedTime(date, timeZone);
       if (zonedDate < new Date() && !updateRideDto.isOver) {
-        throw new BadRequestException('A data agendada não pode ser no passado.');
+        throw new BadRequestException(
+          'A data agendada não pode ser no passado.',
+        );
       }
-
     }
 
     const ride = {
@@ -151,8 +149,7 @@ export class RideService {
       startAddress: new Types.ObjectId(updateRideDto.startAddress),
       destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
       car: new Types.ObjectId(updateRideDto.car),
-      ...(zonedDate && { scheduledTime: zonedDate })
-
+      ...(zonedDate && { scheduledTime: zonedDate }),
     };
 
     const updatedRide = await this.rideModel.findByIdAndUpdate(id, ride, {
@@ -253,7 +250,9 @@ export class RideService {
     const driver = ride.driver.toString();
 
     if (driver !== userId) {
-      throw new BadRequestException('Somente o motorista pode encerrar a carona.');
+      throw new BadRequestException(
+        'Somente o motorista pode encerrar a carona.',
+      );
     }
 
     if (ride.isOver) {
@@ -263,7 +262,7 @@ export class RideService {
     const updatedRide = {
       ...ride._doc,
       isOver: true,
-    }
+    };
 
     const returnedRide = await this.update(rideId, updatedRide);
     await this.userService.updateRideCount(driver, true);
@@ -278,14 +277,20 @@ export class RideService {
   async addRatingToRide(
     rideId: string,
     ratingId: string,
-    { raterId, rateeId, score }: { raterId: string, rateeId: string, score: number },
+    {
+      raterId,
+      rateeId,
+      score,
+    }: { raterId: string; rateeId: string; score: number },
   ): Promise<void> {
     const ride = await this.rideModel.findById(rideId).exec();
     if (!ride) {
       throw new NotFoundException('Carona não encontrada.');
     }
     if (!ride.isOver) {
-      throw new BadRequestException('Avaliações só podem ser feitas após o término da carona.');
+      throw new BadRequestException(
+        'Avaliações só podem ser feitas após o término da carona.',
+      );
     }
 
     /*const alreadyRated = 
@@ -314,7 +319,7 @@ export class RideService {
 
     const ride = await this.rideModel.findById(rideIdObj);
     const user = await this.userService.findOne(userId);
-    const car = await this.carModel.findById(ride.car)
+    const car = await this.carModel.findById(ride.car);
     const rideCandidates = ride.candidates || [];
     const userIdObj = new Types.ObjectId(userId);
 
@@ -345,18 +350,23 @@ export class RideService {
     if (ride.members.length === ride.numSeats) {
       throw new BadRequestException('Essa carona já está cheia.');
     }
-  
+
     const distance = await this.adressService.getDistance(addressId);
-    console.log(distance)
     const avgConsumption = car.avgConsumption;
-    console.log(avgConsumption)
-    const suggestedValue = parseFloat((6.15 * distance / avgConsumption).toFixed(2));
-    console.log(suggestedValue)
-    rideCandidates.push({
+    const suggestedValue = parseFloat(
+      ((6.15 * distance) / avgConsumption).toFixed(2),
+    );
+    const candidate = {
       user: userIdObj,
       address: addressIdObj,
       suggestedValue: suggestedValue,
-    } as Candidate);
+    };
+    try {
+      const candidateCreated = await this.candidateModel.create(candidate);
+      rideCandidates.push(candidateCreated);
+    } catch (error) {
+      throw new InternalServerErrorException(`Erro ao criar um candidato.`);
+    }
 
     // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
     await this.sendEmail(
@@ -365,12 +375,17 @@ export class RideService {
       'Nova solicitação de bigu!',
     );
 
-    const updateRideDto: any = { ...ride, candidates: rideCandidates }
+    const updateRideDto: any = { ...ride, candidates: rideCandidates };
 
     return await this.update(rideId, updateRideDto);
   }
 
-  async acceptCandidate(driverId: string, rideId: string, candidateId: string, freeRide: boolean) {
+  async acceptCandidate(
+    driverId: string,
+    rideId: string,
+    candidateId: string,
+    freeRide: boolean,
+  ) {
     const ride: any = await this.findOne(rideId);
     const candidateObjId = new Types.ObjectId(candidateId);
     const rideCandidates = ride.candidates;
@@ -384,12 +399,12 @@ export class RideService {
         ).address;
         const idx = rideCandidatesId.indexOf(candidateId);
         const candidate = await this.findOneCandidate(candidateId);
-        const aggreedValue = freeRide ? 0 : candidate.suggestedValue
+        const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
         const member = new this.memberModel({
           user: candidateObjId,
           address: addressIdObj,
           aggreedValue: aggreedValue,
-        });
+        }).save();
         ride.members.push(member);
         const newMembers = ride.members;
 
@@ -401,13 +416,13 @@ export class RideService {
         );
 
         rideCandidates.splice(idx, 1);
+        this.candidateModel.deleteOne(candidate._id);
         const newRide = await this.update(rideId, {
           ...ride,
           candidates: rideCandidates,
           members: newMembers,
         });
         return newRide.toDTO();
-
       } else throw new NotFoundException('Candidato não encontrado.');
     } else throw new NotFoundException('Corrida não encontrada.');
   }
@@ -426,13 +441,15 @@ export class RideService {
       if (rideCandidatesId.includes(candidateId)) {
         const idx = rideCandidatesId.indexOf(candidateId);
         rideCandidates.splice(idx, 1);
-
+        this.candidateModel.findByIdAndDelete(candidateId);
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
         await this.sendEmail(
           (await this.userService.findOne(ride.driver.toString())).email,
           '[BIGUAPP] Solicitação rejeitada!',
           'Procure outro bigu!',
         );
+
+        
 
         return (
           await this.update(rideId, {
@@ -454,7 +471,12 @@ export class RideService {
     if (status === 'declined') {
       return await this.declineCandidate(driverId, rideId, candidateId);
     } else {
-      return await this.acceptCandidate(driverId, rideId, candidateId, freeRide);
+      return await this.acceptCandidate(
+        driverId,
+        rideId,
+        candidateId,
+        freeRide,
+      );
     }
   }
 
@@ -466,7 +488,7 @@ export class RideService {
       if (rideMembersId.includes(memberId)) {
         const idx = rideMembersId.indexOf(memberId);
         rideMembers.splice(idx, 1);
-
+        this.memberModel.findByIdAndDelete(memberId);
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
         await this.sendEmail(
           (await this.userService.findOne(ride.driver.toString())).email,
