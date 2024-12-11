@@ -419,7 +419,7 @@ export class RideService {
         const candidate = await this.findOneCandidate(candidateId);
         const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
         const member = new this.memberModel({
-          user: candidateObjId,
+          user: candidate.user,
           address: addressIdObj,
           aggreedValue: aggreedValue,
         }).save();
