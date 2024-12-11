@@ -29,9 +29,9 @@ export class Ride extends Document {
   @Prop({ required: true })
   goingToCollege: boolean;
 
-  @Prop({ required: true })
+  /*@Prop({ required: true })
   price: number;
-
+  */
   @Prop()
   scheduledTime: Date;
 
@@ -69,7 +69,8 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
 
       return {
         user: user ? user.toDTO() : null,
-        address: address ? address.toDTO() : null
+        address: address ? address.toDTO() : null,
+        aggreedValue: member.aggreedValue
       };
     })
   );
@@ -82,7 +83,8 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
 
       return {
         user: user ? user.toDTO() : null, // Certifique-se de que toDTO está definido em User
-        address: address ? address.toDTO() : null // Certifique-se de que toDTO está definido em Address
+        address: address ? address.toDTO() : null, // Certifique-se de que toDTO está definido em Address
+        suggestedValue: candidate.suggestedValue
       };
     })
   );
@@ -99,7 +101,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
     destinationAddress: destinationAddress.toDTO(),
     numSeats: this.numSeats,
     goingToCollege: this.goingToCollege,
-    price: this.price,
+    //price: this.price,
     scheduledTime: this.scheduledTime.toLocaleString(),
     vehicle: vehicle.toDTO(),
     description: this.description,

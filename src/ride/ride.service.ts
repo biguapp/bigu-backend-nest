@@ -2,11 +2,12 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException,,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { toZonedTime } from 'date-fns-tz';
 import { Model, Types } from 'mongoose';
+import { AddressService } from '../address/address.service';
 import { MailjetService } from 'nest-mailjet';
 import { UserService } from '../user/user.service';
 import { CreateRideDto } from './dto/create-ride.dto';
@@ -24,6 +25,7 @@ export class RideService {
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
     private readonly userService: UserService,
+    private readonly adressService: AddressService,
     private readonly mailjetService: MailjetService,
     private readonly vehicleService: VehicleService,
   ) {}
@@ -57,6 +59,7 @@ export class RideService {
       );
     }
 
+    const scheduledDate = new Date(createRideDto.scheduledTime);
     const scheduledDate = new Date(createRideDto.scheduledTime);
 
     const timeZone = 'America/Sao_Paulo';
@@ -112,11 +115,29 @@ export class RideService {
     page: number = 1,
     limit: number = 10,
   ): Promise<any> {
-    const skip = (page - 1) * limit;
-    const rides = this.rideModel.find(filter).skip(skip).limit(limit).exec();
-    const totalPages = await this.rideModel.countDocuments(filter).exec();
+    let parameterPage, parameterLimit;
+    if (Number.isNaN(page) || page === null) {
+      parameterPage = 1;
+    } else {
+      parameterPage = page;
+    }
 
-    return { totalPages, page, pageSize: limit, rides };
+    if (Number.isNaN(limit) || limit === null) {
+      parameterLimit = 10;
+    } else {
+      parameterLimit = limit;
+    }
+    const skip = (parameterPage - 1) * parameterLimit;
+    const rides = await this.rideModel
+      .find(filter)
+      .skip(skip)
+      .limit(parameterLimit)
+      .exec();
+    const totalPages =
+      Math.floor(
+        (await this.rideModel.countDocuments(filter).exec()) / parameterLimit,
+      ) + 1;
+    return { totalPages, parameterPage, pageSize: parameterLimit, rides };
   }
 
   async findOne(id: string): Promise<Ride> {
@@ -128,6 +149,17 @@ export class RideService {
     }
 
     return ride;
+  }
+
+
+  async findOneCandidate(id: string): Promise<Candidate> {
+    const candidate = await this.candidateModel.findById(id);
+
+    if (!candidate) {
+      throw new NotFoundException(`Candidato com ID ${id} não foi encontrado.`);
+    }
+
+    return candidate;
   }
 
   async update(id: string, updateRideDto: UpdateRideDto): Promise<Ride> {
@@ -213,14 +245,26 @@ export class RideService {
 
   async getUserHistory(userId: string) {
     const objId = new Types.ObjectId(userId);
-    const userRides = await this.rideModel
+    return await this.rideModel
       .find({
-        $or: [{ driver: objId }, { members: objId }],
-        $and: [{ isOver: true }],
+        $or: [
+          { driver: objId },
+          { members: objId },
+          { candidates: { $elemMatch: { user: objId } } },
+        ],
       })
       .exec();
-    return userRides;
   }
+  // async getUserHistory(userId: string) {
+  //   const objId = new Types.ObjectId(userId);
+  //   const userRides = await this.rideModel
+  //     .find({
+  //       $or: [{ driver: objId }, { members: objId }],
+  //       $and: [{ isOver: true }],
+  //     })
+  //     .exec();
+  //   return userRides;
+  // }
 
   async getDriverActiveRides(userId: string) {
     const objId = new Types.ObjectId(userId);
@@ -318,6 +362,7 @@ export class RideService {
 
     const ride = await this.rideModel.findById(rideIdObj);
     const user = await this.userService.findOne(userId);
+    const car = await this.carModel.findById(ride.car);
     const rideCandidates = ride.candidates || [];
     const userIdObj = new Types.ObjectId(userId);
 
@@ -349,10 +394,22 @@ export class RideService {
       throw new BadRequestException('Essa carona já está cheia.');
     }
 
-    rideCandidates.push({
+    const distance = await this.adressService.getDistance(addressId);
+    const avgConsumption = car.avgConsumption;
+    const suggestedValue = parseFloat(
+      ((6.15 * distance) / avgConsumption).toFixed(2),
+    );
+    const candidate = {
       user: userIdObj,
       address: addressIdObj,
-    } as Candidate);
+      suggestedValue: suggestedValue,
+    };
+    try {
+      const candidateCreated = await this.candidateModel.create(candidate);
+      rideCandidates.push(candidateCreated);
+    } catch (error) {
+      throw new InternalServerErrorException(`Erro ao criar um candidato.`);
+    }
 
     // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
     await this.sendEmail(
@@ -366,9 +423,13 @@ export class RideService {
     return await this.update(rideId, updateRideDto);
   }
 
-  async acceptCandidate(driverId: string, rideId: string, candidateId: string) {
+  async acceptCandidate(
+    driverId: string,
+    rideId: string,
+    candidateId: string,
+    freeRide: boolean,
+  ) {
     const ride: any = await this.findOne(rideId);
-    const candidateObjId = new Types.ObjectId(candidateId);
     const rideCandidates = ride.candidates;
     const rideCandidatesId = rideCandidates.map((candidate) =>
       candidate.user.toString(),
@@ -379,11 +440,15 @@ export class RideService {
           (candidate) => candidate.user.toString() === candidateId,
         ).address;
         const idx = rideCandidatesId.indexOf(candidateId);
-        const member = new this.memberModel({
-          user: candidateObjId,
+        const candidate = rideCandidates.filter(candidate => candidate.user.toString() ===  candidateId)[0];
+        const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
+        const member = {
+          user: candidate.user,
           address: addressIdObj,
-        });
-        ride.members.push(member);
+          aggreedValue: aggreedValue,
+        }
+        const memberCreated = await this.memberModel.create(member);
+        ride.members.push(memberCreated);
         const newMembers = ride.members;
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
@@ -394,6 +459,7 @@ export class RideService {
         );
 
         rideCandidates.splice(idx, 1);
+        this.candidateModel.findByIdAndDelete(candidateId);
         const newRide = await this.update(rideId, {
           ...ride,
           candidates: rideCandidates,
@@ -418,7 +484,7 @@ export class RideService {
       if (rideCandidatesId.includes(candidateId)) {
         const idx = rideCandidatesId.indexOf(candidateId);
         rideCandidates.splice(idx, 1);
-
+        this.candidateModel.findByIdAndDelete(candidateId);
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
         await this.sendEmail(
           (await this.userService.findOne(ride.driver.toString())).email,
@@ -441,11 +507,17 @@ export class RideService {
     rideId: string,
     candidateId: string,
     status: string,
+    freeRide: boolean,
   ) {
     if (status === 'declined') {
       return await this.declineCandidate(driverId, rideId, candidateId);
     } else {
-      return await this.acceptCandidate(driverId, rideId, candidateId);
+      return await this.acceptCandidate(
+        driverId,
+        rideId,
+        candidateId,
+        freeRide,
+      );
     }
   }
 
@@ -457,7 +529,7 @@ export class RideService {
       if (rideMembersId.includes(memberId)) {
         const idx = rideMembersId.indexOf(memberId);
         rideMembers.splice(idx, 1);
-
+        this.memberModel.findByIdAndDelete(memberId);
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
         await this.sendEmail(
           (await this.userService.findOne(ride.driver.toString())).email,

@@ -13,7 +13,7 @@ import {
   Query,
   Req,
   Res,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -26,7 +26,7 @@ import { RideService } from './ride.service';
 @ApiTags('rides')
 @Controller('rides')
 export class RideController {
-  constructor(private readonly rideService: RideService) { }
+  constructor(private readonly rideService: RideService) {}
 
   //refatorado
   @UseGuards(JwtAuthGuard)
@@ -172,7 +172,6 @@ export class RideController {
     } catch (error) {
       console.error('Erro ao atualizar a carona: ', error);
 
-
       if (error instanceof NotFoundException) {
         return response.status(HttpStatus.NOT_FOUND).json({
           message: error.message || 'A carona não foi encontrada.',
@@ -240,9 +239,10 @@ export class RideController {
   })
   async getActiveRides(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const activeRidesModel = await this.rideService.findAll({ isOver: false });
+      const activeRidesModel = await this.rideService.findAll({
+        isOver: false,
+      });
       const rides = await Promise.all(
-
         activeRidesModel.map((ride) => ride.toDTO()),
       );
 
@@ -280,7 +280,7 @@ export class RideController {
     @Res() response,
   ): Promise<RideResponseDto[]> {
     try {
-      const { rides, totalPages, pageSize } =
+      const { totalPages, actualPage, pageSize, rides } =
         await this.rideService.findAllPaging(
           {
             isOver: false,
@@ -295,10 +295,9 @@ export class RideController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Todas as caronas disponíveis foram retornadas.',
-
         availableRides,
         totalPages, // Número total de caronas disponíveis
-        page, // Página atual
+        actualPage, // Página atual
         pageSize, // Tamanho da página (número de caronas por página)
       });
     } catch (error) {
@@ -327,7 +326,10 @@ export class RideController {
   })
   async getActiveRidesToWomen(@Res() response): Promise<RideResponseDto[]> {
     try {
-      const activeRidesToWomenModel = await this.rideService.findAll({ isOver: false, toWomen: true });
+      const activeRidesToWomenModel = await this.rideService.findAll({
+        isOver: false,
+        toWomen: true,
+      });
       const rides = await Promise.all(
         activeRidesToWomenModel.map((ride) => ride.toDTO()),
       );
@@ -367,20 +369,19 @@ export class RideController {
     @Res() response,
   ): Promise<RideResponseDto[]> {
     try {
-
-      const { rides, totalPages, pageSize } = await this.rideService.findAllPaging(
-        {
-          isOver: false,
-          toWomen: true,
-          $expr: { $gt: ['$numSeats', { $size: '$members' }] },
-        },
-        page,
-        limit,
-      );
+      const { rides, totalPages, pageSize } =
+        await this.rideService.findAllPaging(
+          {
+            isOver: false,
+            toWomen: true,
+            $expr: { $gt: ['$numSeats', { $size: '$members' }] },
+          },
+          page,
+          limit,
+        );
 
       const ridesAvailableToWomen = await Promise.all(
         rides.map((ride) => ride.toDTO()),
-
       );
 
       return response.status(HttpStatus.OK).json({
@@ -604,7 +605,8 @@ export class RideController {
   })
   @ApiResponse({
     status: 500,
-    description: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+    description:
+      'Erro ao retornar o histórico do usuário como membro ou motorista.',
   })
   async getOtherUserHistory(
     @Param('id') id: string,
@@ -622,7 +624,8 @@ export class RideController {
       });
     } catch (error) {
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Erro ao retornar o histórico do usuário como membro ou motorista.',
+        message:
+          'Erro ao retornar o histórico do usuário como membro ou motorista.',
         error: error.message || 'Erro interno do servidor',
       });
     }
@@ -734,7 +737,7 @@ export class RideController {
   @ApiOperation({ summary: 'Recusar ou aceitar candidato para a carona.' })
   @ApiResponse({
     status: 200,
-    description: 'Candidato recusado ou aceitado com sucesso.',
+    description: 'Candidato recusado ou aceito com sucesso.',
   })
   @ApiResponse({
     status: 404,
@@ -748,7 +751,7 @@ export class RideController {
     @Req() req,
     @Param('rideId') rideId,
     @Param('candidateId') candidateId,
-    @Body() body: { status: string },
+    @Body() body: { status: string; freeRide: boolean },
     @Res() response,
   ) {
     try {
@@ -758,6 +761,7 @@ export class RideController {
         rideId,
         candidateId,
         body.status,
+        body.freeRide,
       );
 
       return response.status(HttpStatus.OK).json({
@@ -871,7 +875,11 @@ export class RideController {
     status: 500,
     description: 'Erro interno ao deixar carona.',
   })
-  async leaveRide(@Req() req, @Res() response: Response, @Param('rideId') rideId) {
+  async leaveRide(
+    @Req() req,
+    @Res() response: Response,
+    @Param('rideId') rideId,
+  ) {
     try {
       const userId = req.user.sub;
       const updatedRide = await this.rideService.removeMember(

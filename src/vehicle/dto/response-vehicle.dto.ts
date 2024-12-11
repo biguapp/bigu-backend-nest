@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
-import { VehicleType } from '../schemas/vehicle.schema';
+import { IsString, IsOptional, Length, IsNumber } from 'class-validator';
 
-export class VehicleResponseDto {
+export class CreateCarDto {
+  
   @ApiProperty({ description: 'Marca do carro', example: 'Chevrolet' })
   @IsString()
   readonly brand: string;
@@ -13,7 +13,11 @@ export class VehicleResponseDto {
 
   @ApiProperty({ description: 'Ano do carro', example: '2019' })
   @IsString()
-  readonly modelYear: string;
+  readonly modelYear?: string;
+
+  @ApiProperty({ description: 'Consumo médio (km/l)', example: '16'})
+  @IsNumber()
+  readonly avgConsumption: number;
 
   @ApiProperty({ description: 'Cor do carro', example: 'Preto' })
   @IsString()

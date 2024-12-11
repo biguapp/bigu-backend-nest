@@ -10,15 +10,19 @@ import { VehicleModule } from '@src/vehicle/vehicle.module';
 import { Member, MemberSchema } from './schemas/member.schema';
 import { Candidate, CandidateSchema } from './schemas/candidate.schema';
 import { MailjetModule } from 'nest-mailjet';
+import { Car, CarSchema } from '@src/car/schemas/car.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Ride.name, schema: RideSchema }]),
     MongooseModule.forFeature([{ name: Member.name, schema: MemberSchema }]),
+    MongooseModule.forFeature([{ name: Car.name, schema: CarSchema }]),
     MongooseModule.forFeature([
       { name: Candidate.name, schema: CandidateSchema },
     ]),
+    CarModule,
     AuthModule,
+    AddressModule,
     MailjetModule.registerAsync({
       useFactory: () => ({
         apiKey: process.env.MAILJET_API_KEY,

@@ -14,4 +14,10 @@ export class CandidateResponseDto {
   })
   @IsString()
   readonly address: string;
+
+  @ApiProperty({
+    description: 'Suggested price for the ride',
+  })
+  @IsString()
+  readonly suggestedValue: number;
 }
