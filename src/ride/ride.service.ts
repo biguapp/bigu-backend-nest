@@ -405,7 +405,6 @@ export class RideService {
     freeRide: boolean,
   ) {
     const ride: any = await this.findOne(rideId);
-    const candidateObjId = new Types.ObjectId(candidateId);
     const rideCandidates = ride.candidates;
     const rideCandidatesId = rideCandidates.map((candidate) =>
       candidate.user.toString(),
@@ -416,14 +415,15 @@ export class RideService {
           (candidate) => candidate.user.toString() === candidateId,
         ).address;
         const idx = rideCandidatesId.indexOf(candidateId);
-        const candidate = await this.findOneCandidate(candidateId);
+        const candidate = rideCandidates.filter(candidate => candidate.user.toString() ===  candidateId)[0];
         const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
-        const member = new this.memberModel({
+        const member = {
           user: candidate.user,
           address: addressIdObj,
           aggreedValue: aggreedValue,
-        }).save();
-        ride.members.push(member);
+        }
+        const memberCreated = await this.memberModel.create(member);
+        ride.members.push(memberCreated);
         const newMembers = ride.members;
 
         // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
