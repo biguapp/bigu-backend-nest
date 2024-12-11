@@ -13,6 +13,7 @@ import { RatingModule } from './rating/rating.module';
 import { RideModule } from './ride/ride.module';
 import { ConfigModule } from '@nestjs/config';
 import { MailjetModule } from 'nest-mailjet';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MailjetModule } from 'nest-mailjet';
         apiSecret: process.env.MAILJET_API_SECRET,
       }),
     }),
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: RolesGuard }],
