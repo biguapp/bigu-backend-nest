@@ -19,6 +19,9 @@ export class Vehicle extends Document {
   modelYear?: string;
 
   @Prop({ required: true })
+  avgConsumption: number;
+
+  @Prop({ required: true })
   color: string;
 
   @Prop({ required: true })
@@ -38,6 +41,7 @@ VehicleSchema.methods.toDTO = function (): VehicleResponseDto {
     vehicleId: this.id,
     brand: this.brand,
     vehicleModel: this.vehicleModel,
+    avgConsumption: this.avgConsumption,
     plate: this.plate,
     modelYear: this.modelYear,
     color: this.color,

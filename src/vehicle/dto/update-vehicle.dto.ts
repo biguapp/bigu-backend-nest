@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateVehicleDto } from './create-vehicle.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNumber } from 'class-validator';
 
 export class UpdateVehicleDto extends PartialType(CreateVehicleDto) {
   
@@ -14,6 +14,10 @@ export class UpdateVehicleDto extends PartialType(CreateVehicleDto) {
   @IsOptional()
   @IsString()
   readonly vehicleModel?: string;
+
+  @ApiProperty({ description: 'Consumo médio (km/l)', example: '16', required: false })
+  @IsNumber()
+  readonly avgConsumption?: number;
 
   @ApiProperty({ description: 'Ano do veículo', example: '2019', required: false })
   @IsOptional()
