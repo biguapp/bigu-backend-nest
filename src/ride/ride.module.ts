@@ -10,17 +10,17 @@ import { VehicleModule } from '@src/vehicle/vehicle.module';
 import { Member, MemberSchema } from './schemas/member.schema';
 import { Candidate, CandidateSchema } from './schemas/candidate.schema';
 import { MailjetModule } from 'nest-mailjet';
-import { Car, CarSchema } from '@src/car/schemas/car.schema';
+import { Vehicle, VehicleSchema } from '@src/vehicle/schemas/vehicle.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Ride.name, schema: RideSchema }]),
     MongooseModule.forFeature([{ name: Member.name, schema: MemberSchema }]),
-    MongooseModule.forFeature([{ name: Car.name, schema: CarSchema }]),
+    MongooseModule.forFeature([{ name: Vehicle.name, schema: VehicleSchema }]),
     MongooseModule.forFeature([
       { name: Candidate.name, schema: CandidateSchema },
     ]),
-    CarModule,
+    VehicleModule,
     AuthModule,
     AddressModule,
     MailjetModule.registerAsync({

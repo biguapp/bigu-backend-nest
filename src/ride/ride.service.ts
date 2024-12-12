@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { toZonedTime } from 'date-fns-tz';
@@ -16,7 +16,7 @@ import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { Ride } from './interfaces/ride.interface';
 import { VehicleService } from '@src/vehicle/vehicle.service';
-import { VehicleType } from '@src/vehicle/schemas/vehicle.schema';
+import { Vehicle, VehicleType } from '@src/vehicle/schemas/vehicle.schema';
 
 @Injectable()
 export class RideService {
@@ -24,6 +24,7 @@ export class RideService {
     @InjectModel('Ride') private readonly rideModel: Model<Ride>,
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
+    @InjectModel('Vehicle') private readonly vehicleModel: Model<Vehicle>,
     private readonly userService: UserService,
     private readonly adressService: AddressService,
     private readonly mailjetService: MailjetService,
@@ -59,7 +60,6 @@ export class RideService {
       );
     }
 
-    const scheduledDate = new Date(createRideDto.scheduledTime);
     const scheduledDate = new Date(createRideDto.scheduledTime);
 
     const timeZone = 'America/Sao_Paulo';
@@ -362,7 +362,7 @@ export class RideService {
 
     const ride = await this.rideModel.findById(rideIdObj);
     const user = await this.userService.findOne(userId);
-    const car = await this.carModel.findById(ride.car);
+    const vehicle = await this.vehicleModel.findById(ride.vehicle);
     const rideCandidates = ride.candidates || [];
     const userIdObj = new Types.ObjectId(userId);
 
@@ -395,7 +395,7 @@ export class RideService {
     }
 
     const distance = await this.adressService.getDistance(addressId);
-    const avgConsumption = car.avgConsumption;
+    const avgConsumption = vehicle.avgConsumption;
     const suggestedValue = parseFloat(
       ((6.15 * distance) / avgConsumption).toFixed(2),
     );

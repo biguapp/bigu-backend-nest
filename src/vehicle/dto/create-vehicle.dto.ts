@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, Length, IsEnum } from 'class-validator';
+import { IsString, IsOptional, Length, IsEnum, IsNumber } from 'class-validator';
 import { VehicleType } from '../schemas/vehicle.schema';
 
 export class CreateVehicleDto {
@@ -34,4 +34,8 @@ export class CreateVehicleDto {
   @ApiProperty({ description: 'Placa do veículo', example: 'KGU7E07' })
   @IsString()
   readonly plate: string;
+
+  @ApiProperty({ description: 'Consumo médio do veículo', example: 9})
+  @IsNumber()
+  readonly avgConsumption: number;
 }
