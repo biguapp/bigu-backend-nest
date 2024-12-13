@@ -331,6 +331,26 @@ export class RideService {
     await ride.save();
   }
 
+  async addReportToRide(
+    rideId: string,
+    reportId: string,
+    {
+      reporterId
+    }: { reporterId: string; },
+  ): Promise<void> {
+    const ride = await this.rideModel.findById(rideId).exec();
+    if (!ride) {
+      throw new NotFoundException('Carona não encontrada.');
+    }
+    if (ride.driver.toString() === reporterId) {
+      ride.driverRatings.push(reportId);
+    } else {
+      ride.memberRatings.push(reportId);
+    }
+
+    await ride.save();
+  }
+
   async requestRide(userId: string, rideId: string, addressId: string) {
     const rideIdObj = new Types.ObjectId(rideId);
     const addressIdObj = new Types.ObjectId(addressId);

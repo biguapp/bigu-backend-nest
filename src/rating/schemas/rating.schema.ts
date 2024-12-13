@@ -12,7 +12,7 @@ export class Rating extends Document {
   raterId: Types.ObjectId;  // avaliador
 
   @Prop({ required: true })
-  raterName: String;  
+  raterName: string;  
 
   @Prop({ required: true })
   rateeId: Types.ObjectId;  // avaliado
