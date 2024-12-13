@@ -85,12 +85,4 @@ export class RideResponseDto {
   @ApiProperty({ description: 'IDs de avaliações feitas pelos membros'})
   @IsArray()
   readonly memberRatings: string[];
-
-  @ApiProperty({ description: 'IDs de denúncias feitas pelo motorista'})
-  @IsArray()
-  readonly driverReports: string[];
-
-  @ApiProperty({ description: 'IDs de denúncias feitas pelos membros'})
-  @IsArray()
-  readonly memberReports: string[];
 }

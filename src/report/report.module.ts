@@ -4,13 +4,11 @@ import { ReportController } from './report.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReportSchema } from './schemas/report.schema';
 import { AuthModule } from '../auth/auth.module';
-import { RideModule } from '../ride/ride.module';
 import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Report', schema: ReportSchema }]),
-    RideModule,
     UserModule,
     AuthModule,
   ],

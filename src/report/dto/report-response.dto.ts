@@ -9,12 +9,6 @@ export class ReportResponseDto {
     reportId: string;
 
     @ApiProperty({
-        description: 'ID da carona associada à denúncia',
-        example: '60d5ec49f10a2c001b564ece',
-    })
-    rideId: string;
-
-    @ApiProperty({
         description: 'ID de quem está denunciando (motorista ou membro)',
         example: '60d5ec49f10a2c001b564ece',
     })

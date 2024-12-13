@@ -4,15 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateReportDto {
 
     @ApiProperty({
-        description: 'ID da carona associada à denúncia',
-        example: '60d5ec49f10a2c001b564ece',
-    })
-    @IsNotEmpty()
-    @IsString()
-    rideId: string;
-
-    @ApiProperty({
-        description: 'ID de quem está sendo denunciado (motorista ou membro)',
+        description: 'ID de quem está sendo denunciado',
         example: '60d5ec49f10a2c001b564ece',
     })
     @IsNotEmpty()

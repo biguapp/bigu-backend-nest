@@ -6,9 +6,6 @@ import { ReportResponseDto } from '../dto/report-response.dto';
 export class Report extends Document {
 
   @Prop({ required: true })
-  rideId: Types.ObjectId;
-
-  @Prop({ required: true })
   reporterId: Types.ObjectId;  // denunciador
 
   @Prop({ required: true })
@@ -31,7 +28,6 @@ export const ReportSchema = SchemaFactory.createForClass(Report);
 
 ReportSchema.methods.toDTO = function (): ReportResponseDto {
   return {
-    rideId: this.rideId,
     reporterId: this.reporterId,
     reporterName: this.reporterName,
     accusedId: this.accusedId,

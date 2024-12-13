@@ -18,6 +18,7 @@ export interface User extends Document {
   readonly takenRidesCount?: number;
   readonly verificationCode: string;
   readonly isVerified: boolean;
+  readonly reports: string[];
 
   idPhoto?: Buffer;
   documentStatus: 'pending' | 'approved' | 'rejected'; 

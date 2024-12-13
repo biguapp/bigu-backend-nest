@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsArray } from 'class-validator';
 
 export class UserResponseDto {
   @ApiProperty({ description: 'Foto de perfil do usuário' })
@@ -94,4 +94,8 @@ export class UserResponseDto {
   feedbacks: string[];
 
   readonly isVerified: boolean;
+
+  @ApiProperty({ description: 'IDs das denúncias que o usuário recebeu'})
+  @IsArray()
+  readonly reports: string[];
 }
