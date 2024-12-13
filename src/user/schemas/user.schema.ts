@@ -47,7 +47,7 @@ export class User extends Document {
   @Prop({ default: 0 })
   readonly takenRidesCount?: number;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   verificationCode: string;
 
   @Prop( { required: true, default: false})

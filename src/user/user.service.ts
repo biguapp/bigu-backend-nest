@@ -243,12 +243,13 @@ export class UserService {
   }
 
   async addReportToUser(accusedId: string, reportId: string): Promise<void> {
-    const user = await this.userModel.findById(accusedId).exec();
+    const user = await this.findOne(accusedId);
     if (!user) {
       throw new NotFoundException('Usuário não encontrado.');
     }
+    console.log(user);
     user.reports.push(reportId);
-
+    console.log(user);
     await user.save();
   }
 
