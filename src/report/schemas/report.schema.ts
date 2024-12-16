@@ -4,21 +4,23 @@ import { ReportResponseDto } from '../dto/report-response.dto';
 
 @Schema()
 export class Report extends Document {
+  @Prop({ required: true })
+  reporterId: Types.ObjectId; // denunciador
 
   @Prop({ required: true })
-  reporterId: Types.ObjectId;  // denunciador
+  reporterName: string;
 
   @Prop({ required: true })
-  reporterName: string;  
+  reporterSex: string;
 
   @Prop({ required: true })
-  accusedId: Types.ObjectId;  // denunciado
+  accusedId: Types.ObjectId; // denunciado
 
   @Prop()
-  content: string;  // motivo da denúncia
+  content: string; // motivo da denúncia
 
   @Prop()
-  comment?: string;  // comentário opcional
+  comment?: string; // comentário opcional
 
   @Prop({ default: Date.now })
   createdAt: Date;
@@ -30,6 +32,7 @@ ReportSchema.methods.toDTO = function (): ReportResponseDto {
   return {
     reporterId: this.reporterId,
     reporterName: this.reporterName,
+    reporterSex: this.reporterSex,
     accusedId: this.accusedId,
     content: this.content,
     comment: this.comment,

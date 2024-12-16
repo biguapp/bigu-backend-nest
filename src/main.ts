@@ -4,8 +4,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ValidationExceptionFilter } from './filters/validation-exception.filter';
 
-
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -21,9 +19,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Bigu API')
-    .setDescription(
-      'API para aplicativo de caronas universitárias',
-    )
+    .setDescription('API para aplicativo de caronas universitárias')
     .setVersion('0.1')
     .addBearerAuth(
       {
@@ -38,6 +34,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
 
-  await app.listen(3001);
+  await app.listen(3000);
 }
 bootstrap();
