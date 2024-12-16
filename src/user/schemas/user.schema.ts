@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Role } from '../../enums/enum';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { UserResponseDto } from '../dto/response-user.dto';
 
 @Schema()
@@ -47,7 +47,7 @@ export class User extends Document {
   @Prop({ default: 0 })
   readonly takenRidesCount?: number;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   verificationCode: string;
 
   @Prop( { required: true, default: false})
@@ -57,7 +57,10 @@ export class User extends Document {
   documentStatus: 'pending' | 'approved' | 'rejected';
 
   @Prop({ required: false })
-  verificationReason?: string; 
+  verificationReason?: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Report' }] })
+  reports?: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -79,6 +82,7 @@ UserSchema.methods.toDTO = function (): UserResponseDto {
     isVerified: this.isVerified,
     documentStatus: this.documentStatus, 
     verificationReason: this.verificationReason,  
+    reports: this.reports,
   };
 
 };
