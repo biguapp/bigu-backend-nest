@@ -33,10 +33,10 @@ export class RideService {
   ) {}
 
   // Criação de uma nova carona
-  // 66e093bfe2323b4802da45c3 - ENTRADA PRINCIPAL
-  // 66e09414e2323b4802da45c5 - ENTRADA CEEI
-  // 66e09431e2323b4802da45c7 - ENTRADA HUMANAS
-  // 66e09466e2323b4802da45c9 - ENTRADA CCT
+  // 6760f01c72afa9ea7dfc590d - ENTRADA PRINCIPAL
+  // 6760f0c072afa9ea7dfc590e - ENTRADA CEEI
+  // 6760f0ff72afa9ea7dfc5910 - ENTRADA HUMANAS
+  // 6760f12872afa9ea7dfc5911 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
     const driver = await this.userService.findOne(createRideDto.driver);
     const vehicle = await this.vehicleService.findOne(createRideDto.vehicle);
