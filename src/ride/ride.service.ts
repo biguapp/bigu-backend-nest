@@ -77,7 +77,7 @@ export class RideService {
     const driverRides = await this.getDriverActiveRides(createRideDto.driver);
     const driverRidesScheduled = driverRides.filter(
       (ride) =>
-        ride.scheduledTime > new Date(zonedDate.getTime() - 30 * 60000) ||
+        ride.scheduledTime > new Date(zonedDate.getTime() - 30 * 60000) &&
         ride.scheduledTime < new Date(zonedDate.getTime() + 30 * 60000),
     );
 
@@ -253,6 +253,7 @@ export class RideService {
           { members: objId },
           { candidates: { $elemMatch: { user: objId } } },
         ],
+        $and: [{ isOver: true }]
       })
       .exec();
   }

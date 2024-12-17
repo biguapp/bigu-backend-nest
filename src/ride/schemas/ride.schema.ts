@@ -90,7 +90,7 @@ RideSchema.methods.toDTO = async function (): Promise<RideResponseDto> {
   );
   const startAddress = await this.model('Address').findById(this.startAddress).exec();
   const destinationAddress = await this.model('Address').findById(this.destinationAddress).exec();
-  const vehicle = await this.model('Vehicle').findById(this.car).exec();
+  const vehicle = await this.model('Vehicle').findById(this.vehicle).exec();
 
   return {
     rideId: this.id,
