@@ -26,7 +26,8 @@ export class RatingService {
     raterId: string,
   ): Promise<Rating> {
     const raterName = (await this.userService.findOne(raterId)).name;
-    const newRating = { ...createRatingDto, raterId, raterName };
+    const raterSex = (await this.userService.findOne(raterId)).sex;
+    const newRating = { ...createRatingDto, raterId, raterName, raterSex };
     const rating = new this.ratingModel(newRating);
     const { rideId, rateeId, score } = createRatingDto;
     await this.rideService.addRatingToRide(rideId, rating._id.toString(), {

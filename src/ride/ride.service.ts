@@ -18,6 +18,7 @@ import { Ride } from './interfaces/ride.interface';
 import { VehicleService } from '@src/vehicle/vehicle.service';
 import { Vehicle, VehicleType } from '@src/vehicle/schemas/vehicle.schema';
 
+
 @Injectable()
 export class RideService {
   constructor(
@@ -399,13 +400,12 @@ export class RideService {
     const suggestedValue = parseFloat(
       ((6.15 * distance) / avgConsumption).toFixed(2),
     );
-    const candidate = {
-      user: userIdObj,
-      address: addressIdObj,
-      suggestedValue: suggestedValue,
-    };
     try {
-      const candidateCreated = await this.candidateModel.create(candidate);
+      const candidateCreated = await this.candidateModel.create({
+        user: userIdObj,
+        address: addressIdObj,
+        suggestedValue: suggestedValue,
+      });
       rideCandidates.push(candidateCreated);
     } catch (error) {
       throw new InternalServerErrorException(`Erro ao criar um candidato.`);
@@ -426,28 +426,29 @@ export class RideService {
   async acceptCandidate(
     driverId: string,
     rideId: string,
-    candidateId: string,
+    candidateId: string, // O FRONT TA ENVIANDO O ID DO USUARIO, PRECISA ENVIAR O ID DO CANDIDATO
     freeRide: boolean,
   ) {
     const ride: any = await this.findOne(rideId);
     const rideCandidates = ride.candidates;
     const rideCandidatesId = rideCandidates.map((candidate) =>
-      candidate.user.toString(),
+      candidate._id.toString(),
     );
     if (ride.driver.toString() === driverId) {
       if (rideCandidatesId.includes(candidateId)) {
         const addressIdObj = rideCandidates.find(
-          (candidate) => candidate.user.toString() === candidateId,
+          (candidate) => candidate._id.toString() === candidateId,
         ).address;
         const idx = rideCandidatesId.indexOf(candidateId);
-        const candidate = rideCandidates.filter(candidate => candidate.user.toString() ===  candidateId)[0];
+        const candidate = rideCandidates.filter(
+          (candidate) => candidate._id.toString() === candidateId,
+        )[0];
         const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
-        const member = {
+        const memberCreated = await this.memberModel.create({
           user: candidate.user,
           address: addressIdObj,
           aggreedValue: aggreedValue,
-        }
-        const memberCreated = await this.memberModel.create(member);
+        });
         ride.members.push(memberCreated);
         const newMembers = ride.members;
 

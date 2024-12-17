@@ -4,24 +4,26 @@ import { RatingResponseDto } from '../dto/rating-response.dto';
 
 @Schema()
 export class Rating extends Document {
-
   @Prop({ required: true })
   rideId: Types.ObjectId;
 
   @Prop({ required: true })
-  raterId: Types.ObjectId;  // avaliador
+  raterId: Types.ObjectId; // avaliador
 
   @Prop({ required: true })
-  raterName: String;  
+  raterName: string;
 
   @Prop({ required: true })
-  rateeId: Types.ObjectId;  // avaliado
+  raterSex: string;
+
+  @Prop({ required: true })
+  rateeId: Types.ObjectId; // avaliado
 
   @Prop({ required: true, min: 0, max: 5 })
-  score: number;  // nota em estrelas
+  score: number; // nota em estrelas
 
   @Prop()
-  comment?: string;  // comentário opcional
+  comment?: string; // comentário opcional
 
   @Prop({ default: Date.now })
   createdAt: Date;
@@ -34,6 +36,7 @@ RatingSchema.methods.toDTO = function (): RatingResponseDto {
     rideId: this.rideId,
     raterId: this.raterId,
     raterName: this.raterName,
+    raterSex: this.raterSex,
     rateeId: this.rateeId,
     score: this.score,
     comment: this.comment,
