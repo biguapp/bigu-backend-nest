@@ -8,7 +8,7 @@ import { RolesGuard } from './roles/roles.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './user/user.module';
 import { AddressModule } from './address/address.module';
-import { CarModule } from './car/car.module';
+import { VehicleModule } from './vehicle/vehicle.module';
 import { RatingModule } from './rating/rating.module';
 import { ReportModule } from './report/report.module';
 import { RideModule } from './ride/ride.module';
@@ -23,7 +23,7 @@ import { ChatModule } from './chat/chat.module';
     AuthModule,
     JwtModule,
     AddressModule,
-    CarModule,
+    VehicleModule,
     RatingModule,
     ReportModule,
     RideModule,

@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CarController } from './car.controller';
-import { CarService } from './car.service';
+import { VehicleController } from './vehicle.controller';
+import { VehicleService } from './vehicle.service';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-describe('CarController', () => {
-  let controller: CarController;
-  let service: CarService;
+describe('VehicleController', () => {
+  let controller: VehicleController;
+  let service: VehicleService;
 
   const mockAuthService = {
     validateUser: jest.fn().mockResolvedValue(true),
@@ -18,12 +18,12 @@ describe('CarController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CarController],
+      controllers: [VehicleController],
       providers: [
         {
-          provide: CarService,
+          provide: VehicleService,
           useValue: {
-            // Mock methods of CarService as needed
+            // Mock methods of VehicleService as needed
             create: jest.fn(),
             findAll: jest.fn(),
             findOne: jest.fn(),
@@ -41,13 +41,13 @@ describe('CarController', () => {
     .useValue(mockJwtAuthGuard) // Mock JwtAuthGuard
     .compile();
 
-    controller = module.get<CarController>(CarController);
-    service = module.get<CarService>(CarService);
+    controller = module.get<VehicleController>(VehicleController);
+    service = module.get<VehicleService>(VehicleService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  // Add more tests here to cover CarController methods
+  // Add more tests here to cover VehicleController methods
 });

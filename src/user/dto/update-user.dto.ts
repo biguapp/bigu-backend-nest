@@ -3,7 +3,7 @@ import { IsOptional, Matches } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
 import { CreateAddressDto } from '../../address/dto/create-address.dto';
 import { Role } from '../../enums/enum';
-import { CreateCarDto } from '../../car/dto/create-car.dto';
+import { CreateVehicleDto } from '../../vehicle/dto/create-vehicle.dto';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({ description: 'Foto de perfil do usuário', required: false })

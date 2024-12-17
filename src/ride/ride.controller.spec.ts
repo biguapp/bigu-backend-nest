@@ -12,6 +12,7 @@ import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { RideResponseDto } from './dto/response-ride.dto';
+import { VehicleType } from '@src/vehicle/schemas/vehicle.schema';
 
 describe('RideController', () => {
   let controller: RideController;
@@ -24,15 +25,17 @@ describe('RideController', () => {
     destinationAddress: 'Destination Location',
     numSeats: 4,
     goingToCollege: true,
-    price: 20.0,
     scheduledTime: '2024-09-10T15:30:00Z',
-    car: 'Car Model',
+    vehicle: 'Vehicle Model',
     description: 'Ride to campus',
     toWomen: false,
+    isOver: false
   };
 
   const rideResponse: RideResponseDto = {
     rideId: '123',
+    driverRatings: [],
+    memberRatings: [],
     driver: {
       name: 'João Silva',
       matricula: '2021001234',
@@ -43,6 +46,8 @@ describe('RideController', () => {
       avgScore: 5,
       feedbacks: [],
       isVerified: true,
+      ratingCount: 0,
+      documentStatus: "pending"
     },
     startAddress: {
       rua: 'Avenida Paulista',
@@ -53,6 +58,8 @@ describe('RideController', () => {
       cidade: 'São Paulo',
       estado: 'SP',
       addressId: '1',
+      cep: '12345678',
+      distance: 4
     },
     destinationAddress: {
       rua: 'Avenida Paulista',
@@ -63,20 +70,23 @@ describe('RideController', () => {
       cidade: 'São Paulo',
       estado: 'SP',
       addressId: '2',
+      cep: '12345668',
+      distance: 2
     },
     numSeats: 3,
     goingToCollege: true,
-    price: 15.0,
     scheduledTime: '2024-09-10T15:30:00Z',
-    car: {
+    vehicle: {
       brand: 'Chevrolet',
-      carModel: 'Onix',
+      vehicleModel: 'Onix',
       modelYear: '2019',
       color: 'Preto',
       plate: 'KGU7E07',
-      carId: '1',
+      vehicleId: '1',
+      type: VehicleType.CAR,
+      avgConsumption: 9
     },
-    description: 'Carona para o campus universitário',
+    description: 'Vehicleona para o campus universitário',
     toWomen: false,
     members: [],
     candidates: [],
@@ -213,7 +223,7 @@ describe('RideController', () => {
       expect(service.findOne).toHaveBeenCalledWith(rideId);
       expect(response.status).toHaveBeenCalledWith(404);
       expect(response.json).toHaveBeenCalledWith({
-        message: 'Carona não encontrada.',
+        message: 'Vehicleona não encontrada.',
       });
     });
   });

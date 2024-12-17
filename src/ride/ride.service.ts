@@ -15,7 +15,9 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 import { Candidate } from './interfaces/candidate.interface';
 import { Member } from './interfaces/member.interface';
 import { Ride } from './interfaces/ride.interface';
-import { Car } from '@src/car/schemas/car.schema';
+import { VehicleService } from '@src/vehicle/vehicle.service';
+import { Vehicle, VehicleType } from '@src/vehicle/schemas/vehicle.schema';
+
 
 @Injectable()
 export class RideService {
@@ -23,10 +25,11 @@ export class RideService {
     @InjectModel('Ride') private readonly rideModel: Model<Ride>,
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     @InjectModel('Candidate') private readonly candidateModel: Model<Candidate>,
-    @InjectModel('Car') private readonly carModel: Model<Car>,
+    @InjectModel('Vehicle') private readonly vehicleModel: Model<Vehicle>,
     private readonly userService: UserService,
     private readonly adressService: AddressService,
     private readonly mailjetService: MailjetService,
+    private readonly vehicleService: VehicleService,
   ) {}
 
   // Criação de uma nova carona
@@ -36,6 +39,16 @@ export class RideService {
   // 66e09466e2323b4802da45c9 - ENTRADA CCT
   async create(createRideDto: CreateRideDto): Promise<Ride> {
     const driver = await this.userService.findOne(createRideDto.driver);
+    const vehicle = await this.vehicleService.findOne(createRideDto.vehicle);
+
+    if (
+      vehicle.type === VehicleType.MOTORCYCLE &&
+      createRideDto.numSeats !== 1
+    ) {
+      throw new BadRequestException(
+        'Numero de vagas incompatível com o tipo do veículo.',
+      );
+    }
     if (!driver) {
       throw new NotFoundException(
         'O motorista não foi encontrado na base de dados.',
@@ -79,7 +92,7 @@ export class RideService {
       driver: new Types.ObjectId(createRideDto.driver),
       startAddress: new Types.ObjectId(createRideDto.startAddress),
       destinationAddress: new Types.ObjectId(createRideDto.destinationAddress),
-      car: new Types.ObjectId(createRideDto.car),
+      vehicle: new Types.ObjectId(createRideDto.vehicle),
       members: [],
       candidates: [],
       isOver: false,
@@ -131,11 +144,14 @@ export class RideService {
   async findOne(id: string): Promise<Ride> {
     const ride = await this.rideModel.findById(id);
     if (!ride) {
-      throw new NotFoundException(`Carona com ID ${id} não foi encontrada.`);
+      throw new NotFoundException(
+        `Carona com ID ${id} não foi encontrada.`,
+      );
     }
 
     return ride;
   }
+
 
   async findOneCandidate(id: string): Promise<Candidate> {
     const candidate = await this.candidateModel.findById(id);
@@ -160,12 +176,23 @@ export class RideService {
       }
     }
 
+    const vehicle = await this.vehicleService.findOne(updateRideDto.vehicle);
+
+    if (
+      vehicle.type === VehicleType.MOTORCYCLE &&
+      updateRideDto.numSeats !== 1
+    ) {
+      throw new BadRequestException(
+        'Numero de vagas incompatível com o tipo do veículo.',
+      );
+    }
+
     const ride = {
       ...updateRideDto,
       driver: new Types.ObjectId(updateRideDto.driver),
       startAddress: new Types.ObjectId(updateRideDto.startAddress),
       destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
-      car: new Types.ObjectId(updateRideDto.car),
+      vehicle: new Types.ObjectId(updateRideDto.vehicle),
       ...(zonedDate && { scheduledTime: zonedDate }),
     };
 
@@ -336,7 +363,7 @@ export class RideService {
 
     const ride = await this.rideModel.findById(rideIdObj);
     const user = await this.userService.findOne(userId);
-    const car = await this.carModel.findById(ride.car);
+    const vehicle = await this.vehicleModel.findById(ride.vehicle);
     const rideCandidates = ride.candidates || [];
     const userIdObj = new Types.ObjectId(userId);
 
@@ -369,7 +396,7 @@ export class RideService {
     }
 
     const distance = await this.adressService.getDistance(addressId);
-    const avgConsumption = car.avgConsumption;
+    const avgConsumption = vehicle.avgConsumption;
     const suggestedValue = parseFloat(
       ((6.15 * distance) / avgConsumption).toFixed(2),
     );
