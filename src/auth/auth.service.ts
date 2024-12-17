@@ -1,21 +1,20 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import { UpdateUserDto } from '@src/user/dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
-import { UserService } from '../user/user.service';
-import { CreateUserDto } from '../user/dto/create-user.dto';
-import { Role } from '../enums/enum';
-import { UserResponseDto } from '../user/dto/response-user.dto';
-import { BlacklistedToken } from './schemas/token.schema';
 import { MailjetService } from 'nest-mailjet';
-import { UpdateUserDto } from '@src/user/dto/update-user.dto';
+import { Role } from '../enums/enum';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { UserResponseDto } from '../user/dto/response-user.dto';
+import { UserService } from '../user/user.service';
+import { BlacklistedToken } from './schemas/token.schema';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +25,7 @@ export class AuthService {
     private readonly blacklistedTokenModel: Model<BlacklistedToken>,
     private readonly userService: UserService,
     private readonly mailjetService: MailjetService,
-  ) {}
+  ) { }
 
   async blacklistToken(token: string, expiresAt: Date): Promise<void> {
     const blacklistedToken = new this.blacklistedTokenModel({
@@ -251,6 +250,9 @@ export class AuthService {
       if (user.verificationCode !== code) {
         throw new BadRequestException('Código incorreto.');
       } else if (user.verificationCode === code) {
+        await this.userService.update(user.id, {
+          isVerified: true,
+        } as UpdateUserDto);
         return { validation: true, message: 'Código verificado.' };
       } else {
         return { validation: false, message: 'Código incorreto.' };
