@@ -421,7 +421,7 @@ export class RideService {
 
     const updateRideDto: any = { ...ride, candidates: rideCandidates };
 
-    return await this.update(rideId, updateRideDto);
+    return await this.update(rideId, updateRideDto._doc);
   }
 
   async acceptCandidate(

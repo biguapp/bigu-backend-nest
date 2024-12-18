@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { Vehicle } from './interfaces/vehicle.interface';
@@ -28,7 +28,7 @@ export class VehicleService {
     return await this.vehicleModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Vehicle> {
+  async findOne(id: string | Types.ObjectId): Promise<Vehicle> {
     const vehicle = await this.vehicleModel.findById(id).exec();
     if (!vehicle) {
       throw new NotFoundException(`Veículo com ID ${id} não encontrado`);
