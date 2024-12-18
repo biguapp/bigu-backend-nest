@@ -6,8 +6,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { VehicleResponseDto } from './dto/response-vehicle.dto';
 
-@ApiTags('Vehicles')
-@Controller('Vehicles')
+@ApiTags('vehicles')
+@Controller('vehicles')
 export class VehicleController {
   constructor(private readonly vehicleService: VehicleService) { }
 
