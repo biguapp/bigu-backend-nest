@@ -175,24 +175,26 @@ export class RideService {
         );
       }
     }
-
-    const vehicle = await this.vehicleService.findOne(updateRideDto.vehicle);
-
-    if (
-      vehicle.type === VehicleType.MOTORCYCLE &&
-      updateRideDto.numSeats !== 1
-    ) {
-      throw new BadRequestException(
-        'Numero de vagas incompatível com o tipo do veículo.',
-      );
+    if (updateRideDto.vehicle) {
+      const vehicle = await this.vehicleService.findOne(updateRideDto.vehicle);
+  
+      if (
+        vehicle.type === VehicleType.MOTORCYCLE &&
+        updateRideDto.numSeats !== 1
+      ) {
+        throw new BadRequestException(
+          'Numero de vagas incompatível com o tipo do veículo.',
+        );
+      }
     }
+
 
     const ride = {
       ...updateRideDto,
-      driver: new Types.ObjectId(updateRideDto.driver),
-      startAddress: new Types.ObjectId(updateRideDto.startAddress),
-      destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress),
-      vehicle: new Types.ObjectId(updateRideDto.vehicle),
+      ...(updateRideDto.driver && { driver: new Types.ObjectId(updateRideDto.driver) }),
+      ...(updateRideDto.startAddress && { startAddress: new Types.ObjectId(updateRideDto.startAddress) }),
+      ...(updateRideDto.destinationAddress && { destinationAddress: new Types.ObjectId(updateRideDto.destinationAddress) }),
+      ...(updateRideDto.vehicle && { vehicle: new Types.ObjectId(updateRideDto.vehicle) }),
       ...(zonedDate && { scheduledTime: zonedDate }),
     };
 
@@ -338,15 +340,6 @@ export class RideService {
       );
     }
 
-    /*const alreadyRated = 
-      ride.driverRatings.some((id) => id.toString() === raterId) ||
-      ride.memberRatings.some((id) => id.toString() === raterId);
-
-    // o usuário pode atualizar a que já tinha, não criar uma nova
-    if (alreadyRated) {
-      throw new BadRequestException('O usuário já fez uma avaliação.')
-    }*/
-
     if (ride.driver.toString() === raterId) {
       ride.driverRatings.push(ratingId);
     } else {
@@ -421,55 +414,86 @@ export class RideService {
 
     const updateRideDto: any = { ...ride, candidates: rideCandidates };
 
-    return await this.update(rideId, updateRideDto._doc);
+    return await this.update(rideId, updateRideDto);
   }
 
   async acceptCandidate(
     driverId: string,
     rideId: string,
-    candidateId: string, // O FRONT TA ENVIANDO O ID DO USUARIO, PRECISA ENVIAR O ID DO CANDIDATO
+    userId: string, // O FRONT TA ENVIANDO O ID DO USUARIO, PRECISA ENVIAR O ID DO CANDIDATO
     freeRide: boolean,
   ) {
-    const ride: any = await this.findOne(rideId);
+    const ride: Ride = await this.findOne(rideId);
     const rideCandidates = ride.candidates;
-    const rideCandidatesId = rideCandidates.map((candidate) =>
-      candidate._id.toString(),
+    
+    if (ride.driver.toString() !== driverId) {
+      throw new NotFoundException('Corrida não encontrada.')
+    }
+    
+    const candidate = rideCandidates.find((candidates) => candidates.user.toString() === userId);
+    const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
+    const memberCreated = await this.memberModel.create({
+      user: candidate.user,
+      address: candidate.address,
+      aggreedValue: aggreedValue,
+    });
+    ride.members.push(memberCreated);
+    const newMembers = ride.members;
+
+    // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
+    await this.sendEmail(
+      (await this.userService.findOne(ride.driver.toString())).email,
+      '[BIGUAPP] Solicitação aceita!',
+      'Você conseguiu um bigu!',
     );
-    if (ride.driver.toString() === driverId) {
-      if (rideCandidatesId.includes(candidateId)) {
-        const addressIdObj = rideCandidates.find(
-          (candidate) => candidate._id.toString() === candidateId,
-        ).address;
-        const idx = rideCandidatesId.indexOf(candidateId);
-        const candidate = rideCandidates.filter(
-          (candidate) => candidate._id.toString() === candidateId,
-        )[0];
-        const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
-        const memberCreated = await this.memberModel.create({
-          user: candidate.user,
-          address: addressIdObj,
-          aggreedValue: aggreedValue,
-        });
-        ride.members.push(memberCreated);
-        const newMembers = ride.members;
 
-        // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
-        await this.sendEmail(
-          (await this.userService.findOne(ride.driver.toString())).email,
-          '[BIGUAPP] Solicitação aceita!',
-          'Você conseguiu um bigu!',
-        );
+    const newCandidates = rideCandidates.filter((cand) => cand.id !== candidate.id)
+    await this.candidateModel.findByIdAndDelete(candidate.id);
+    const newRide = await this.update(rideId, {
+      candidates : newCandidates,
+      members: newMembers
+    })
+    return newRide.toDTO();
+      //     return newRide.toDTO();
+    // const rideCandidatesId = rideCandidates.map((candidate) =>
+    //   candidate._id.toString(),
+    // );
+    // console.log(userId)
+    // if (ride.driver.toString() === driverId) {
+    //   if (rideCandidatesId.includes(userId)) {
+    //     const addressIdObj = rideCandidates.find(
+    //       (candidate) => candidate.user.toString() === candidateId,
+    //     ).address;
+    //     const idx = rideCandidatesId.indexOf(candidateId);
+    //     const candidate = rideCandidates.filter(
+    //       (candidate) => candidate._id.toString() === candidateId,
+    //     )[0];
+    //     const aggreedValue = freeRide ? 0 : candidate.suggestedValue;
+    //     const memberCreated = await this.memberModel.create({
+    //       user: candidate.user,
+    //       address: addressIdObj,
+    //       aggreedValue: aggreedValue,
+    //     });
+    //     ride.members.push(memberCreated);
+    //     const newMembers = ride.members;
 
-        rideCandidates.splice(idx, 1);
-        this.candidateModel.findByIdAndDelete(candidateId);
-        const newRide = await this.update(rideId, {
-          ...ride,
-          candidates: rideCandidates,
-          members: newMembers,
-        });
-        return newRide.toDTO();
-      } else throw new NotFoundException('Candidato não encontrado.');
-    } else throw new NotFoundException('Corrida não encontrada.');
+    //     // COTA DE 100 EMAILS POR DIA, CUIDADO NOS TESTES, PODE COMENTAR O TRECHO SE NÃO ESTIVER PRECISANDO
+    //     await this.sendEmail(
+    //       (await this.userService.findOne(ride.driver.toString())).email,
+    //       '[BIGUAPP] Solicitação aceita!',
+    //       'Você conseguiu um bigu!',
+    //     );
+
+    //     rideCandidates.splice(idx, 1);
+    //     this.candidateModel.findByIdAndDelete(candidateId);
+        // const newRide = await this.update(rideId, {
+        //   ...ride,
+        //   candidates: rideCandidates,
+        //   members: newMembers,
+        // });
+    //     return newRide.toDTO();
+    //   } else throw new NotFoundException('Candidato não encontrado.');
+    // } else throw new NotFoundException('Corrida não encontrada.');
   }
 
   async declineCandidate(
