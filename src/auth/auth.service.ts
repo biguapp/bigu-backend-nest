@@ -175,7 +175,6 @@ export class AuthService {
       throw new UnauthorizedException('Código de verificação inválido.');
     } else {
         await this.userService.update(userId, {
-          ...user.toObject(),
           isVerified: true,
         } as UpdateUserDto);
       
