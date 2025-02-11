@@ -162,9 +162,12 @@ export class AuthController {
   @Put('confirm/user/:code')
   @ApiOperation({ summary: 'Confirm account.' })
   @ApiResponse({ status: 200, description: 'Account verified.' })
-  async confirmAccount(@Req() req, @Param('code') code: string) {
+  async confirmAccount(@Req() req, @Param('code') code: string, @Res() response: Response) {
     const userId = req.user.sub;
-    return await this.authService.confirmRegistration(userId, code);
+    const msg = await this.authService.confirmRegistration(userId, code);
+    return response.status(HttpStatus.OK).json({
+      message: msg,
+    });
   }
 
   @Post('request-password-reset/')

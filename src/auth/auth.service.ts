@@ -166,7 +166,7 @@ export class AuthService {
   }
 
   async confirmRegistration(userId: string, code: string): Promise<string> {
-    const user = await this.userService.findOne(userId); // Método para encontrar o usuário pelo ID
+    const user = await this.userService.findOne(userId);
     if (!user) {
       throw new UnauthorizedException('Usuário não encontrado.');
     }
@@ -174,13 +174,12 @@ export class AuthService {
     if (user.verificationCode !== code) {
       throw new UnauthorizedException('Código de verificação inválido.');
     } else {
-      (
         await this.userService.update(userId, {
-          ...user,
+          ...user.toObject(),
           isVerified: true,
-        } as UpdateUserDto)
-      ).save();
-      return 'Conta confirmada!';
+        } as UpdateUserDto);
+      
+      return 'Conta verificada!';
     }
   }
 
