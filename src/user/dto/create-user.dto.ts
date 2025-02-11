@@ -1,9 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Matches, MinLength, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Role } from '../../enums/enum';
-import { CreateAddressDto } from '../../address/dto/create-address.dto';
-import { CreateVehicleDto } from '../../vehicle/dto/create-vehicle.dto';
+import { IsEmail, IsNotEmpty, IsString, Matches, MinLength, ValidateNested } from 'class-validator';
 
 export class CreateUserDto {
 

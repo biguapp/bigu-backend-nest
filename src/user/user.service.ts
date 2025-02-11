@@ -190,7 +190,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
-    return await this.update(userId, { ...user, profileImage: imageBuffer } as UpdateUserDto);
+    return await this.update(userId, { profileImage: imageBuffer } as UpdateUserDto);
   }
 
   async updateIdPhoto(userId: string, idPhotoBuffer: Buffer): Promise<void> {
