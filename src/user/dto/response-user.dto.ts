@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsArray } from 'class-validator';
+import { Role } from '@src/enums/enum';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsArray, IsEnum } from 'class-validator';
 
 export class UserResponseDto {
   @ApiProperty({ description: 'Foto de perfil do usuário' })
@@ -98,4 +99,7 @@ export class UserResponseDto {
   @ApiProperty({ description: 'IDs das denúncias que o usuário recebeu'})
   @IsArray()
   readonly reports: string[];
+
+  @ApiProperty({ description: 'Role do usuário'})
+  readonly role: Role.User;
 }
