@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '@src/enums/enum';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsArray, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsArray,
+  IsEnum,
+} from 'class-validator';
 
 export class UserResponseDto {
   @ApiProperty({ description: 'Foto de perfil do usuário' })
@@ -83,7 +90,7 @@ export class UserResponseDto {
   @IsOptional()
   @IsString()
   readonly verificationReason?: string;
-  
+
   @ApiProperty({
     description: 'Quantidade de caronas recebidas pelo usuário',
     example: 0,
@@ -91,15 +98,15 @@ export class UserResponseDto {
   })
   @IsOptional()
   readonly takenRidesCount?: number;
-  
+
   feedbacks: string[];
 
   readonly isVerified: boolean;
 
-  @ApiProperty({ description: 'IDs das denúncias que o usuário recebeu'})
+  @ApiProperty({ description: 'IDs das denúncias que o usuário recebeu' })
   @IsArray()
   readonly reports: string[];
 
-  @ApiProperty({ description: 'Role do usuário'})
+  @ApiProperty({ description: 'Role do usuário' })
   readonly role: Role.User;
 }
