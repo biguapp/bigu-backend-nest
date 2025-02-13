@@ -47,7 +47,7 @@ export class RideResponseDto {
   readonly scheduledTime: string;
 
   @ApiProperty({
-    description: 'Informações sobre o carro',
+    description: 'Informações sobre o veículo',
     type: VehicleResponseDto
   })
   readonly vehicle: VehicleResponseDto;

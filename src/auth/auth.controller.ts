@@ -251,27 +251,4 @@ export class AuthController {
     }
   }
 
-  @Put('validate-code/:email/:code')
-  @ApiOperation({ summary: 'Validar código de verificação.' })
-  @ApiResponse({ status: 401, description: 'Código de verificação inválido.' })
-  async validateCode(
-    @Param('email') email: string,
-    @Param('code') code: string,
-    @Res() response: Response,
-  ) {
-    try {
-      const { validation, message } = await this.authService.validateCode(
-        email,
-        code,
-      );
-      if (validation) {
-        return response.status(HttpStatus.ACCEPTED).json({ message });
-      } else return response.status(HttpStatus.BAD_REQUEST).json({ message });
-    } catch (error) {
-      console.error(error);
-      return response.status(HttpStatus.NOT_FOUND).json({
-        message: error.message || 'Não encontrado.',
-      });
-    }
-  }
 }

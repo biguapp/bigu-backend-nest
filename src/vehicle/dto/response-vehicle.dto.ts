@@ -4,15 +4,15 @@ import { VehicleType } from '../schemas/vehicle.schema';
 
 
 export class VehicleResponseDto {
-  @swagger.ApiProperty({ description: 'Marca do carro', example: 'Chevrolet' })
+  @swagger.ApiProperty({ description: 'Marca do veículo', example: 'Chevrolet' })
   @IsString()
   readonly brand: string;
 
-  @swagger.ApiProperty({ description: 'Modelo do carro', example: 'Onix' })
+  @swagger.ApiProperty({ description: 'Modelo do veículo', example: 'Onix' })
   @IsString()
   readonly vehicleModel: string;
 
-  @swagger.ApiProperty({ description: 'Ano do carro', example: '2019' })
+  @swagger.ApiProperty({ description: 'Ano do veículo', example: '2019' })
   @IsString()
   readonly modelYear: string;
 
@@ -20,15 +20,15 @@ export class VehicleResponseDto {
   @IsNumber()
   readonly avgConsumption: number;
 
-  @swagger.ApiProperty({ description: 'Cor do carro', example: 'Preto' })
+  @swagger.ApiProperty({ description: 'Cor do veículo', example: 'Preto' })
   @IsString()
   readonly color: string;
 
-  @swagger.ApiProperty({ description: 'Placa do carro', example: 'KGU7E07' })
+  @swagger.ApiProperty({ description: 'Placa do veículo', example: 'KGU7E07' })
   @IsString()
   readonly plate: string;
 
-  @swagger.ApiProperty({ description: 'Id do carro', example: '1' })
+  @swagger.ApiProperty({ description: 'Id do veículo', example: '1' })
   @IsString()
   readonly vehicleId: string;
   @swagger.ApiProperty({ description: 'Tipo do veículo', example: VehicleType.CAR })
