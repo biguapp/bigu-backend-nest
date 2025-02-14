@@ -462,6 +462,38 @@ async getIdPhoto(@Res() response, @Req() req): Promise<void> {
 }
 
 @UseGuards(JwtAuthGuard)
+@Get('id-photo/:id')
+@ApiOperation({ summary: 'Retorna a foto de ID do usuário autenticado' })
+async getIdPhotoUser(@Res() response, @Param('id') id: string,) {
+  try {
+    const user = await this.userService.findOne(id);
+
+    if (!user || !user.idPhoto) {
+      throw new NotFoundException('Foto de ID não encontrada.');
+    }
+
+    return response.status(HttpStatus.OK).json({
+      message: 'O usuário foi retornado com sucesso.',
+      photo: user.idPhoto.toString('base64'),
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof NotFoundException) {
+      return response.status(HttpStatus.NOT_FOUND).json({
+        message: 'Foto de ID não encontrada.',
+        error: error.message,
+      });
+    }
+
+    return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Erro ao tentar retornar a foto de ID.',
+      error: error.message,
+    });
+  }
+}
+
+@UseGuards(JwtAuthGuard)
 @Put('evaluate-document/:id')
 @ApiOperation({ summary: 'Avaliar o documento de um usuário' })
 @ApiParam({
@@ -485,20 +517,13 @@ async evaluateUserDocument(
     });
   }
 
-  req.user = userFromDb;
-
-  if (req.user?.role !== 'admin') {
+  if (userFromDb?.role !== 'admin') {
     return response.status(HttpStatus.FORBIDDEN).json({
       message: 'Acesso negado. Somente administradores podem avaliar documentos.',
     });
   }
 
   try {
-    const userToEvaluate = await this.userService.findOne(id);
-    if (!userToEvaluate) {
-      throw new NotFoundException('Usuário não encontrado.');
-    }
-
     const updatedUser = await this.userService.verifyUserDocument(id, evaluateDocumentDto.isApproved, evaluateDocumentDto.reason);
 
     return response.status(HttpStatus.OK).json({
@@ -521,4 +546,29 @@ async evaluateUserDocument(
     });
   }
 }
+  @Get('inReview')
+  @ApiOperation({ summary: 'Retorna todos os usuários que o documento está em analise' })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuários que o documento está em analise retornados com sucesso.',
+    type: [UserResponseDto],
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro interno ao retornar os usuários que o documento está em analise.',
+  })
+  async getUsersWithDocumentStatusInReview(@Res() response): Promise<UserResponseDto[]> {
+    const usersModel = await this.userService.findAll({ documentStatus: 'inReview' });
+    let users: UserResponseDto[] = [];
+    
+    if (usersModel) {
+      users = usersModel.map((user) => user.toDTO());
+    }
+
+    return response.status(HttpStatus.OK).json({
+      message: 'Usuários que o documento está em analise retornados com sucesso.',
+      users,
+    });
+
+  }
 }

@@ -6,6 +6,10 @@ export class UserResponseDto {
   @IsOptional()
   readonly profileImage?: Buffer;
 
+  @ApiProperty({ description: 'Foto de perfil do usuário' })
+  @IsOptional()
+  readonly idPhoto?: Buffer;
+
   @ApiProperty({
     description: 'Nome completo do usuário',
     example: 'João Silva',
@@ -72,7 +76,7 @@ export class UserResponseDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly documentStatus: 'pending' | 'approved' | 'rejected';
+  readonly documentStatus: 'pending' | 'approved' | 'rejected' | 'inReview';
 
   @ApiProperty({
     description: 'Motivo para a reprovação do documento, caso tenha',

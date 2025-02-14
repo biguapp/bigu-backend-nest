@@ -193,14 +193,13 @@ export class UserService {
     return await this.update(userId, { profileImage: imageBuffer } as UpdateUserDto);
   }
 
-  async updateIdPhoto(userId: string, idPhotoBuffer: Buffer): Promise<void> {
+  async updateIdPhoto(userId: string, idPhotoBuffer: Buffer): Promise<User> {
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found.');
     }
-  
-    user.idPhoto = idPhotoBuffer;
-    await user.save();
+    
+    return await this.update(userId, { idPhoto: idPhotoBuffer, documentStatus: 'inReview' } as UpdateUserDto);
   }
 
   async notifyAdminForIdVerification(userId: string): Promise<void> {
@@ -236,10 +235,10 @@ export class UserService {
       throw new NotFoundException('User not found.');
     }
   
-    user.documentStatus = isApproved ? 'approved' : 'rejected';
-    user.verificationReason = isApproved ? undefined : reason;
-    await user.save();
-    return user;
+    return await this.update(userId, { 
+      documentStatus: isApproved ? 'approved' : 'rejected', 
+      verificationReason: isApproved ? undefined : reason
+    } as UpdateUserDto);
   }
 
   async addReportToUser(accusedId: string, reportId: string): Promise<void> {
@@ -247,9 +246,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('Usuário não encontrado.');
     }
-    console.log(user);
     user.reports.push(reportId);
-    console.log(user);
     await user.save();
   }
 

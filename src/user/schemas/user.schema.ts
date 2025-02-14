@@ -53,8 +53,8 @@ export class User extends Document {
   @Prop( { required: true, default: false})
   isVerified: boolean;
 
-  @Prop({required: false, type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' })
-  documentStatus: 'pending' | 'approved' | 'rejected';
+  @Prop({required: false, type: String, enum: ['pending', 'approved', 'rejected', 'inReview'], default: 'pending' })
+  documentStatus: 'pending' | 'approved' | 'rejected' | 'inReview';
 
   @Prop({ required: false })
   verificationReason?: string;
@@ -68,6 +68,7 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.methods.toDTO = function (): UserResponseDto {
   return {
     profileImage: this.profileImage ? this.profileImage.toString('base64') : null,
+    idPhoto: this.idPhoto ? this.idPhoto.toString('base64') : null,
     userId: this.id,
     name: this.name,
     email: this.email,

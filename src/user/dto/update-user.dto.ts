@@ -10,6 +10,18 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   readonly profileImage?: Buffer;
 
+  @ApiProperty({ description: 'Foto do documento do usuário', required: false })
+  @IsOptional()
+  readonly idPhoto?: Buffer;
+
+  @ApiProperty({ description: 'Status da análise do documento do usuário', required: false })
+  @IsOptional()
+  readonly documentStatus?: 'pending' | 'approved' | 'rejected' | 'inReview';
+  
+  @ApiProperty({ description: 'Motivo da recusa', required: false })
+  @IsOptional()
+  readonly verificationReason?: string
+
   @ApiProperty({
     description: 'Nome completo do usuário',
     example: 'João Silva',
@@ -91,7 +103,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     required: false,
   })
   @IsOptional()
-  readonly ratingCount: number;
+  readonly ratingCount?: number;
 
   @ApiProperty({
     description: 'Quantidade de caronas oferecidas pelo usuário',

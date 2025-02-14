@@ -21,7 +21,7 @@ export interface User extends Document {
   readonly reports: string[];
 
   idPhoto?: Buffer;
-  documentStatus: 'pending' | 'approved' | 'rejected'; 
+  documentStatus: 'pending' | 'approved' | 'rejected' | 'inReview'; 
   verificationReason?: string; 
 
   toDTO(): UserResponseDto;
