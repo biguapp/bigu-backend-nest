@@ -72,6 +72,7 @@ UserSchema.methods.toDTO = function (): UserResponseDto {
     userId: this.id,
     name: this.name,
     email: this.email,
+    role: this.role,
     sex: this.sex,
     phoneNumber: this.phoneNumber,
     matricula: this.matricula,
