@@ -32,7 +32,7 @@ export class AddressService {
       );
     }
     
-    const distance = await this.calculateDistance(createAddressDto);
+    const distance = 3; // await this.calculateDistance(createAddressDto);
     const newAddress = { ...createAddressDto, user: userId, distance: distance };
     const address = new this.addressModel(newAddress);
 
