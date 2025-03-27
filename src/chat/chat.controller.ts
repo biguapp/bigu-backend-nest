@@ -20,20 +20,20 @@ export class ChatController {
 
   @UseGuards(JwtAuthGuard)
   @Get('conversations/:userId')
-  findUserConversations(@Param('userId') userId: string) {
-    return this.chatService.getUserConversations(userId);
+  async findUserConversations(@Param('userId') userId: string) {
+    return await this.chatService.getUserConversations(userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('messages/:chatRoomId')
-  findMessages(@Param('chatRoomId') chatRoomId: string) {
-    return this.chatService.getMessages(chatRoomId);
+  async findMessages(@Param('chatRoomId') chatRoomId: string) {
+    return await this.chatService.getMessages(chatRoomId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('messages')
-  sendMessage(@Body() createMessageDto: CreateMessageDto) {
-    return this.chatService.sendMessage(createMessageDto);
+  async sendMessage(@Body() createMessageDto: CreateMessageDto) {
+    return await this.chatService.sendMessage(createMessageDto);
   }
 
   @UseGuards(JwtAuthGuard)
