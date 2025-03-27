@@ -1,20 +1,19 @@
-import { Schema, Document, model } from 'mongoose';
+import { Schema, Document, model, Types } from 'mongoose';
 
-export const ChatSchema = new Schema(
-  {
-    senderId: { type: String, required: true },
-    recipientId: { type: String, required: true },
-    message: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
-  },
-  { timestamps: true } 
-);
-
-export interface ChatMessage extends Document {
-  senderId: string;
-  recipientId: string;
-  message: string;
-  timestamp: Date;
+export interface ChatRoom extends Document {
+  ride: Types.ObjectId; // Referência à carona
+  participants: Types.ObjectId[]; // IDs dos usuários no chat
+  isGroup: boolean; // true para grupo, false para chat 1:1
+  createdAt: Date;
 }
 
-export const ChatMessageModel = model<ChatMessage>('ChatMessage', ChatSchema);
+export const ChatRoomSchema = new Schema<ChatRoom>(
+  {
+    ride: { type: Schema.Types.ObjectId, ref: 'Ride', required: true },
+    participants: [{ type: Types.ObjectId, ref: 'User', required: true }],
+    isGroup: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
+export const ChatRoomModel = model<ChatRoom>('ChatRoom', ChatRoomSchema);

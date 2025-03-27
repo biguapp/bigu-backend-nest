@@ -1,33 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { ChatMessageModel, ChatMessage } from './schemas/chat.schema';  
-
+import { InjectModel } from '@nestjs/mongoose';
+import { Message } from './schemas/message.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ChatService {
-  async saveMessage(senderId: string, recipientId: string, message: string): Promise<ChatMessage> {
-    return await new ChatMessageModel({ senderId, recipientId, message }).save();
+  constructor(@InjectModel('Message') private readonly messageModel: Model<Message>) {}
+
+  async createMessage(data: { chatRoomId: string; senderId: string; content: string }) {
+    const message = new this.messageModel({
+      chatRoom: data.chatRoomId,
+      sender: data.senderId,
+      content: data.content,
+    });
+    return message.save();
   }
 
-  async getMessages(userId: string, otherUserId: string): Promise<ChatMessage[]> {
-    return await ChatMessageModel.find({
-      $or: [
-        { senderId: userId, recipientId: otherUserId },
-        { senderId: otherUserId, recipientId: userId },
-      ],
-    }).sort({ timestamp: 1 });
-  }
-
-  async getMessagesAfter(
-    userId: string,
-    otherUserId: string,
-    timestamp: Date,
-  ): Promise<ChatMessage[]> {
-    return await ChatMessageModel.find({
-      $or: [
-        { senderId: userId, recipientId: otherUserId },
-        { senderId: otherUserId, recipientId: userId },
-      ],
-      timestamp: { $gt: timestamp },
-    }).sort({ timestamp: 1 });
+  async getMessages(chatRoomId: string) {
+    return this.messageModel.find({ chatRoom: chatRoomId }).populate('sender').exec();
   }
 }
