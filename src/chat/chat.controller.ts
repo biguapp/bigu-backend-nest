@@ -13,7 +13,7 @@ import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard';
 
-@ApiTags('users')
+@ApiTags('chats')
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
