@@ -4,6 +4,7 @@ import { Message } from './schemas/message.schema';
 import { Model } from 'mongoose';
 import { ChatRoom } from './schemas/chat.schema';
 import { CreateMessageDto } from './dto/createMessage.dto';
+import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 
 @Injectable()
 export class ChatService {
@@ -43,5 +44,28 @@ export class ChatService {
     });
 
     return await newMessage.save();
+  }
+
+  async createOrGetChatRoom(dto: CreateChatRoomDto) {
+    const { rideId, userId, participantId } = dto;
+
+    // Procura por sala existente entre os dois participantes, independente da ordem
+    let chatRoom = await this.chatRoomModel.findOne({
+      ride: rideId,
+      $or: [
+        { participants: [userId, participantId] },
+        { participants: [participantId, userId] },
+      ],
+    });
+
+    // Se não existe, cria
+    if (!chatRoom) {
+      chatRoom = await this.chatRoomModel.create({
+        ride: rideId,
+        participants: [userId, participantId],
+      });
+    }
+
+    return chatRoom;
   }
 }

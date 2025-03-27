@@ -10,10 +10,12 @@ export interface ChatRoom extends Document {
 export const ChatRoomSchema = new Schema<ChatRoom>(
   {
     ride: { type: Schema.Types.ObjectId, ref: 'Ride', required: true },
-    participants: [{ type: Types.ObjectId, ref: 'User', required: true }],
+    participants: [
+      { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    ],
     isGroup: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const ChatRoomModel = model<ChatRoom>('ChatRoom', ChatRoomSchema);

@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Query, Param } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/createMessage.dto';
+import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -19,5 +20,11 @@ export class ChatController {
   @Post('messages')
   sendMessage(@Body() createMessageDto: CreateMessageDto) {
     return this.chatService.sendMessage(createMessageDto);
+  }
+
+  @Post('create-or-get-room')
+  async createOrGetRoom(@Body() dto: CreateChatRoomDto) {
+    const chatRoom = await this.chatService.createOrGetChatRoom(dto);
+    return { chatRoomId: chatRoom._id };
   }
 }
