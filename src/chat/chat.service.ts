@@ -48,7 +48,6 @@ export class ChatService {
 
   async createOrGetChatRoom(dto: CreateChatRoomDto) {
     const { rideId, userId, participantId } = dto;
-
     // Procura por sala existente entre os dois participantes, independente da ordem
     let chatRoom = await this.chatRoomModel.findOne({
       ride: rideId,
@@ -63,6 +62,8 @@ export class ChatService {
       chatRoom = await this.chatRoomModel.create({
         ride: rideId,
         participants: [userId, participantId],
+        isGroup: false,
+        createdAt: Date.now()
       });
     }
 
