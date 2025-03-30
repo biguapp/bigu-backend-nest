@@ -11,6 +11,7 @@ import {
   Res,
   UnauthorizedException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
@@ -114,7 +115,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a user' })
   @ApiResponse({ status: 201, description: 'User registered' })
   @ApiResponse({ status: 401, description: 'Código de verificação inválido.' })
-  @ApiResponse({ status: 404, description: 'O usuário não foi encontrado.' })
+  @ApiResponse({ status: 400, description: 'Endereço de email ou matrícula já utilizado.' })
   @ApiResponse({
     status: 500,
     description: 'Erro interno ao tentar enviar redefinir senha.',
@@ -144,9 +145,9 @@ export class AuthController {
         });
       }
 
-      if (error instanceof NotFoundException) {
-        return response.status(HttpStatus.NOT_FOUND).json({
-          message: error.message || 'Não encontrado.',
+      if (error instanceof BadRequestException) {
+        return response.status(HttpStatus.BAD_REQUEST).json({
+          message: error.message || 'A credencial já está em uso.',
         });
       }
 
