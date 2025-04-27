@@ -48,6 +48,13 @@ export class RatingService {
     return await rating.save();
   }
 
+  async getUserSubmittedRatings(userId: string): Promise<Rating[]> {
+    if (!this.userService.findOne(userId)) {
+      throw new NotFoundException(`Usuário com ID ${userId} não encontrado.`);
+    }
+    return await this.ratingModel.find({ raterId: userId }).exec();
+  }
+
   async getUserRatings(userId: string): Promise<Rating[]> {
     if (!this.userService.findOne(userId)) {
       throw new NotFoundException(`Usuário com ID ${userId} não encontrado.`);

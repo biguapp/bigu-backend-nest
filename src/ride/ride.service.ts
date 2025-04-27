@@ -18,7 +18,6 @@ import { Ride } from './interfaces/ride.interface';
 import { VehicleService } from '@src/vehicle/vehicle.service';
 import { Vehicle, VehicleType } from '@src/vehicle/schemas/vehicle.schema';
 
-
 @Injectable()
 export class RideService {
   constructor(
@@ -144,14 +143,11 @@ export class RideService {
   async findOne(id: string): Promise<Ride> {
     const ride = await this.rideModel.findById(id);
     if (!ride) {
-      throw new NotFoundException(
-        `Carona com ID ${id} não foi encontrada.`,
-      );
+      throw new NotFoundException(`Carona com ID ${id} não foi encontrada.`);
     }
 
     return ride;
   }
-
 
   async findOneCandidate(id: string): Promise<Candidate> {
     const candidate = await this.candidateModel.findById(id);
@@ -255,7 +251,7 @@ export class RideService {
           { members: objId },
           { candidates: { $elemMatch: { user: objId } } },
         ],
-        $and: [{ isOver: true }]
+        $and: [{ isOver: true }],
       })
       .exec();
   }
